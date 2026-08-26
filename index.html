@@ -3,29 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Élite - Le meilleur de la Ligue 1</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Importation de Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Élite - Vivez la Ligue 1 autrement</title>
+    <!-- Police d'écriture moderne (Poppins) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- VARIABLES DE COULEURS --- */
+        :root {
+            --bg-dark: #0a0b10;
+            --bg-card: #151821;
+            --accent: #e50046; /* Le rouge/rose sportif */
+            --accent-hover: #ff0a5a;
+            --text-main: #ffffff;
+            --text-muted: #9ba1a6;
+            --gradient: linear-gradient(135deg, #e50046, #8000ff);
+        }
+
+        /* --- BASE ET RÉINITIALISATION --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-up { animation: fadeUp 1s ease-out forwards; opacity: 0; }
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+
+        /* --- HEADER (Menu) --- */
+        header {
+            position: fixed; top: 0; width: 100%; padding: 20px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(10px);
+            z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .logo { font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
+        nav { display: flex; gap: 30px; align-items: center; }
+        nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s; }
+        nav a:hover { color: var(--accent); }
+        .btn-compte { background: var(--accent); padding: 10px 24px; border-radius: 30px; color: white; font-weight: 600; transition: background 0.3s, transform 0.3s; }
+        .btn-compte:hover { background: var(--accent-hover); transform: scale(1.05); }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;
+            background: linear-gradient(to bottom, rgba(10,11,16,0.2), var(--bg-dark)), url('https://images.unsplash.com/photo-1574629810360-7efbb4980aed?auto=format&fit=crop&w=1920&q=80') center/cover;
+            padding: 0 20px;
+        }
+        .hero h1 { font-size: 60px; font-weight: 800; line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; }
+        .hero p { font-size: 20px; color: var(--text-muted); max-width: 600px; margin: 0 auto 40px auto; }
+        .btn-hero { background: white; color: var(--bg-dark); padding: 15px 40px; font-size: 18px; font-weight: bold; border-radius: 40px; transition: 0.3s; display: inline-block; }
+        .btn-hero:hover { background: var(--accent); color: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(229, 0, 70, 0.3); }
+
+        /* --- SECTION CONTENUS (Grille) --- */
+        .section { padding: 100px 50px; text-align: center; }
+        .section-title { font-size: 36px; font-weight: 800; margin-bottom: 15px; }
+        .section-subtitle { color: var(--text-muted); margin-bottom: 60px; font-size: 16px; }
+        
+        .grid-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .card-feature { background: var(--bg-card); padding: 40px 30px; border-radius: 20px; transition: 0.4s; border: 1px solid rgba(255,255,255,0.05); }
+        .card-feature:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .card-feature h3 { font-size: 22px; margin-bottom: 15px; color: white; }
+        .card-feature p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+        .icon { font-size: 40px; margin-bottom: 20px; display: inline-block; }
+
+        /* --- SECTION PRIX (Abonnements) --- */
+        .grid-pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto; }
+        .card-price { background: var(--bg-card); padding: 50px 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; position: relative; overflow: hidden; text-align: left; }
+        .card-price:hover { transform: translateY(-5px); }
+        
+        /* Mise en avant du Premium */
+        .card-price.premium { border: 2px solid var(--accent); background: linear-gradient(to bottom, rgba(229, 0, 70, 0.05), var(--bg-card)); }
+        .badge-premium { position: absolute; top: 15px; right: -30px; background: var(--accent); color: white; padding: 5px 40px; font-size: 12px; font-weight: bold; transform: rotate(45deg); }
+
+        .price-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+        .price-amount { font-size: 40px; font-weight: 800; color: var(--accent); margin-bottom: 30px; }
+        .price-amount span { font-size: 16px; color: var(--text-muted); font-weight: 400; }
+        
+        .price-list { list-style: none; margin-bottom: 40px; }
+        .price-list li { margin-bottom: 15px; font-size: 14px; color: var(--text-muted); display: flex; align-items: center; }
+        .price-list li::before { content: '✓'; color: var(--accent); font-weight: bold; margin-right: 10px; font-size: 16px; }
+
+        .btn-price { display: block; text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        .btn-price:hover { background: white; color: var(--bg-dark); }
+        .card-price.premium .btn-price { background: var(--gradient); color: white; }
+        .card-price.premium .btn-price:hover { box-shadow: 0 10px 20px rgba(229, 0, 70, 0.4); transform: scale(1.02); }
+
+        /* --- FOOTER --- */
+        footer { text-align: center; padding: 40px; border-top: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size: 14px; margin-top: 50px; }
+    </style>
 </head>
 <body>
+
+    <!-- HEADER -->
     <header>
-        <div class="logo">Élite</div>
+        <div class="logo">ÉLITE</div>
         <nav>
-            <a href="index.html">Accueil</a>
             <a href="#">Articles</a>
-            <a href="#">Matchs</a>
-            <a href="#" id="bouton-compte">Compte / S'abonner</a>
+            <a href="#">Matchs & Fan Zone</a>
+            <a href="#">Élite Le Mag</a>
+            <a href="#">Décrypte</a>
+            <!-- Le seul bouton qui fonctionne : il renvoie vers la page compte qu'on a déjà créée ! -->
+            <a href="compte.html" class="btn-compte">Compte</a>
         </nav>
     </header>
 
-    <main>
-        <h1>Bienvenue sur Élite</h1>
-        <p>Vivez la Ligue 1 autrement.</p>
-    </main>
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="animate-up">
+            <h1>Le Football<br>Sans Limites</h1>
+            <p>Vivez la Ligue 1 de l'intérieur. Analyses pointues, podcasts immersifs, émissions vidéos et Fan Zone en direct. Plongez au cœur du jeu.</p>
+            <a href="#abonnements" class="btn-hero">Découvrir nos offres</a>
+        </div>
+    </section>
 
-    <!-- Tes scripts -->
-    <script src="js/supabase-config.js"></script>
-    <script src="js/app.js"></script>
+    <!-- SECTION FONCTIONNALITÉS -->
+    <section class="section">
+        <h2 class="section-title animate-up">Tout l'univers Élite</h2>
+        <p class="section-subtitle animate-up delay-1">Une expérience complète pour les vrais passionnés de ballon rond.</p>
+        
+        <div class="grid-features">
+            <div class="card-feature animate-up delay-1">
+                <span class="icon">📺</span>
+                <h3>Élite Le Mag</h3>
+                <p>Notre émission vidéo phare. Débats, tactiques et invités exclusifs pour analyser chaque journée de championnat.</p>
+            </div>
+            <div class="card-feature animate-up delay-2">
+                <span class="icon">🎙️</span>
+                <h3>Élite Décrypte</h3>
+                <p>Le podcast qui va au-delà du terrain. Coulisses, mercato, et interviews sans langue de bois.</p>
+            </div>
+            <div class="card-feature animate-up delay-3">
+                <span class="icon">📊</span>
+                <h3>Analyses Poussées</h3>
+                <p>Scores en direct, possession, heatmap, buteurs et commentaires de joueurs. L'interface ultime pour suivre un match.</p>
+            </div>
+            <div class="card-feature animate-up delay-3">
+                <span class="icon">🏟️</span>
+                <h3>La Fan Zone</h3>
+                <p>Commentez les matchs en direct avec la communauté Élite pendant que vous regardez la Ligue 1+.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION ABONNEMENTS -->
+    <section class="section" id="abonnements">
+        <h2 class="section-title animate-up">Rejoins l'Élite</h2>
+        <p class="section-subtitle animate-up delay-1">Choisis l'abonnement qui correspond à ta passion.</p>
+        
+        <div class="grid-pricing">
+            
+            <!-- Offre Free -->
+            <div class="card-price animate-up delay-1">
+                <h3 class="price-title">Free</h3>
+                <div class="price-amount">0€ <span>/ à vie</span></div>
+                <ul class="price-list">
+                    <li>Accès à certains articles</li>
+                    <li>1 analyse de match par journée (Dimanche 17h15)</li>
+                    <li>1ère minute du podcast Élite Décrypte</li>
+                    <li>1ère minute de l'émission Élite Le Mag</li>
+                </ul>
+                <a href="compte.html" class="btn-price">Créer un compte gratuit</a>
+            </div>
+
+            <!-- Offre Classic -->
+            <div class="card-price animate-up delay-2">
+                <h3 class="price-title">Classic</h3>
+                <div class="price-amount">4.99€ <span>/ mois</span></div>
+                <ul class="price-list">
+                    <li>Accès à 100% des articles</li>
+                    <li>7 analyses de matchs par journée</li>
+                    <li>Accès illimité au podcast Élite Décrypte</li>
+                    <li>2 émissions Élite Le Mag sur 3</li>
+                    <li>Accès complet à la Fan Zone</li>
+                </ul>
+                <a href="#" class="btn-price">S'abonner à Classic</a>
+            </div>
+
+            <!-- Offre Premium -->
+            <div class="card-price premium animate-up delay-3">
+                <div class="badge-premium">LE BEST</div>
+                <h3 class="price-title">Premium</h3>
+                <div class="price-amount">6.99€ <span>/ mois</span></div>
+                <ul class="price-list">
+                    <li>Accès à 100% des articles</li>
+                    <li>Toutes les analyses de matchs (100%)</li>
+                    <li>Accès illimité au podcast Élite Décrypte</li>
+                    <li>Toutes les émissions Élite Le Mag (Samedi inclus)</li>
+                    <li>Accès complet à la Fan Zone</li>
+                </ul>
+                <a href="#" class="btn-price">Débloquer le Premium</a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2026 Élite Média. Tous droits réservés. L'univers de la Ligue 1.</p>
+    </footer>
+
 </body>
 </html>
