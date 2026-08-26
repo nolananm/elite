@@ -1,4 +1,49 @@
-<!-- Le script "Tout-en-un" avec tes identifiants -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Élite</title>
+    <!-- Importation de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .admin-box { background: white; padding: 20px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 0 auto; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #e50046; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        button:hover { background-color: #c4003c; }
+        #message-retour { text-align: center; font-weight: bold; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <!-- On cache cette boite par défaut (display: none) en attendant de vérifier si tu es Admin -->
+    <div class="admin-box" id="admin-content" style="display: none;">
+        <h2>🛠️ Panel de Gestion - Ajouter un match</h2>
+        
+        <label>Équipe à domicile :</label>
+        <input type="text" id="equipe-dom" placeholder="Ex: Paris Saint-Germain">
+        
+        <label>Équipe à l'extérieur :</label>
+        <input type="text" id="equipe-ext" placeholder="Ex: Olympique de Marseille">
+        
+        <label>Score Domicile :</label>
+        <input type="number" id="score-dom" placeholder="0" value="0">
+        
+        <label>Score Extérieur :</label>
+        <input type="number" id="score-ext" placeholder="0" value="0">
+
+        <label>Accès requis :</label>
+        <select id="niveau-acces">
+            <option value="free">Free (Match du dimanche 17h15)</option>
+            <option value="classic" selected>Classic (Standard)</option>
+            <option value="premium">Premium</option>
+        </select>
+
+        <button onclick="ajouterMatch()">Publier le match</button>
+        <p id="message-retour"></p>
+    </div>
+    
     <script>
         // 1. Tes identifiants Supabase
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
@@ -9,16 +54,14 @@
 
         // 3. Sécurité : Vérifier si l'utilisateur est Admin
         async function verifierAdmin() {
-            // On regarde qui est connecté
             const { data: { user } } = await supabaseClient.auth.getUser();
             
             if (!user) {
-                // S'il n'est pas connecté, on le renvoie vers la page de connexion
+                // Pas connecté -> direction la page de connexion
                 window.location.href = 'compte.html';
                 return;
             }
 
-            // S'il est connecté, on vérifie s'il est admin dans la table 'profils'
             const { data: profil } = await supabaseClient
                 .from('profils')
                 .select('est_admin')
@@ -26,19 +69,18 @@
                 .single();
 
             if (!profil || profil.est_admin !== true) {
-                // S'il n'est pas admin, on le renvoie à l'accueil avec un message
+                // Connecté mais pas admin -> direction l'accueil
                 alert("⛔ Accès refusé : Espace réservé à l'administration d'Élite.");
                 window.location.href = 'index.html';
             } else {
-                // S'il est admin, on affiche le contenu de la page
+                // Admin validé -> on affiche la boîte de gestion
                 document.getElementById('admin-content').style.display = "block";
             }
         }
 
-        // On lance la vérification immédiatement
         verifierAdmin();
 
-        // 4. Fonction pour envoyer les données (identique à avant)
+        // 4. Fonction pour envoyer les données
         async function ajouterMatch() {
             const eqDom = document.getElementById('equipe-dom').value;
             const eqExt = document.getElementById('equipe-ext').value;
@@ -76,3 +118,5 @@
             }
         }
     </script>
+</body>
+</html>
