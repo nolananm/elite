@@ -4,20 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - Élite</title>
-    <!-- Importation de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
-        .admin-box { background: white; padding: 20px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 0 auto; }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; display: flex; justify-content: center; }
+        .admin-box, .error-box { background: white; padding: 30px; border-radius: 8px; width: 100%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 20px auto; }
+        .error-box { text-align: center; }
+        .error-box h2 { color: #e50046; }
         input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { background-color: #e50046; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
         button:hover { background-color: #c4003c; }
+        .btn-retour { background-color: #1a1a1a; margin-top: 15px; }
+        .btn-retour:hover { background-color: #333; }
         #message-retour { text-align: center; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <!-- On cache cette boite par défaut (display: none) en attendant de vérifier si tu es Admin -->
+    <!-- Message d'erreur affiché si l'utilisateur n'est pas Admin -->
+    <div class="error-box" id="unauthorized-message" style="display: none;">
+        <h2>⛔ Accès Refusé</h2>
+        <p>Tu n'as pas les autorisations nécessaires pour accéder au panel d'administration d'Élite.</p>
+        <button class="btn-retour" onclick="window.location.href='compte.html'">Se connecter avec un compte autorisé</button>
+        <button class="btn-retour" onclick="window.location.href='index.html'">Retourner à l'accueil</button>
+    </div>
+
+    <!-- Panneau de gestion affiché uniquement si l'utilisateur est Admin -->
     <div class="admin-box" id="admin-content" style="display: none;">
         <h2>🛠️ Panel de Gestion - Ajouter un match</h2>
         
@@ -45,20 +56,19 @@
     </div>
     
     <script>
-        // 1. Tes identifiants Supabase
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
-        
-        // 2. Initialisation de la connexion
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // 3. Sécurité : Vérifier si l'utilisateur est Admin
         async function verifierAdmin() {
+            const adminContent = document.getElementById('admin-content');
+            const errorContent = document.getElementById('unauthorized-message');
+
             const { data: { user } } = await supabaseClient.auth.getUser();
             
             if (!user) {
-                // Pas connecté -> direction la page de connexion
-                window.location.href = 'compte.html';
+                // Pas connecté : on affiche l'erreur
+                errorContent.style.display = "block";
                 return;
             }
 
@@ -69,18 +79,16 @@
                 .single();
 
             if (!profil || profil.est_admin !== true) {
-                // Connecté mais pas admin -> direction l'accueil
-                alert("⛔ Accès refusé : Espace réservé à l'administration d'Élite.");
-                window.location.href = 'index.html';
+                // Connecté mais pas admin : on affiche l'erreur
+                errorContent.style.display = "block";
             } else {
-                // Admin validé -> on affiche la boîte de gestion
-                document.getElementById('admin-content').style.display = "block";
+                // Admin validé : on affiche le panneau de gestion
+                adminContent.style.display = "block";
             }
         }
 
         verifierAdmin();
 
-        // 4. Fonction pour envoyer les données
         async function ajouterMatch() {
             const eqDom = document.getElementById('equipe-dom').value;
             const eqExt = document.getElementById('equipe-ext').value;
