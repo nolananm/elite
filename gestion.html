@@ -8,10 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
-        .admin-box { background: white; padding: 20px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #e50046; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .admin-box { background: white; padding: 20px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 0 auto; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #e50046; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
         button:hover { background-color: #c4003c; }
+        #message-retour { text-align: center; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -41,24 +42,30 @@
         <button onclick="ajouterMatch()">Publier le match</button>
         <p id="message-retour"></p>
     </div>
-
-    <!-- On charge ta configuration Supabase -->
-    <script src="js/supabase-config.js"></script>
     
-    <!-- Le script pour envoyer les données à ta base -->
+    <!-- Le script "Tout-en-un" avec tes identifiants -->
     <script>
+        // 1. Tes identifiants Supabase
+        const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
+        
+        // 2. Initialisation de la connexion (Syntaxe corrigée)
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 3. Fonction pour envoyer les données
         async function ajouterMatch() {
             const eqDom = document.getElementById('equipe-dom').value;
             const eqExt = document.getElementById('equipe-ext').value;
-            const scoreDom = document.getElementById('score-dom').value;
-            const scoreExt = document.getElementById('score-ext').value;
+            const scoreDom = parseInt(document.getElementById('score-dom').value);
+            const scoreExt = parseInt(document.getElementById('score-ext').value);
             const acces = document.getElementById('niveau-acces').value;
             const message = document.getElementById('message-retour');
 
             message.textContent = "Envoi en cours...";
+            message.style.color = "black";
 
-            // On envoie les données dans la table 'matchs' de Supabase
-            const { data, error } = await supabase
+            // Envoi vers Supabase
+            const { data, error } = await supabaseClient
                 .from('matchs')
                 .insert([
                     { 
@@ -74,12 +81,15 @@
             if (error) {
                 message.textContent = "❌ Erreur : " + error.message;
                 message.style.color = "red";
+                console.error("Erreur détaillée :", error);
             } else {
                 message.textContent = "✅ Match ajouté avec succès !";
                 message.style.color = "green";
-                // Réinitialise les champs texte
+                // On vide les cases pour le prochain match
                 document.getElementById('equipe-dom').value = "";
                 document.getElementById('equipe-ext').value = "";
+                document.getElementById('score-dom').value = "0";
+                document.getElementById('score-ext').value = "0";
             }
         }
     </script>
