@@ -7,12 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Variables identiques à la page d'accueil */
         :root {
-            --bg-dark: #0a0b10;
             --bg-card: #151821;
             --accent: #e50046;
-            --accent-hover: #ff0a5a;
             --text-main: #ffffff;
             --text-muted: #9ba1a6;
             --gradient: linear-gradient(135deg, #e50046, #8000ff);
@@ -20,8 +17,11 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         
+        /* FOND DYNAMIQUE ET COLORÉ */
         body { 
-            background: linear-gradient(to bottom, rgba(10,11,16,0.5), var(--bg-dark)), url('https://images.unsplash.com/photo-1574629810360-7efbb4980aed?auto=format&fit=crop&w=1920&q=80') center/cover;
+            background: linear-gradient(-45deg, #0a0b10, #e50046, #4a00e0, #0a0b10);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             color: var(--text-main); 
             height: 100vh; 
             display: flex; 
@@ -30,18 +30,22 @@
             flex-direction: column;
         }
 
-        /* Le logo au-dessus de la boîte */
-        .logo-top { font-size: 32px; font-weight: 800; margin-bottom: 20px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; text-decoration: none; }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-        /* La boîte principale */
+        .logo-top { font-size: 40px; font-weight: 800; margin-bottom: 25px; color: white; letter-spacing: 2px; text-decoration: none; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+
         .auth-box { 
             background: var(--bg-card); 
             padding: 40px; 
             border-radius: 20px; 
             width: 100%; 
             max-width: 450px; 
-            border: 1px solid rgba(255,255,255,0.05); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             animation: fadeUp 0.6s ease-out forwards;
         }
 
@@ -50,59 +54,30 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Les onglets (Se connecter / S'inscrire) */
         .tabs { display: flex; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.1); }
-        .tab { 
-            flex: 1; 
-            text-align: center; 
-            padding: 10px; 
-            cursor: pointer; 
-            color: var(--text-muted); 
-            font-weight: 600; 
-            transition: 0.3s; 
-            position: relative;
-        }
+        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s; position: relative; }
         .tab:hover { color: white; }
         .tab.active { color: white; }
-        .tab.active::after { 
-            content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; 
-            background: var(--accent); border-radius: 2px; 
-        }
+        .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; }
 
-        /* Les champs de texte */
-        input { 
-            width: 100%; padding: 15px; margin-bottom: 15px; 
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: white; border-radius: 8px; outline: none; transition: 0.3s; 
-        }
+        input { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
 
-        /* Le bouton d'action */
-        .btn-action { 
-            width: 100%; padding: 15px; border: none; border-radius: 8px; 
-            background: var(--gradient); color: white; font-size: 16px; font-weight: bold; 
-            cursor: pointer; transition: 0.3s; margin-top: 10px;
-        }
-        .btn-action:hover { box-shadow: 0 5px 15px rgba(229, 0, 70, 0.4); transform: translateY(-2px); }
+        .btn-action { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--gradient); color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-action:hover { box-shadow: 0 5px 20px rgba(229, 0, 70, 0.5); transform: translateY(-2px); }
 
-        .btn-logout { background: rgba(255,255,255,0.1); color: white; }
+        .btn-logout { background: rgba(255,255,255,0.1); color: white; margin-top: 20px; }
         .btn-logout:hover { background: rgba(255,255,255,0.2); box-shadow: none; }
 
-        /* Messages */
         #auth-message { text-align: center; font-size: 14px; margin-top: 15px; min-height: 20px; }
         .msg-error { color: #ff4d4d; }
         .msg-success { color: #00e676; }
 
-        /* Espace Compte Connecté */
         #section-compte { text-align: center; }
         #section-compte h3 { font-size: 24px; margin-bottom: 10px; }
-        .plan-badge { 
-            display: inline-block; padding: 8px 20px; background: var(--accent); 
-            color: white; border-radius: 30px; font-size: 14px; font-weight: bold; 
-            margin: 20px 0; letter-spacing: 1px;
-        }
+        .plan-badge { display: inline-block; padding: 8px 20px; background: var(--gradient); color: white; border-radius: 30px; font-size: 14px; font-weight: bold; margin: 20px 0; letter-spacing: 1px; }
         
-        .retour-accueil { margin-top: 20px; color: var(--text-muted); font-size: 14px; text-decoration: none; transition: 0.3s; }
+        .retour-accueil { margin-top: 25px; color: rgba(255,255,255,0.7); font-size: 14px; text-decoration: none; transition: 0.3s; }
         .retour-accueil:hover { color: white; }
     </style>
 </head>
@@ -111,16 +86,12 @@
     <a href="index.html" class="logo-top">ÉLITE</a>
 
     <div class="auth-box">
-        
-        <!-- SECTION AUTHENTIFICATION (Cachée si connecté) -->
         <div id="section-auth">
-            <!-- Onglets -->
             <div class="tabs">
                 <div class="tab active" id="tab-login" onclick="changerMode('login')">Se connecter</div>
                 <div class="tab" id="tab-register" onclick="changerMode('register')">S'inscrire</div>
             </div>
 
-            <!-- Formulaire -->
             <input type="email" id="email" placeholder="Adresse e-mail">
             <input type="password" id="password" placeholder="Mot de passe">
             
@@ -128,10 +99,9 @@
             <p id="auth-message"></p>
         </div>
 
-        <!-- SECTION COMPTE (Cachée si non connecté) -->
         <div id="section-compte" style="display: none;">
-            <h3>Espace Membre</h3>
-            <p style="color: var(--text-muted);">Ton abonnement actuel :</p>
+            <h3>Ton Profil Élite</h3>
+            <p style="color: var(--text-muted);">Voici ton abonnement actuel :</p>
             <div class="plan-badge" id="plan-display">Chargement...</div>
             <button class="btn-action btn-logout" onclick="deconnexion()">Se déconnecter</button>
         </div>
@@ -140,22 +110,19 @@
     <a href="index.html" class="retour-accueil">← Retour à l'accueil</a>
 
     <script>
-        // --- 1. CONFIGURATION SUPABASE ---
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // --- 2. GESTION DE L'INTERFACE UTILISATEUR ---
-        let modeActuel = 'login'; // Peut être 'login' ou 'register'
+        let modeActuel = 'login';
         const tabLogin = document.getElementById('tab-login');
         const tabRegister = document.getElementById('tab-register');
         const btnSubmit = document.getElementById('btn-submit');
         const message = document.getElementById('auth-message');
 
-        // Fonction pour changer d'onglet
         function changerMode(mode) {
             modeActuel = mode;
-            message.textContent = ""; // On efface les messages d'erreur précédents
+            message.textContent = "";
             message.className = "";
             document.getElementById('email').value = "";
             document.getElementById('password').value = "";
@@ -171,7 +138,6 @@
             }
         }
 
-        // Fonction liée au gros bouton
         function soumettre() {
             if (modeActuel === 'login') {
                 connexion();
@@ -180,7 +146,6 @@
             }
         }
 
-        // --- 3. FONCTIONS D'AUTHENTIFICATION ---
         async function inscription() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -193,9 +158,15 @@
                 message.className = "msg-error";
                 message.textContent = "❌ " + error.message;
             } else {
-                message.className = "msg-success";
-                message.textContent = "✅ Compte créé ! Tu peux maintenant te connecter.";
-                changerMode('login'); // On remet l'onglet sur connexion automatiquement
+                // Sur Supabase, si l'email n'a pas besoin de confirmation, on est connecté automatiquement
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (user) {
+                    window.location.href = 'index.html'; // Redirection automatique !
+                } else {
+                    message.className = "msg-success";
+                    message.textContent = "✅ Compte créé ! Connecte-toi.";
+                    changerMode('login');
+                }
             }
         }
 
@@ -211,14 +182,14 @@
                 message.className = "msg-error";
                 message.textContent = "❌ Identifiants incorrects.";
             } else {
-                message.textContent = "";
-                verifierSession();
+                // Connexion réussie : Redirection instantanée vers l'accueil !
+                window.location.href = 'index.html';
             }
         }
 
         async function deconnexion() {
             await supabaseClient.auth.signOut();
-            verifierSession();
+            window.location.href = 'index.html'; // On retourne à l'accueil après déconnexion
         }
 
         async function verifierSession() {
@@ -228,30 +199,17 @@
             const planDisplay = document.getElementById('plan-display');
             
             if (user) {
-                // Utilisateur connecté
                 sectionAuth.style.display = "none";
                 sectionCompte.style.display = "block";
                 
-                const { data: profil } = await supabaseClient
-                    .from('profils')
-                    .select('plan')
-                    .eq('id', user.id)
-                    .single();
-                    
-                if (profil) {
-                    planDisplay.textContent = "ÉLITE " + profil.plan.toUpperCase();
-                }
+                const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
+                if (profil) { planDisplay.textContent = "ÉLITE " + profil.plan.toUpperCase(); }
             } else {
-                // Utilisateur non connecté
                 sectionAuth.style.display = "block";
                 sectionCompte.style.display = "none";
-                document.getElementById('email').value = "";
-                document.getElementById('password').value = "";
-                message.textContent = "";
             }
         }
 
-        // --- 4. LANCEMENT ---
         verifierSession();
     </script>
 </body>
