@@ -17,11 +17,9 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         
-        /* FOND DYNAMIQUE ET COLORÉ */
+        /* FOND DOUX ET REPOSANT */
         body { 
-            background: linear-gradient(-45deg, #0a0b10, #e50046, #4a00e0, #0a0b10);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background: radial-gradient(circle at center, #151821 0%, #0a0b10 100%);
             color: var(--text-main); 
             height: 100vh; 
             display: flex; 
@@ -30,22 +28,17 @@
             flex-direction: column;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         .logo-top { font-size: 40px; font-weight: 800; margin-bottom: 25px; color: white; letter-spacing: 2px; text-decoration: none; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
+        /* BOÎTE AVEC LÉGER HALO LUMINEUX */
         .auth-box { 
             background: var(--bg-card); 
             padding: 40px; 
             border-radius: 20px; 
             width: 100%; 
             max-width: 450px; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.05); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(229, 0, 70, 0.1);
             animation: fadeUp 0.6s ease-out forwards;
         }
 
@@ -77,7 +70,7 @@
         #section-compte h3 { font-size: 24px; margin-bottom: 10px; }
         .plan-badge { display: inline-block; padding: 8px 20px; background: var(--gradient); color: white; border-radius: 30px; font-size: 14px; font-weight: bold; margin: 20px 0; letter-spacing: 1px; }
         
-        .retour-accueil { margin-top: 25px; color: rgba(255,255,255,0.7); font-size: 14px; text-decoration: none; transition: 0.3s; }
+        .retour-accueil { margin-top: 25px; color: rgba(255,255,255,0.5); font-size: 14px; text-decoration: none; transition: 0.3s; }
         .retour-accueil:hover { color: white; }
     </style>
 </head>
@@ -158,10 +151,9 @@
                 message.className = "msg-error";
                 message.textContent = "❌ " + error.message;
             } else {
-                // Sur Supabase, si l'email n'a pas besoin de confirmation, on est connecté automatiquement
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 if (user) {
-                    window.location.href = 'index.html'; // Redirection automatique !
+                    window.location.href = 'index.html';
                 } else {
                     message.className = "msg-success";
                     message.textContent = "✅ Compte créé ! Connecte-toi.";
@@ -182,14 +174,13 @@
                 message.className = "msg-error";
                 message.textContent = "❌ Identifiants incorrects.";
             } else {
-                // Connexion réussie : Redirection instantanée vers l'accueil !
                 window.location.href = 'index.html';
             }
         }
 
         async function deconnexion() {
             await supabaseClient.auth.signOut();
-            window.location.href = 'index.html'; // On retourne à l'accueil après déconnexion
+            window.location.href = 'index.html';
         }
 
         async function verifierSession() {
