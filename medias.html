@@ -45,19 +45,27 @@
         .page-header h1 { font-size: 40px; font-weight: 800; text-transform: uppercase; }
         .page-header p { color: var(--text-muted); font-size: 16px; margin-top: 10px; }
 
-        .media-section { margin-bottom: 60px; }
-        .media-section h2 { font-size: 28px; border-left: 4px solid var(--accent); padding-left: 15px; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        /* STRUCTURE DES SECTIONS ET REPLAYS */
+        .media-section { margin-bottom: 70px; background: rgba(255,255,255,0.02); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .media-section h2 { font-size: 32px; border-left: 4px solid var(--accent); padding-left: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
         
+        .sub-title { font-size: 18px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 20px 0; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .sub-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+
         .grid-media { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
         
+        /* Modèle de base pour les cartes médias */
         .media-card {
             background: var(--bg-card);
             border-radius: 15px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            transition: border-color 0.3s;
         }
-        .media-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .media-card:hover { border-color: rgba(255,255,255,0.2); }
+        
+        /* Carte "Dernier Numéro" mise en avant (Plus grande) */
+        .media-card.featured { max-width: 800px; border: 1px solid rgba(229, 0, 70, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
         video { width: 100%; outline: none; background: #000; aspect-ratio: 16/9; }
         
@@ -72,9 +80,8 @@
             border: none; width: 45px; height: 45px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; font-size: 16px; transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(229, 0, 70, 0.3);
         }
-        .play-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(229, 0, 70, 0.5); }
+        .play-btn:hover { opacity: 0.9; }
         
         .progress-container { flex: 1; display: flex; align-items: center; position: relative; }
         .progress-container input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; cursor: pointer; margin: 0; }
@@ -92,25 +99,20 @@
         .media-info p { color: var(--text-muted); font-size: 14px; line-height: 1.5; }
 
 
-        /* =========================================
-           NOUVELLE POPUP D'UPGRADE FLUIDE & PREMIUM 
-           ========================================= */
+        /* POPUP D'UPGRADE FLUIDE & PREMIUM (Sans animations parasites au survol) */
         #upgrade-modal {
-            display: none; /* Reste en display:none par défaut */
+            display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 7, 12, 0.85); 
-            backdrop-filter: blur(15px); /* Flou très élégant en arrière-plan */
+            backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             z-index: 2000;
             justify-content: center; align-items: center;
             opacity: 0; 
-            transition: opacity 0.4s ease; /* Transition d'opacité fluide */
+            transition: opacity 0.4s ease;
         }
         
-        /* Classe ajoutée par le JS pour déclencher l'animation */
-        #upgrade-modal.show {
-            opacity: 1;
-        }
+        #upgrade-modal.show { opacity: 1; }
 
         .upgrade-box { 
             background: linear-gradient(145deg, #161a25, #0f111a); 
@@ -120,17 +122,12 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-            
-            /* Animation de zoom au moment de l'affichage */
             transform: scale(0.95) translateY(20px);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
-        #upgrade-modal.show .upgrade-box {
-            transform: scale(1) translateY(0);
-        }
+        #upgrade-modal.show .upgrade-box { transform: scale(1) translateY(0); }
 
-        /* Halo lumineux à l'intérieur de la boîte */
         .upgrade-box::before {
             content: ''; position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
             width: 100%; height: 100%; 
@@ -154,18 +151,11 @@
         .btn-upgrade { 
             display: block; width: 100%; padding: 18px; background: var(--gradient); color: white; 
             font-weight: 800; border-radius: 12px; font-size: 16px; border: none; cursor: pointer; text-decoration: none;
-            text-transform: uppercase; letter-spacing: 1px; position: relative; overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
+            text-transform: uppercase; letter-spacing: 1px; 
+            transition: opacity 0.2s; /* Transition très sobre */
         }
         
-        /* Effet de brillance dynamique sur le bouton */
-        .btn-upgrade::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: 0.5s;
-        }
-        .btn-upgrade:hover::after { left: 100%; }
-        .btn-upgrade:hover { box-shadow: 0 10px 30px rgba(229, 0, 70, 0.5); transform: translateY(-3px); }
+        .btn-upgrade:hover { opacity: 0.9; } /* Finis les effets de brillance et les rebonds ! */
         
         .btn-close { 
             margin-top: 25px; display: inline-block; color: #707580; font-size: 13px; font-weight: 600; 
@@ -194,54 +184,102 @@
             <p>Retrouve <b>Élite Le Mag</b> et <b>Élite Décrypte</b>. <br><span id="user-status-text" style="color: var(--text-muted); font-weight: 400; font-size: 14px;">Chargement du profil...</span></p>
         </div>
 
+        <!-- =======================
+             SECTION : ÉLITE LE MAG
+             ======================= -->
         <div class="media-section">
             <h2>Élite Le Mag</h2>
+            
+            <h4 class="sub-title">🔴 Dernier Numéro</h4>
+            
+            <div class="media-card featured">
+                <video controls class="elite-player" data-access="classic">
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                </video>
+                <div class="media-info">
+                    <span class="badge-acces badge-classic">Classic</span>
+                    <h3>Le Mag : Débrief de la 12ème journée (TEST)</h3>
+                    <p>Analyse complète et retour sur les décisions arbitrales du week-end. L'équipe passe en revue les moments forts et les polémiques. (Avance à 55 secondes pour tester la restriction).</p>
+                </div>
+            </div>
+
+            <h4 class="sub-title">▶️ Replays Précédents</h4>
+            
             <div class="grid-media">
-                
+                <!-- Ancien épisode 1 -->
+                <div class="media-card">
+                    <video controls class="elite-player" data-access="premium">
+                        <!-- Remarque : Cette vidéo est vide, c'est juste pour le visuel de la grille -->
+                    </video>
+                    <div class="media-info">
+                        <span class="badge-acces badge-premium">Premium</span>
+                        <h3>Le Mag : Émission Spéciale du Samedi</h3>
+                        <p>Débat enflammé sur le choc du sommet.</p>
+                    </div>
+                </div>
+                <!-- Ancien épisode 2 -->
                 <div class="media-card">
                     <video controls class="elite-player" data-access="classic">
-                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
                     </video>
                     <div class="media-info">
                         <span class="badge-acces badge-classic">Classic</span>
-                        <h3>Le Mag : Débrief de la journée (TEST)</h3>
-                        <p>Analyse complète et retour sur les décisions arbitrales. Avance à 55 secondes pour tester la restriction.</p>
+                        <h3>Le Mag : Débrief 11ème journée</h3>
+                        <p>Retour sur la journée précédente.</p>
                     </div>
                 </div>
-
             </div>
         </div>
 
+        <!-- =======================
+             SECTION : ÉLITE DÉCRYPTE
+             ======================= -->
         <div class="media-section">
             <h2>Élite Décrypte</h2>
-            <div class="grid-media">
-                
-                <div class="media-card">
-                    <div class="custom-audio-player">
-                        <button class="play-btn" id="play-btn">▶</button>
-                        <div class="progress-container">
-                            <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
-                        </div>
-                        <div class="time-display" id="time-display">0:00</div>
-                        
-                        <audio id="custom-audio" class="elite-player" data-access="premium">
-                            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-                        </audio>
+            
+            <h4 class="sub-title">🎙️ Podcast du jour</h4>
+
+            <div class="media-card featured">
+                <div class="custom-audio-player">
+                    <button class="play-btn" id="play-btn">▶</button>
+                    <div class="progress-container">
+                        <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
                     </div>
+                    <div class="time-display" id="time-display">0:00</div>
                     
-                    <div class="media-info">
-                        <!-- Remarque : J'ai mis ce test en PREMIUM pour que tu puisses voir le titre changer -->
-                        <span class="badge-acces badge-premium">Premium</span>
-                        <h3>Décrypte : Les coulisses du Mercato (TEST)</h3>
-                        <p>Notre invité balance sur les coulisses du dernier mercato hivernal.</p>
+                    <audio id="custom-audio" class="elite-player" data-access="premium">
+                        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+                    </audio>
+                </div>
+                
+                <div class="media-info">
+                    <span class="badge-acces badge-premium">Premium</span>
+                    <h3>Décrypte : Les coulisses du Mercato hivernal</h3>
+                    <p>Notre invité balance sur les tractations secrètes du dernier mercato et les clauses improbables des contrats. (Ceci est un épisode Premium pour le test).</p>
+                </div>
+            </div>
+
+            <h4 class="sub-title">▶️ Anciens Podcasts</h4>
+            
+            <div class="grid-media">
+                <!-- On simule des anciens podcasts -->
+                <div class="media-card">
+                    <div class="media-info" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span class="badge-acces badge-classic">Classic</span>
+                        <h3>Décrypte : La formation à la française</h3>
                     </div>
                 </div>
-
+                <div class="media-card">
+                    <div class="media-info" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span class="badge-acces badge-classic">Classic</span>
+                        <h3>Décrypte : L'arbitrage sous pression</h3>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
 
-    <!-- LA NOUVELLE MODAL FLUIDE ET INTELLIGENTE -->
+    <!-- LA MODAL FIXE, FLUIDE ET PROFESSIONNELLE -->
     <div id="upgrade-modal">
         <div class="upgrade-box">
             <div class="upgrade-content">
@@ -321,7 +359,7 @@
 
             lecteurs.forEach(lecteur => {
                 lecteur.addEventListener('timeupdate', () => {
-                    const accesRequis = lecteur.getAttribute('data-access'); // classic ou premium
+                    const accesRequis = lecteur.getAttribute('data-access'); 
                     
                     if ((profilActuel === 'none' || profilActuel === 'free') && lecteur.currentTime >= 60) {
                         bloquerLecteur(lecteur, "L'extrait gratuit d'une minute est terminé. Abonne-toi pour accéder à l'intégralité du média.", accesRequis);
@@ -335,10 +373,9 @@
 
         function bloquerLecteur(lecteur, message, planRequis) {
             lecteur.pause();
-            lecteur.currentTime = 59; // On bloque juste avant la barre fatidique
+            lecteur.currentTime = 59; 
             lecteurBloqueActuel = lecteur;
             
-            // 1. Changement dynamique du titre
             const titreElement = document.getElementById('upgrade-title');
             if (planRequis === 'premium') {
                 titreElement.innerHTML = "Élite <span style='color: var(--accent)'>Premium</span>";
@@ -346,30 +383,20 @@
                 titreElement.innerHTML = "Élite <span style='color: #0055ff'>Classic</span>";
             }
 
-            // 2. Texte du message
             document.getElementById('upgrade-message').textContent = message;
             
-            // 3. Affichage fluide (Display Flex puis Opacity 1 via classe 'show')
             const modal = document.getElementById('upgrade-modal');
             modal.style.display = 'flex';
-            
-            // Un micro délai est obligatoire pour que le navigateur comprenne l'animation CSS
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 10);
+            setTimeout(() => { modal.classList.add('show'); }, 10);
         }
 
         function fermerModal() {
             const modal = document.getElementById('upgrade-modal');
-            
-            // 1. On retire la classe pour déclencher l'animation de fermeture (fondu)
             modal.classList.remove('show');
-            
-            // 2. On attend la fin de l'animation CSS (400ms) avant de cacher complètement
             setTimeout(() => {
                 modal.style.display = 'none';
                 if (lecteurBloqueActuel) {
-                    lecteurBloqueActuel.currentTime = 0; // Rembobinage
+                    lecteurBloqueActuel.currentTime = 0; 
                 }
             }, 400); 
         }
