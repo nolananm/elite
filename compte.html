@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Compte - Élite</title>
+    <!-- Importation de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; display: flex; justify-content: center; }
+        .auth-box { background: white; padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .btn-connexion { background-color: #1a1a1a; }
+        .btn-connexion:hover { background-color: #333; }
+        .btn-inscription { background-color: #e50046; }
+        .btn-inscription:hover { background-color: #c4003c; }
+        #auth-message { text-align: center; font-weight: bold; margin-top: 15px; }
+        .plan-badge { display: inline-block; padding: 5px 10px; background: #e50046; color: white; border-radius: 20px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-box">
+        <h2>Espace Membre Élite</h2>
+        
+        <!-- Section visible si l'utilisateur n'est PAS connecté -->
+        <div id="section-connexion">
+            <input type="email" id="email" placeholder="Adresse e-mail">
+            <input type="password" id="password" placeholder="Mot de passe">
+            
+            <button class="btn-connexion" onclick="connexion()">Se connecter</button>
+            <button class="btn-inscription" onclick="inscription()">Créer un compte (Free)</button>
+            <p id="auth-message"></p>
+        </div>
+
+        <!-- Section visible si l'utilisateur EST connecté -->
+        <div id="section-compte" style="display: none; text-align: center;">
+            <h3>Bienvenue !</h3>
+            <p>Ton abonnement actuel : <br><br><span class="plan-badge" id="plan-display">Chargement...</span></p>
+            <br>
+            <button class="btn-connexion" onclick="deconnexion()">Se déconnecter</button>
+        </div>
+    </div>
+
+    <!-- On charge ta configuration Supabase -->
+    <script src="js/supabase-config.js"></script>
+    
+    <!-- Le script de gestion des comptes -->
+    <script>
+        const message = document.getElementById('auth-message');
+        const sectionConnexion = document.getElementById('section-connexion');
+        const sectionCompte = document.getElementById('section-compte');
+        const planDisplay = document.getElementById('plan-display');
+
+        // Fonction pour s'inscrire
+        async function inscription() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            message.textContent = "Création du compte...";
+            
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            
+            if (error) {
+                message.style.color = "red";
+                message.textContent = "❌ " + error.message;
+            } else {
+                message.style.color = "green";
+                message.textContent = "✅ Compte créé ! Tu peux maintenant te connecter.";
+            }
+        }
+
+        // Fonction pour se connecter
+        async function connexion() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            message.textContent = "Connexion en cours...";
+            
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                message.style.color = "red";
+                message.textContent = "❌ Identifiants incorrects.";
+            } else {
+                verifierSession(); // On met à jour l'affichage
+            }
+        }
+
+        // Fonction pour se déconnecter
+        async function deconnexion() {
+            await supabase.auth.signOut();
+            verifierSession();
+        }
+
+        // Vérifier si quelqu'un est connecté au chargement de la page
+        async function verifierSession() {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (user) {
+                // L'utilisateur est connecté, on cache le formulaire et on montre son compte
+                sectionConnexion.style.display = "none";
+                sectionCompte.style.display = "block";
+                
+                // On va chercher son plan d'abonnement dans la table 'profils'
+                const { data: profil } = await supabase
+                    .from('profils')
+                    .select('plan')
+                    .eq('id', user.id)
+                    .single();
+                    
+                if (profil) {
+                    planDisplay.textContent = "ÉLITE " + profil.plan.toUpperCase();
+                }
+            } else {
+                // Personne n'est connecté, on montre le formulaire
+                sectionConnexion.style.display = "block";
+                sectionCompte.style.display = "none";
+                document.getElementById('email').value = "";
+                document.getElementById('password').value = "";
+                message.textContent = "";
+            }
+        }
+
+        // On lance la vérification dès que la page s'ouvre
+        verifierSession();
+    </script>
+</body>
+</html>
