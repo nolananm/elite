@@ -11,6 +11,7 @@
             --bg-dark: #0a0b10;
             --bg-card: #151821;
             --accent: #e50046;
+            --accent-hover: #ff0a5a;
             --text-main: #ffffff;
             --text-muted: #9ba1a6;
             --gradient: linear-gradient(135deg, #e50046, #8000ff);
@@ -20,6 +21,7 @@
         body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
 
+        /* HEADER */
         header {
             position: fixed; top: 0; width: 100%; padding: 20px 50px;
             display: flex; justify-content: space-between; align-items: center;
@@ -37,7 +39,7 @@
         .page-header h1 { font-size: 40px; font-weight: 800; text-transform: uppercase; }
         .page-header p { color: var(--text-muted); font-size: 16px; margin-top: 10px; }
 
-        /* Grille des médias */
+        /* SECTIONS & GRILLES */
         .media-section { margin-bottom: 60px; }
         .media-section h2 { font-size: 28px; border-left: 4px solid var(--accent); padding-left: 15px; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
         
@@ -48,34 +50,65 @@
             border-radius: 15px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.3s;
         }
-        .media-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        /* Lecteurs Vidéo et Audio */
-        video, audio { width: 100%; outline: none; background: #000; }
-        audio { height: 50px; background: rgba(255,255,255,0.05); }
+        /* VIDÉO */
+        video { width: 100%; outline: none; background: #000; aspect-ratio: 16/9; }
         
+        /* LECTEUR PODCAST SUR MESURE (Minimaliste) */
+        .custom-audio-player {
+            display: flex; align-items: center; gap: 15px;
+            background: rgba(255,255,255,0.02); padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .play-btn {
+            background: var(--text-main); color: var(--bg-dark);
+            border: none; width: 45px; height: 45px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; font-size: 18px; transition: 0.2s;
+        }
+        .play-btn:hover { transform: scale(1.05); background: var(--accent); color: white; }
+        
+        .progress-container { flex: 1; display: flex; align-items: center; position: relative; }
+        .progress-container input[type=range] {
+            width: 100%; -webkit-appearance: none; background: transparent; cursor: pointer; margin: 0;
+        }
+        /* Customisation de la barre */
+        .progress-container input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .progress-container input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: var(--accent); margin-top: -4px; }
+        
+        .time-display { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 45px; text-align: right; }
+
+        /* INFOS DES MÉDIAS */
         .media-info { padding: 25px; }
-        .badge-acces { display: inline-block; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 15px; }
-        .badge-classic { background: #0055ff; color: white; }
-        .badge-premium { background: var(--gradient); color: white; }
+        .badge-acces { display: inline-block; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; margin-bottom: 12px; }
+        .badge-classic { background: rgba(255,255,255,0.1); color: white; }
+        .badge-premium { background: var(--accent); color: white; }
         
-        .media-info h3 { font-size: 20px; margin-bottom: 10px; }
+        .media-info h3 { font-size: 20px; margin-bottom: 10px; font-weight: 600; line-height: 1.3; }
         .media-info p { color: var(--text-muted); font-size: 14px; line-height: 1.5; }
 
-        /* Popup Upgrade (Bloque l'écran quand on dépasse 1 minute) */
+        /* POPUP D'UPGRADE (Pro, sombre et minimaliste) */
         #upgrade-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 11, 16, 0.95); z-index: 2000;
-            justify-content: center; align-items: center; text-align: center;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 2000;
+            justify-content: center; align-items: center;
         }
-        .upgrade-box { background: var(--bg-card); padding: 50px; border-radius: 20px; max-width: 500px; border: 2px solid var(--accent); box-shadow: 0 0 50px rgba(229, 0, 70, 0.2); }
-        .upgrade-box h2 { font-size: 30px; margin-bottom: 15px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .upgrade-box p { color: var(--text-muted); margin-bottom: 30px; font-size: 16px; }
-        .btn-upgrade { display: inline-block; padding: 15px 40px; background: var(--gradient); color: white; font-weight: bold; border-radius: 30px; font-size: 18px; transition: 0.3s; }
-        .btn-upgrade:hover { transform: scale(1.05); }
-        .btn-close { margin-top: 20px; display: block; color: var(--text-muted); font-size: 14px; cursor: pointer; text-decoration: underline; background: none; border: none; width: 100%; }
+        .upgrade-box { 
+            background: #11131a; padding: 40px; border-radius: 12px; max-width: 420px; 
+            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
+            text-align: center;
+        }
+        .icon-lock { font-size: 40px; margin-bottom: 15px; display: inline-block; }
+        .upgrade-box h2 { font-size: 22px; margin-bottom: 10px; font-weight: 600; color: white; }
+        .upgrade-box p { color: #888; margin-bottom: 30px; font-size: 15px; line-height: 1.6; }
+        .btn-upgrade { 
+            display: block; width: 100%; padding: 16px; background: white; color: black; 
+            font-weight: 600; border-radius: 8px; font-size: 16px; transition: 0.2s; 
+        }
+        .btn-upgrade:hover { background: #e0e0e0; }
+        .btn-close { margin-top: 20px; display: block; color: var(--text-muted); font-size: 14px; cursor: pointer; background: none; border: none; width: 100%; transition: color 0.2s; }
+        .btn-close:hover { color: white; }
 
     </style>
 </head>
@@ -94,24 +127,23 @@
     <div class="container">
         <div class="page-header">
             <h1>Émissions & Podcasts</h1>
-            <p>Retrouve <b>Élite Le Mag</b> et <b>Élite Décrypte</b>. <br><span id="user-status-text" style="color: var(--accent); font-weight: bold;">Chargement de ton profil...</span></p>
+            <p>Retrouve <b>Élite Le Mag</b> et <b>Élite Décrypte</b>. <br><span id="user-status-text" style="color: var(--text-muted); font-weight: 400; font-size: 14px;">Chargement du profil...</span></p>
         </div>
 
         <!-- SECTION VIDÉOS (LE MAG) -->
         <div class="media-section">
-            <h2>📺 Élite Le Mag</h2>
-            <div class="grid-media" id="liste-videos">
+            <h2>Élite Le Mag</h2>
+            <div class="grid-media">
                 
-                <!-- DÉMO VIDÉO CODÉE EN DUR POUR TESTER -->
                 <div class="media-card">
+                    <!-- Vidéo de test longue (environ 10 min) -->
                     <video controls class="elite-player" data-access="classic">
-                        <!-- Vidéo test libre de droits -->
-                        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
                     </video>
                     <div class="media-info">
                         <span class="badge-acces badge-classic">Classic</span>
-                        <h3>Le Mag : Débrief de la 12ème journée (DÉMO)</h3>
-                        <p>Débat enflammé sur les choix tactiques du week-end. Laisse tourner la vidéo 1 minute pour tester le blocage !</p>
+                        <h3>Le Mag : Débrief de la journée (TEST)</h3>
+                        <p>Analyse complète et retour sur les décisions arbitrales. Avance à 55 secondes pour tester la restriction.</p>
                     </div>
                 </div>
 
@@ -120,19 +152,28 @@
 
         <!-- SECTION PODCASTS (DÉCRYPTE) -->
         <div class="media-section">
-            <h2>🎙️ Élite Décrypte</h2>
-            <div class="grid-media" id="liste-podcasts">
+            <h2>Élite Décrypte</h2>
+            <div class="grid-media">
                 
-                <!-- DÉMO AUDIO CODÉE EN DUR POUR TESTER -->
                 <div class="media-card">
-                    <audio controls class="elite-player" data-access="classic">
-                        <!-- Audio test libre de droits -->
-                        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-                    </audio>
+                    <!-- Lecteur audio sur mesure -->
+                    <div class="custom-audio-player">
+                        <button class="play-btn" id="play-btn">▶</button>
+                        <div class="progress-container">
+                            <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="time-display" id="time-display">0:00</div>
+                        
+                        <!-- L'audio caché qui fait le travail -->
+                        <audio id="custom-audio" class="elite-player" data-access="classic">
+                            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+                        </audio>
+                    </div>
+                    
                     <div class="media-info">
                         <span class="badge-acces badge-classic">Classic</span>
-                        <h3>Décrypte : Les secrets du Mercato (DÉMO)</h3>
-                        <p>Plongée au cœur des transferts. Écoute pendant 1 minute pour tester la restriction.</p>
+                        <h3>Décrypte : Les coulisses du Mercato</h3>
+                        <p>Notre invité balance sur les coulisses du dernier mercato hivernal.</p>
                     </div>
                 </div>
 
@@ -140,13 +181,14 @@
         </div>
     </div>
 
-    <!-- LE MODAL D'UPGRADE (S'affiche quand la minute est écoulée) -->
+    <!-- LE MODAL D'UPGRADE MINIMALISTE -->
     <div id="upgrade-modal">
         <div class="upgrade-box">
-            <h2>⏱️ Temps écoulé !</h2>
-            <p id="upgrade-message">L'extrait gratuit de 1 minute est terminé. Pour regarder ou écouter l'intégralité de nos émissions, passe au niveau supérieur !</p>
+            <div class="icon-lock">🔒</div>
+            <h2>Abonnement requis</h2>
+            <p id="upgrade-message">L'extrait gratuit de 1 minute est terminé. Abonne-toi pour profiter de l'intégralité du contenu.</p>
             <a href="index.html#abonnements" class="btn-upgrade">Découvrir les offres</a>
-            <button class="btn-close" onclick="fermerModal()">Fermer (Retour au début)</button>
+            <button class="btn-close" onclick="fermerModal()">Fermer et recommencer</button>
         </div>
     </div>
 
@@ -155,8 +197,8 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let profilActuel = 'none'; // 'none', 'free', 'classic', 'premium'
-        let lecteurBloqueActuel = null; // Mémorise quel lecteur a été mis en pause
+        let profilActuel = 'none'; 
+        let lecteurBloqueActuel = null; 
 
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -166,58 +208,90 @@
                 const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
                 if (profil) {
                     profilActuel = profil.plan;
-                    statusText.textContent = `Ton abonnement : Élite ${profilActuel.toUpperCase()}`;
+                    statusText.innerHTML = `Profil détecté : <span style="color:white; font-weight:600;">Élite ${profilActuel.toUpperCase()}</span>`;
                 }
             } else {
-                statusText.innerHTML = `Tu n'es pas connecté. <a href="compte.html" style="text-decoration: underline;">Connecte-toi ici.</a>`;
+                statusText.innerHTML = `Visiteur (Non connecté). <a href="compte.html" style="color: white; text-decoration: underline;">Connexion</a>`;
             }
 
             appliquerRestrictions();
-            // Note : Plus tard, on ajoutera ici la fonction pour aller chercher les vraies vidéos de la base de données !
+            configurerLecteurAudio();
         }
 
-        // LA FONCTION MAGIQUE DE BLOCAGE À 1 MINUTE
+        /* ----- GESTION DU LECTEUR AUDIO SUR MESURE ----- */
+        function configurerLecteurAudio() {
+            const audio = document.getElementById('custom-audio');
+            const playBtn = document.getElementById('play-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const timeDisplay = document.getElementById('time-display');
+
+            // Clic sur Play/Pause
+            playBtn.addEventListener('click', () => {
+                if (audio.paused) { audio.play(); } 
+                else { audio.pause(); }
+            });
+
+            // Gérer l'apparence du bouton selon l'état de l'audio
+            audio.addEventListener('play', () => playBtn.innerHTML = '⏸');
+            audio.addEventListener('pause', () => playBtn.innerHTML = '▶');
+
+            // Mettre à jour la barre et le temps pendant la lecture
+            audio.addEventListener('timeupdate', () => {
+                if (audio.duration) {
+                    progressBar.value = (audio.currentTime / audio.duration) * 100;
+                    timeDisplay.textContent = formatTime(audio.currentTime);
+                }
+            });
+
+            // Permettre à l'utilisateur de cliquer sur la barre de progression
+            progressBar.addEventListener('input', () => {
+                if (audio.duration) {
+                    audio.currentTime = (progressBar.value / 100) * audio.duration;
+                }
+            });
+        }
+
+        // Formatage du temps en 0:00
+        function formatTime(seconds) {
+            let min = Math.floor(seconds / 60);
+            let sec = Math.floor(seconds % 60);
+            return min + ':' + (sec < 10 ? '0' + sec : sec);
+        }
+
+        /* ----- BLOCAGE À 60 SECONDES ----- */
         function appliquerRestrictions() {
-            // On sélectionne tous les lecteurs vidéo et audio de la page
             const lecteurs = document.querySelectorAll('.elite-player');
 
             lecteurs.forEach(lecteur => {
-                // À chaque fois que le temps avance (chaque seconde)
                 lecteur.addEventListener('timeupdate', () => {
-                    const accesRequis = lecteur.getAttribute('data-access'); // 'classic' ou 'premium'
+                    const accesRequis = lecteur.getAttribute('data-access'); 
                     
-                    // RÈGLE 1 : Si l'utilisateur est 'none' (déconnecté) ou 'free', on bloque à 60 secondes.
                     if ((profilActuel === 'none' || profilActuel === 'free') && lecteur.currentTime >= 60) {
-                        bloquerLecteur(lecteur, "L'extrait gratuit de 1 minute est terminé. Abonne-toi pour voir la suite !");
+                        bloquerLecteur(lecteur, "Abonnement requis pour regarder ou écouter plus d'une minute.");
                     }
-                    
-                    // RÈGLE 2 : Si l'utilisateur est 'classic' et tente de regarder l'émission Premium du samedi
                     else if (profilActuel === 'classic' && accesRequis === 'premium' && lecteur.currentTime >= 60) {
-                        bloquerLecteur(lecteur, "Cette émission du Samedi est une exclusivité Premium !");
+                        bloquerLecteur(lecteur, "Cette émission est réservée aux abonnés Premium.");
                     }
                 });
             });
         }
 
         function bloquerLecteur(lecteur, message) {
-            lecteur.pause(); // On met pause
-            lecteur.currentTime = 59; // On recule d'une seconde pour ne pas tourner en boucle
-            lecteurBloqueActuel = lecteur; // On retient le lecteur concerné
+            lecteur.pause();
+            lecteur.currentTime = 59.5; 
+            lecteurBloqueActuel = lecteur;
             
-            // On affiche le beau popup
             document.getElementById('upgrade-message').textContent = message;
             document.getElementById('upgrade-modal').style.display = 'flex';
         }
 
         function fermerModal() {
             document.getElementById('upgrade-modal').style.display = 'none';
-            // Si l'utilisateur ferme la popup sans payer, on remet la vidéo à zéro
             if (lecteurBloqueActuel) {
-                lecteurBloqueActuel.currentTime = 0;
+                lecteurBloqueActuel.currentTime = 0; // Remet à 0 si on ferme
             }
         }
 
-        // Démarrage
         initialiserPage();
     </script>
 </body>
