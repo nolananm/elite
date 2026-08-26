@@ -6,7 +6,6 @@
     <title>Émissions & Podcasts - Élite</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Chargement de l'API YouTube -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root {
@@ -26,6 +25,7 @@
                         var(--bg-dark); 
             color: var(--text-main); 
             overflow-x: hidden; 
+            min-height: 100vh;
         }
         a { text-decoration: none; color: inherit; }
 
@@ -51,46 +51,41 @@
         .sub-title { font-size: 18px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 20px 0; font-weight: 600; display: flex; align-items: center; gap: 10px; }
         .sub-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
 
-        .media-card { background: var(--bg-card); border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .grid-media { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
+        
+        .media-card { background: var(--bg-card); border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: border-color 0.3s; display: flex; flex-direction: column;}
+        .media-card:hover { border-color: rgba(255,255,255,0.2); }
         .media-card.featured { max-width: 800px; border: 1px solid rgba(229, 0, 70, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        /* --- LECTEUR YOUTUBE SÉCURISÉ --- */
+        /* LECTEUR YOUTUBE SÉCURISÉ */
         .yt-wrapper { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; }
-        .yt-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; /* Empêche les clics directs sur YouTube */ }
-        
-        /* Le bouclier qui capte nos clics */
-        .yt-shield { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; 
-            cursor: pointer; display: flex; justify-content: center; align-items: center; 
-            background: rgba(0,0,0,0.3); transition: background 0.3s; 
-        }
+        .yt-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .yt-shield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); transition: background 0.3s; }
         .yt-shield:hover { background: rgba(0,0,0,0.1); }
-        .yt-play-btn { 
-            background: var(--gradient); width: 80px; height: 80px; border-radius: 50%; 
-            display: flex; justify-content: center; align-items: center; font-size: 28px; color: white; 
-            box-shadow: 0 10px 30px rgba(229,0,70,0.5); transition: transform 0.3s; padding-left: 5px; 
-        }
+        .yt-play-btn { background: var(--gradient); width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; color: white; box-shadow: 0 10px 30px rgba(229,0,70,0.5); transition: transform 0.3s; padding-left: 5px; }
         .yt-shield:hover .yt-play-btn { transform: scale(1.1); }
         
-        /* LECTEUR PODCAST (Inchangé) */
+        /* LECTEUR PODCAST */
         .custom-audio-player { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .play-btn { background: var(--gradient); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 16px; }
+        .play-btn { background: var(--gradient); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 16px; transition: 0.3s; }
         .play-btn:hover { opacity: 0.9; }
         .progress-container { flex: 1; display: flex; align-items: center; position: relative; }
         .progress-container input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; cursor: pointer; margin: 0; }
         .progress-container input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; }
-        .progress-container input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--accent); margin-top: -4px; }
+        .progress-container input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--accent); margin-top: -4px; box-shadow: 0 0 10px var(--accent); }
         .time-display { font-size: 13px; color: var(--text-main); font-weight: 600; font-variant-numeric: tabular-nums; min-width: 45px; text-align: right; }
 
-        /* TEXTES */
-        .media-info { padding: 25px; }
+        .media-info { padding: 25px; flex: 1;}
         .badge-acces { display: inline-block; font-size: 10px; font-weight: bold; padding: 5px 12px; border-radius: 20px; text-transform: uppercase; margin-bottom: 15px; }
         .badge-classic { background: #0055ff; color: white; }
         .badge-premium { background: var(--gradient); color: white; }
         .media-info h3 { font-size: 20px; margin-bottom: 10px; font-weight: 600; line-height: 1.3; }
         .media-info p { color: var(--text-muted); font-size: 14px; line-height: 1.5; }
 
-        /* MODAL (Inchangé) */
+        /* MESSAGE DE CHARGEMENT ET VIDE */
+        .loading-text { text-align: center; color: var(--text-muted); padding: 30px; font-size: 18px; }
+        
+        /* MODAL D'UPGRADE */
         #upgrade-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 2000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.4s ease; }
         #upgrade-modal.show { opacity: 1; }
         .upgrade-box { background: linear-gradient(145deg, #161a25, #0f111a); padding: 50px 40px; border-radius: 24px; width: 100%; max-width: 480px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05); text-align: center; position: relative; overflow: hidden; transform: scale(0.95) translateY(20px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -121,57 +116,34 @@
     <div class="container">
         <div class="page-header">
             <h1>Émissions & Podcasts</h1>
-            <p>Retrouve <b>Élite Le Mag</b> et <b>Élite Décrypte</b>. <br><span id="user-status-text" style="color: var(--text-muted); font-size: 14px;">Chargement du profil...</span></p>
+            <p>Retrouve <b>Élite Le Mag</b> et <b>Élite Décrypte</b>. <br><span id="user-status-text" style="color: var(--text-muted); font-size: 14px;">Vérification de l'abonnement...</span></p>
         </div>
 
-        <!-- SECTION VIDÉOS (YouTube avec Bouclier) -->
+        <!-- SECTION VIDÉOS -->
         <div class="media-section">
             <h2>Élite Le Mag</h2>
             <h4 class="sub-title">🔴 Dernier Numéro</h4>
-            
-            <div class="media-card featured" id="video-container" data-access="classic">
-                <div class="yt-wrapper">
-                    <!-- Div où le lecteur YT va s'injecter -->
-                    <div id="yt-player"></div>
-                    
-                    <!-- Le bouclier magique -->
-                    <div class="yt-shield" id="yt-shield" onclick="toggleYouTube()">
-                        <div class="yt-play-btn" id="yt-play-btn">▶</div>
-                    </div>
-                </div>
+            <div id="video-featured-container">
+                <div class="loading-text">Recherche du dernier numéro...</div>
+            </div>
 
-                <div class="media-info">
-                    <span class="badge-acces badge-classic">Classic</span>
-                    <h3>Le Mag : Débrief de la 12ème journée (TEST YOUTUBE)</h3>
-                    <p>Ce lecteur lit une vidéo YouTube en toute sécurité. Impossible de cliquer sur les logos ou d'avancer le temps. Laisse tourner 60s !</p>
-                </div>
+            <h4 class="sub-title">▶️ Replays Précédents</h4>
+            <div id="video-replays-container" class="grid-media">
+                <div class="loading-text" style="grid-column: 1/-1;">Chargement des replays...</div>
             </div>
         </div>
 
-        <!-- SECTION PODCASTS (Fichiers Audio) -->
+        <!-- SECTION PODCASTS -->
         <div class="media-section">
             <h2>Élite Décrypte</h2>
             <h4 class="sub-title">🎙️ Podcast du jour</h4>
+            <div id="podcast-featured-container">
+                <div class="loading-text">Recherche du podcast du jour...</div>
+            </div>
 
-            <div class="media-card featured">
-                <div class="custom-audio-player">
-                    <button class="play-btn" id="play-btn">▶</button>
-                    <div class="progress-container">
-                        <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1">
-                    </div>
-                    <div class="time-display" id="time-display">0:00</div>
-                    
-                    <audio id="custom-audio" class="elite-audio" data-access="premium">
-                        <!-- Tu pourras héberger tes MP3 sur Supabase plus tard -->
-                        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-                    </audio>
-                </div>
-                
-                <div class="media-info">
-                    <span class="badge-acces badge-premium">Premium</span>
-                    <h3>Décrypte : Les coulisses du Mercato hivernal</h3>
-                    <p>Notre invité balance sur les tractations secrètes du dernier mercato.</p>
-                </div>
+            <h4 class="sub-title">▶️ Anciens Podcasts</h4>
+            <div id="podcast-replays-container" class="grid-media">
+                <div class="loading-text" style="grid-column: 1/-1;">Chargement des anciens podcasts...</div>
             </div>
         </div>
     </div>
@@ -195,10 +167,28 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let profilActuel = 'none'; 
-        let lecteurBloqueActuel = null; // 'yt' ou 'audio'
-        let ytPlayer;
+        let ytPlayers = {};
+        let lecteurBloqueActuel = null; // Objet: {type: 'yt'/'audio', id_ou_element: ...}
+        
+        // Variables pour s'assurer que l'API YouTube est prête
+        let ytApiPrete = false;
+        let videosAPreparer = [];
+
+        function onYouTubeIframeAPIReady() {
+            ytApiPrete = true;
+            if(videosAPreparer.length > 0) {
+                initYouTubePlayers(videosAPreparer);
+            }
+        }
+
+        // Fonction magique pour extraire l'ID d'un lien YouTube
+        function extraireIdYoutube(url) {
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
+            return match ? match[1] : null;
+        }
 
         async function initialiserPage() {
+            // 1. Vérification du compte
             const { data: { user } } = await supabaseClient.auth.getUser();
             const statusText = document.getElementById('user-status-text');
             
@@ -212,104 +202,207 @@
                 statusText.innerHTML = `Visiteur (Non connecté). <a href="compte.html" style="color: white; text-decoration: underline;">Connexion</a>`;
             }
 
-            configurerLecteurAudio();
+            // 2. Récupération des médias depuis Supabase (du plus récent au plus ancien)
+            const { data: medias, error } = await supabaseClient
+                .from('medias')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Erreur de chargement :", error);
+                return;
+            }
+
+            const videos = medias.filter(m => m.type_media === 'video');
+            const podcasts = medias.filter(m => m.type_media === 'podcast');
+
+            // 3. Affichage des Vidéos
+            const featuredVidCont = document.getElementById('video-featured-container');
+            const replaysVidCont = document.getElementById('video-replays-container');
+            
+            if (videos.length > 0) {
+                featuredVidCont.innerHTML = genererHTMLVideo(videos[0], true);
+                
+                let replaysHTML = '';
+                for (let i = 1; i < videos.length; i++) {
+                    replaysHTML += genererHTMLVideo(videos[i], false);
+                }
+                replaysVidCont.innerHTML = replaysHTML || '<div class="loading-text" style="grid-column:1/-1;">Aucun replay disponible pour le moment.</div>';
+                
+                // Préparation pour YouTube
+                videosAPreparer = videos;
+                if (ytApiPrete || (window.YT && window.YT.Player)) {
+                    initYouTubePlayers(videos);
+                }
+            } else {
+                featuredVidCont.innerHTML = '<div class="loading-text">Aucune vidéo n\'a encore été publiée.</div>';
+                replaysVidCont.innerHTML = '';
+            }
+
+            // 4. Affichage des Podcasts
+            const featuredPodCont = document.getElementById('podcast-featured-container');
+            const replaysPodCont = document.getElementById('podcast-replays-container');
+
+            if (podcasts.length > 0) {
+                featuredPodCont.innerHTML = genererHTMLAudio(podcasts[0], true);
+                
+                let replaysAudioHTML = '';
+                for (let i = 1; i < podcasts.length; i++) {
+                    replaysAudioHTML += genererHTMLAudio(podcasts[i], false);
+                }
+                replaysPodCont.innerHTML = replaysAudioHTML || '<div class="loading-text" style="grid-column:1/-1;">Aucun ancien podcast disponible.</div>';
+                
+                configurerLecteursAudio();
+            } else {
+                featuredPodCont.innerHTML = '<div class="loading-text">Aucun podcast n\'a encore été publié.</div>';
+                replaysPodCont.innerHTML = '';
+            }
         }
 
-        /* ----- LECTEUR YOUTUBE INTELLIGENT ----- */
-        // Cette fonction est appelée automatiquement par YouTube quand son script est chargé
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('yt-player', {
-                videoId: 'aqz-KE-bpKQ', // ID d'une vidéo YouTube libre de droits (Big Buck Bunny)
-                playerVars: {
-                    'controls': 0,      // Cache complètement la barre de progression YouTube
-                    'disablekb': 1,     // Bloque les raccourcis clavier
-                    'fs': 0,            // Retire le mode plein écran
-                    'modestbranding': 1, // Enlève le logo YouTube autant que possible
-                    'rel': 0            // Ne montre pas de vidéos recommandées à la fin
-                },
-                events: {
-                    'onStateChange': onPlayerStateChange
+        /* ----- GÉNÉRATION DU HTML ----- */
+        function genererHTMLVideo(media, isFeatured) {
+            const badgeClass = media.niveau_acces === 'premium' ? 'badge-premium' : 'badge-classic';
+            const featuredClass = isFeatured ? 'featured' : '';
+            // Si ce n'est pas un lien YT valide, on ignore
+            if(!extraireIdYoutube(media.url_media)) return '';
+
+            return `
+            <div class="media-card ${featuredClass}" data-access="${media.niveau_acces}">
+                <div class="yt-wrapper">
+                    <div id="yt-player-${media.id}"></div>
+                    <div class="yt-shield" id="yt-shield-${media.id}" onclick="toggleYouTube('${media.id}')">
+                        <div class="yt-play-btn" id="yt-play-btn-${media.id}">▶</div>
+                    </div>
+                </div>
+                <div class="media-info">
+                    <span class="badge-acces ${badgeClass}">${media.niveau_acces}</span>
+                    <h3>${media.titre}</h3>
+                    <p>${media.description}</p>
+                </div>
+            </div>`;
+        }
+
+        function genererHTMLAudio(media, isFeatured) {
+            const badgeClass = media.niveau_acces === 'premium' ? 'badge-premium' : 'badge-classic';
+            const featuredClass = isFeatured ? 'featured' : '';
+
+            return `
+            <div class="media-card ${featuredClass}" data-access="${media.niveau_acces}">
+                <div class="custom-audio-player">
+                    <button class="play-btn">▶</button>
+                    <div class="progress-container">
+                        <input type="range" class="progress-bar" value="0" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="time-display">0:00</div>
+                    <audio src="${media.url_media}"></audio>
+                </div>
+                <div class="media-info">
+                    <span class="badge-acces ${badgeClass}">${media.niveau_acces}</span>
+                    <h3>${media.titre}</h3>
+                    <p>${media.description}</p>
+                </div>
+            </div>`;
+        }
+
+        /* ----- LOGIQUE YOUTUBE DYNAMIQUE ----- */
+        function initYouTubePlayers(videos) {
+            videos.forEach(media => {
+                const ytId = extraireIdYoutube(media.url_media);
+                if (ytId) {
+                    ytPlayers[media.id] = new YT.Player('yt-player-' + media.id, {
+                        videoId: ytId,
+                        playerVars: { 'controls': 0, 'disablekb': 1, 'fs': 0, 'modestbranding': 1, 'rel': 0 },
+                        events: {
+                            'onStateChange': function(event) { onPlayerStateChange(event, media.id); }
+                        }
+                    });
                 }
             });
         }
 
-        function toggleYouTube() {
-            if (!ytPlayer || !ytPlayer.getPlayerState) return;
-            
-            const state = ytPlayer.getPlayerState();
-            // 1 = PLAYING, 2 = PAUSED
-            if (state === 1) {
-                ytPlayer.pauseVideo();
-            } else {
-                ytPlayer.playVideo();
-            }
+        function toggleYouTube(id) {
+            let player = ytPlayers[id];
+            if (!player || !player.getPlayerState) return;
+            let state = player.getPlayerState();
+            if (state === 1) player.pauseVideo();
+            else player.playVideo();
         }
 
-        function onPlayerStateChange(event) {
-            const playBtn = document.getElementById('yt-play-btn');
-            const shield = document.getElementById('yt-shield');
+        function onPlayerStateChange(event, id) {
+            const playBtn = document.getElementById('yt-play-btn-' + id);
+            const shield = document.getElementById('yt-shield-' + id);
+            if (!playBtn || !shield) return;
 
             if (event.data === 1) {
-                // En lecture : on cache le bouton, le bouclier devient totalement invisible
                 playBtn.style.display = 'none';
                 shield.style.background = 'transparent';
             } else {
-                // En pause : on affiche le bouton
                 playBtn.style.display = 'flex';
                 playBtn.innerHTML = '▶';
                 shield.style.background = 'rgba(0,0,0,0.3)';
             }
         }
 
-        // Surveillance du temps YouTube chaque seconde
+        // Vérification du temps YouTube (Toutes les vidéos)
         setInterval(() => {
-            if (ytPlayer && ytPlayer.getCurrentTime) {
-                const time = ytPlayer.getCurrentTime();
-                const accesRequis = document.getElementById('video-container').getAttribute('data-access');
-                
-                if ((profilActuel === 'none' || profilActuel === 'free') && time >= 60) {
-                    bloquerLecteur('yt', "L'extrait gratuit d'une minute est terminé. Abonne-toi pour accéder à l'intégralité de l'émission.", accesRequis);
-                }
-                else if (profilActuel === 'classic' && accesRequis === 'premium' && time >= 60) {
-                    bloquerLecteur('yt', "Cette émission est une exclusivité absolue Premium.", accesRequis);
+            for (let id in ytPlayers) {
+                let player = ytPlayers[id];
+                if (player && player.getCurrentTime && player.getPlayerState() === 1) {
+                    let time = player.getCurrentTime();
+                    // Trouver la carte pour lire le niveau d'accès
+                    let carteElement = document.getElementById('yt-shield-' + id).closest('.media-card');
+                    let accesRequis = carteElement.getAttribute('data-access');
+                    
+                    if ((profilActuel === 'none' || profilActuel === 'free') && time >= 60) {
+                        bloquerLecteur('yt', id, "L'extrait gratuit d'une minute est terminé. Abonne-toi pour accéder à l'intégralité de l'émission.", accesRequis);
+                    }
+                    else if (profilActuel === 'classic' && accesRequis === 'premium' && time >= 60) {
+                        bloquerLecteur('yt', id, "Cette émission est une exclusivité absolue Premium.", accesRequis);
+                    }
                 }
             }
         }, 1000);
 
 
-        /* ----- LECTEUR AUDIO HTML5 ----- */
-        const audio = document.getElementById('custom-audio');
-        function configurerLecteurAudio() {
-            const playBtn = document.getElementById('play-btn');
-            const progressBar = document.getElementById('progress-bar');
-            const timeDisplay = document.getElementById('time-display');
+        /* ----- LOGIQUE AUDIO DYNAMIQUE ----- */
+        function configurerLecteursAudio() {
+            const players = document.querySelectorAll('.custom-audio-player');
+            
+            players.forEach(playerContainer => {
+                const audio = playerContainer.querySelector('audio');
+                const playBtn = playerContainer.querySelector('.play-btn');
+                const progressBar = playerContainer.querySelector('.progress-bar');
+                const timeDisplay = playerContainer.querySelector('.time-display');
+                const carteElement = playerContainer.closest('.media-card');
+                const accesRequis = carteElement.getAttribute('data-access');
 
-            playBtn.addEventListener('click', () => {
-                if (audio.paused) { audio.play(); } else { audio.pause(); }
-            });
+                playBtn.addEventListener('click', () => {
+                    if (audio.paused) audio.play(); else audio.pause();
+                });
 
-            audio.addEventListener('play', () => playBtn.innerHTML = '⏸');
-            audio.addEventListener('pause', () => playBtn.innerHTML = '▶');
+                audio.addEventListener('play', () => playBtn.innerHTML = '⏸');
+                audio.addEventListener('pause', () => playBtn.innerHTML = '▶');
 
-            audio.addEventListener('timeupdate', () => {
-                if (audio.duration) {
-                    progressBar.value = (audio.currentTime / audio.duration) * 100;
-                    timeDisplay.textContent = formatTime(audio.currentTime);
-                }
-                // Vérification du blocage Audio
-                const accesRequis = audio.getAttribute('data-access');
-                if ((profilActuel === 'none' || profilActuel === 'free') && audio.currentTime >= 60) {
-                    bloquerLecteur('audio', "L'extrait gratuit est terminé. Abonne-toi pour accéder à la suite.", accesRequis);
-                }
-                else if (profilActuel === 'classic' && accesRequis === 'premium' && audio.currentTime >= 60) {
-                    bloquerLecteur('audio', "Ce podcast est une exclusivité absolue Premium.", accesRequis);
-                }
-            });
+                audio.addEventListener('timeupdate', () => {
+                    if (audio.duration) {
+                        progressBar.value = (audio.currentTime / audio.duration) * 100;
+                        timeDisplay.textContent = formatTime(audio.currentTime);
+                    }
+                    
+                    // Vérification du blocage Audio
+                    if ((profilActuel === 'none' || profilActuel === 'free') && audio.currentTime >= 60) {
+                        bloquerLecteur('audio', audio, "L'extrait gratuit est terminé. Abonne-toi pour accéder à la suite.", accesRequis);
+                    }
+                    else if (profilActuel === 'classic' && accesRequis === 'premium' && audio.currentTime >= 60) {
+                        bloquerLecteur('audio', audio, "Ce podcast est une exclusivité absolue Premium.", accesRequis);
+                    }
+                });
 
-            progressBar.addEventListener('input', () => {
-                if (audio.duration) {
-                    audio.currentTime = (progressBar.value / 100) * audio.duration;
-                }
+                progressBar.addEventListener('input', () => {
+                    if (audio.duration) {
+                        audio.currentTime = (progressBar.value / 100) * audio.duration;
+                    }
+                });
             });
         }
 
@@ -319,18 +412,17 @@
             return min + ':' + (sec < 10 ? '0' + sec : sec);
         }
 
-
         /* ----- GESTION DE LA MODAL DE BLOCAGE ----- */
-        function bloquerLecteur(typeLecteur, message, planRequis) {
-            lecteurBloqueActuel = typeLecteur;
+        // cible = ID de la vidéo YT, OU l'élément HTML Audio
+        function bloquerLecteur(typeLecteur, cible, message, planRequis) {
+            lecteurBloqueActuel = { type: typeLecteur, cible: cible };
             
-            // Mise en pause selon le lecteur
             if (typeLecteur === 'yt') {
-                ytPlayer.pauseVideo();
-                ytPlayer.seekTo(59.5); // Rembobine sous les 60s
+                ytPlayers[cible].pauseVideo();
+                ytPlayers[cible].seekTo(59.5); 
             } else {
-                audio.pause();
-                audio.currentTime = 59.5;
+                cible.pause();
+                cible.currentTime = 59.5;
             }
             
             const titreElement = document.getElementById('upgrade-title');
@@ -350,13 +442,16 @@
         function fermerModal() {
             const modal = document.getElementById('upgrade-modal');
             modal.classList.remove('show');
+            
             setTimeout(() => {
                 modal.style.display = 'none';
-                // Remise à zéro totale si on ferme
-                if (lecteurBloqueActuel === 'yt') {
-                    ytPlayer.seekTo(0);
-                } else if (lecteurBloqueActuel === 'audio') {
-                    audio.currentTime = 0;
+                // Remise à zéro
+                if (lecteurBloqueActuel) {
+                    if (lecteurBloqueActuel.type === 'yt') {
+                        ytPlayers[lecteurBloqueActuel.cible].seekTo(0);
+                    } else {
+                        lecteurBloqueActuel.cible.currentTime = 0;
+                    }
                 }
             }, 400); 
         }
