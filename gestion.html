@@ -1,1 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Élite</title>
+    <!-- Importation de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .admin-box { background: white; padding: 20px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #e50046; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #c4003c; }
+    </style>
+</head>
+<body>
 
+    <div class="admin-box">
+        <h2>🛠️ Panel de Gestion - Ajouter un match</h2>
+        
+        <label>Équipe à domicile :</label>
+        <input type="text" id="equipe-dom" placeholder="Ex: Paris Saint-Germain">
+        
+        <label>Équipe à l'extérieur :</label>
+        <input type="text" id="equipe-ext" placeholder="Ex: Olympique de Marseille">
+        
+        <label>Score Domicile :</label>
+        <input type="number" id="score-dom" placeholder="0" value="0">
+        
+        <label>Score Extérieur :</label>
+        <input type="number" id="score-ext" placeholder="0" value="0">
+
+        <label>Accès requis :</label>
+        <select id="niveau-acces">
+            <option value="free">Free (Match du dimanche 17h15)</option>
+            <option value="classic" selected>Classic (Standard)</option>
+            <option value="premium">Premium</option>
+        </select>
+
+        <button onclick="ajouterMatch()">Publier le match</button>
+        <p id="message-retour"></p>
+    </div>
+
+    <!-- On charge ta configuration Supabase -->
+    <script src="js/supabase-config.js"></script>
+    
+    <!-- Le script pour envoyer les données à ta base -->
+    <script>
+        async function ajouterMatch() {
+            const eqDom = document.getElementById('equipe-dom').value;
+            const eqExt = document.getElementById('equipe-ext').value;
+            const scoreDom = document.getElementById('score-dom').value;
+            const scoreExt = document.getElementById('score-ext').value;
+            const acces = document.getElementById('niveau-acces').value;
+            const message = document.getElementById('message-retour');
+
+            message.textContent = "Envoi en cours...";
+
+            // On envoie les données dans la table 'matchs' de Supabase
+            const { data, error } = await supabase
+                .from('matchs')
+                .insert([
+                    { 
+                        equipe_domicile: eqDom, 
+                        equipe_exterieur: eqExt, 
+                        score_domicile: scoreDom, 
+                        score_exterieur: scoreExt,
+                        niveau_acces: acces,
+                        date_match: new Date().toISOString()
+                    }
+                ]);
+
+            if (error) {
+                message.textContent = "❌ Erreur : " + error.message;
+                message.style.color = "red";
+            } else {
+                message.textContent = "✅ Match ajouté avec succès !";
+                message.style.color = "green";
+                // Réinitialise les champs texte
+                document.getElementById('equipe-dom').value = "";
+                document.getElementById('equipe-ext').value = "";
+            }
+        }
+    </script>
+</body>
+</html>
