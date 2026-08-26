@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; display: flex; justify-content: center; }
-        .auth-box { background: white; padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .auth-box { background: white; padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 0 auto; }
         h2 { text-align: center; color: #333; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
@@ -44,11 +44,15 @@
         </div>
     </div>
 
-    <!-- On charge ta configuration Supabase -->
-    <script src="js/supabase-config.js"></script>
-    
-    <!-- Le script de gestion des comptes -->
+    <!-- Le script "Tout-en-un" avec tes identifiants -->
     <script>
+        // 1. Tes identifiants Supabase
+        const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
+        
+        // 2. Initialisation de la connexion (Syntaxe corrigée)
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
         const message = document.getElementById('auth-message');
         const sectionConnexion = document.getElementById('section-connexion');
         const sectionCompte = document.getElementById('section-compte');
@@ -59,8 +63,9 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             message.textContent = "Création du compte...";
+            message.style.color = "black";
             
-            const { data, error } = await supabase.auth.signUp({ email, password });
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
             
             if (error) {
                 message.style.color = "red";
@@ -76,34 +81,36 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             message.textContent = "Connexion en cours...";
+            message.style.color = "black";
             
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
             if (error) {
                 message.style.color = "red";
                 message.textContent = "❌ Identifiants incorrects.";
             } else {
-                verifierSession(); // On met à jour l'affichage
+                message.textContent = "";
+                verifierSession();
             }
         }
 
         // Fonction pour se déconnecter
         async function deconnexion() {
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             verifierSession();
         }
 
         // Vérifier si quelqu'un est connecté au chargement de la page
         async function verifierSession() {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await supabaseClient.auth.getUser();
             
             if (user) {
-                // L'utilisateur est connecté, on cache le formulaire et on montre son compte
+                // L'utilisateur est connecté
                 sectionConnexion.style.display = "none";
                 sectionCompte.style.display = "block";
                 
-                // On va chercher son plan d'abonnement dans la table 'profils'
-                const { data: profil } = await supabase
+                // On va chercher son plan d'abonnement
+                const { data: profil, error } = await supabaseClient
                     .from('profils')
                     .select('plan')
                     .eq('id', user.id)
@@ -113,7 +120,7 @@
                     planDisplay.textContent = "ÉLITE " + profil.plan.toUpperCase();
                 }
             } else {
-                // Personne n'est connecté, on montre le formulaire
+                // L'utilisateur n'est pas connecté
                 sectionConnexion.style.display = "block";
                 sectionCompte.style.display = "none";
                 document.getElementById('email').value = "";
@@ -122,7 +129,7 @@
             }
         }
 
-        // On lance la vérification dès que la page s'ouvre
+        // Lancement à l'ouverture de la page
         verifierSession();
     </script>
 </body>
