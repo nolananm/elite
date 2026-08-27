@@ -52,7 +52,7 @@
         .plan-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.5; padding-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .features { list-style: none; margin-bottom: 40px; flex: 1; }
-        .features li { font-size: 14px; margin-bottom: 15px; color: #e0e0e0; display: flex; align-items: flex-start; gap: 10px; }
+        .features li { font-size: 14px; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 10px; }
         .features li.no { color: #555; text-decoration: line-through; }
         .icon-yes { color: #00e676; font-weight: bold; }
         .icon-no { color: #ff4d4d; font-weight: bold; }
@@ -158,16 +158,33 @@
         }
 
         async function chargerAvantages() {
-            const { data: avantages } = await supabaseClient.from('avantages').select('*').order('created_at', { ascending: true });
-            
-            if (!avantages || avantages.length === 0) return; // Garde le texte de chargement si vide
+            const { data: avantages } = await supabaseClient.from('avantages').select('*');
+            if (!avantages || avantages.length === 0) return;
+
+            // Algorithme de tri : 1 = check (Vert), 2 = dash (Orange), 3 = cross (Rouge)
+            const ordreMap = { 'check': 1, 'dash': 2, 'cross': 3 };
+            avantages.sort((a, b) => {
+                let valA = ordreMap[a.type_icone || 'check'] || 1;
+                let valB = ordreMap[b.type_icone || 'check'] || 1;
+                return valA - valB;
+            });
 
             let htmlFree = '', htmlClassic = '', htmlPremium = '';
 
             avantages.forEach(av => {
-                let ligne = av.est_inclus 
-                    ? `<li><span class="icon-yes">✓</span> ${av.texte}</li>` 
-                    : `<li class="no"><span class="icon-no">✕</span> ${av.texte}</li>`;
+                let iconeHtml = '';
+                let classeTexte = 'style="color: #e0e0e0;"'; 
+                
+                if (av.type_icone === 'check') {
+                    iconeHtml = '<span class="icon-yes">✓</span>';
+                } else if (av.type_icone === 'dash') {
+                    iconeHtml = '<span style="color:#ff9800; font-weight:bold;">—</span>';
+                } else {
+                    iconeHtml = '<span class="icon-no">✕</span>';
+                    classeTexte = 'class="no"'; // Rendu barré
+                }
+
+                let ligne = `<li ${classeTexte}>${iconeHtml} ${av.texte}</li>`;
                 
                 if(av.plan === 'free') htmlFree += ligne;
                 else if(av.plan === 'classic') htmlClassic += ligne;
