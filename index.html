@@ -3,184 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Élite - Vivez la Ligue 1 autrement</title>
+    <title>Accueil - Élite</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #0a0b10;
-            --bg-card: #151821;
-            --accent: #e50046;
-            --accent-hover: #ff0a5a;
-            --text-main: #ffffff;
-            --text-muted: #9ba1a6;
-            --gradient: linear-gradient(135deg, #e50046, #8000ff);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; }
+        :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; scroll-behavior: smooth; }
         a { text-decoration: none; color: inherit; }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-up { animation: fadeUp 1s ease-out forwards; opacity: 0; }
-        .delay-1 { animation-delay: 0.2s; }
-        .delay-2 { animation-delay: 0.4s; }
-        .delay-3 { animation-delay: 0.6s; }
-
-        header {
-            position: fixed; top: 0; width: 100%; padding: 20px 50px;
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(10, 11, 16, 0.8); backdrop-filter: blur(10px);
-            z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
+        header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo { font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
         nav { display: flex; gap: 30px; align-items: center; }
-        nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.3s; }
+        nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
-        .btn-compte { background: var(--accent); padding: 10px 24px; border-radius: 30px; color: white; font-weight: 600; transition: background 0.3s, transform 0.3s; }
-        .btn-compte:hover { background: var(--accent-hover); transform: scale(1.05); }
 
-        /* HERO SECTION : Fond en code (Instantané et ultra moderne) */
-        .hero {
-            height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 20px;
-            background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.15), transparent 40%),
-                        radial-gradient(circle at bottom right, rgba(128, 0, 255, 0.15), transparent 40%),
-                        var(--bg-dark);
-        }
-        .hero h1 { font-size: 60px; font-weight: 800; line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; }
-        .hero p { font-size: 20px; color: var(--text-muted); max-width: 600px; margin: 0 auto 40px auto; }
-        .btn-hero { background: white; color: var(--bg-dark); padding: 15px 40px; font-size: 18px; font-weight: bold; border-radius: 40px; transition: 0.3s; display: inline-block; }
-        .btn-hero:hover { background: var(--accent); color: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(229, 0, 70, 0.3); }
-
-        .section { padding: 100px 50px; text-align: center; }
-        .section-title { font-size: 36px; font-weight: 800; margin-bottom: 15px; }
-        .section-subtitle { color: var(--text-muted); margin-bottom: 60px; font-size: 16px; }
+        .hero { text-align: center; padding: 180px 20px 100px 20px; }
+        .hero h1 { font-size: 64px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; line-height: 1.1; }
+        .hero p { color: var(--text-muted); font-size: 20px; max-width: 600px; margin: 0 auto 40px auto; }
         
-        .grid-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto; }
-        .card-feature { background: var(--bg-card); padding: 40px 30px; border-radius: 20px; transition: 0.4s; border: 1px solid rgba(255,255,255,0.05); }
-        .card-feature:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .card-feature h3 { font-size: 22px; margin-bottom: 15px; color: white; }
-        .card-feature p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
-        .icon { font-size: 40px; margin-bottom: 20px; display: inline-block; }
+        .pricing-section { max-width: 1200px; margin: 0 auto 100px auto; padding: 0 20px; }
+        .pricing-header { text-align: center; margin-bottom: 50px; }
+        .pricing-header h2 { font-size: 36px; font-weight: 800; text-transform: uppercase; }
+        .pricing-header p { color: var(--text-muted); font-size: 16px; margin-top: 10px; }
 
-        .grid-pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto; }
-        .card-price { background: var(--bg-card); padding: 50px 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; position: relative; overflow: hidden; text-align: left; }
-        .card-price:hover { transform: translateY(-5px); }
-        .card-price.premium { border: 2px solid var(--accent); background: linear-gradient(to bottom, rgba(229, 0, 70, 0.05), var(--bg-card)); }
-        .badge-premium { position: absolute; top: 15px; right: -30px; background: var(--accent); color: white; padding: 5px 40px; font-size: 12px; font-weight: bold; transform: rotate(45deg); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .pricing-card { background: var(--bg-card); border-radius: 20px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); text-align: center; transition: 0.3s; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .pricing-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.1); }
+        
+        /* Highlight Premium */
+        .pricing-card.premium { background: linear-gradient(145deg, #161a25, #0f111a); border-color: rgba(229,0,70,0.3); }
+        .pricing-card.premium::before { content: 'PASSIONNÉS'; position: absolute; top: 15px; right: -30px; background: var(--gradient); color: white; font-size: 10px; font-weight: 800; padding: 5px 40px; transform: rotate(45deg); letter-spacing: 1px; }
 
-        .price-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
-        .price-amount { font-size: 40px; font-weight: 800; color: var(--accent); margin-bottom: 30px; }
-        .price-amount span { font-size: 16px; color: var(--text-muted); font-weight: 400; }
-        .price-list { list-style: none; margin-bottom: 40px; }
-        .price-list li { margin-bottom: 15px; font-size: 14px; color: var(--text-muted); display: flex; align-items: center; }
-        .price-list li::before { content: '✓'; color: var(--accent); font-weight: bold; margin-right: 10px; font-size: 16px; }
+        .plan-name { font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
+        .plan-price { font-size: 40px; font-weight: 800; margin-bottom: 30px; display: flex; justify-content: center; align-items: baseline; }
+        .plan-price span { font-size: 16px; color: var(--text-muted); font-weight: 600; margin-left: 5px; }
 
-        .btn-price { display: block; text-align: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; font-weight: bold; transition: 0.3s; }
-        .btn-price:hover { background: white; color: var(--bg-dark); }
-        .card-price.premium .btn-price { background: var(--gradient); color: white; }
-        .card-price.premium .btn-price:hover { box-shadow: 0 10px 20px rgba(229, 0, 70, 0.4); transform: scale(1.02); }
+        .plan-features { list-style: none; margin-bottom: 40px; text-align: left; flex: 1; }
+        .plan-features li { padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #d0d0d0; font-size: 15px; display: flex; align-items: center; gap: 10px; }
+        .plan-features li::before { content: '✓'; color: var(--accent); font-weight: bold; }
+        .plan-features li:last-child { border-bottom: none; }
+        .plan-features li.locked { color: #666; }
+        .plan-features li.locked::before { content: '✕'; color: #666; }
 
-        footer { text-align: center; padding: 40px; border-top: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size: 14px; margin-top: 50px; }
+        .btn-plan { display: block; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 800; text-transform: uppercase; transition: 0.3s; margin-top: auto; }
+        .btn-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-free:hover { background: #333; }
+        .btn-classic { background: #0055ff; color: white; border: none; }
+        .btn-classic:hover { background: #0044cc; }
+        .btn-premium { background: var(--gradient); color: white; border: none; }
+        .btn-premium:hover { opacity: 0.9; box-shadow: 0 10px 20px rgba(229,0,70,0.3); }
+
+        .classic-color { color: #0055ff; }
+        .premium-color { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">ÉLITE</div>
+        <a href="index.html" class="logo">ÉLITE</a>
         <nav>
             <a href="articles.html">Articles</a>
             <a href="matchs.html">Matchs & Fan Zone</a>
             <a href="medias.html">Émissions & Podcasts</a>
-            <a href="compte.html" class="btn-compte">Compte</a>
+            <a href="compte.html">Compte</a>
         </nav>
     </header>
 
     <section class="hero">
-        <div class="animate-up">
-            <h1>Le Football<br>Sans Limites</h1>
-            <p>Vivez la Ligue 1 de l'intérieur. Analyses pointues, podcasts immersifs, émissions vidéos et Fan Zone en direct. Plongez au cœur du jeu.</p>
-            <a href="#abonnements" class="btn-hero">Découvrir nos offres</a>
-        </div>
+        <h1>L'Élite du Football<br>Français.</h1>
+        <p>Vivez la Ligue 1 autrement. Articles, résumés, podcasts et fil info en direct. Rejoignez le média nouvelle génération.</p>
+        <a href="#abonnements" style="display: inline-block; padding: 15px 40px; background: var(--gradient); color: white; border-radius: 30px; font-weight: 800; text-transform: uppercase; font-size: 16px; box-shadow: 0 10px 20px rgba(229,0,70,0.3);">Voir les abonnements</a>
     </section>
 
-    <section class="section">
-        <h2 class="section-title animate-up">Tout l'univers Élite</h2>
-        <p class="section-subtitle animate-up delay-1">Une expérience complète pour les vrais passionnés de ballon rond.</p>
-        
-        <div class="grid-features">
-            <div class="card-feature animate-up delay-1">
-                <span class="icon">📺</span>
-                <h3>Élite Le Mag</h3>
-                <p>Notre émission vidéo phare. Débats, tactiques et invités exclusifs pour analyser chaque journée de championnat.</p>
-            </div>
-            <div class="card-feature animate-up delay-2">
-                <span class="icon">🎙️</span>
-                <h3>Élite Décrypte</h3>
-                <p>Le podcast qui va au-delà du terrain. Coulisses, mercato, et interviews sans langue de bois.</p>
-            </div>
-            <div class="card-feature animate-up delay-3">
-                <span class="icon">📊</span>
-                <h3>Analyses Poussées</h3>
-                <p>Scores en direct, possession, heatmap, buteurs et commentaires de joueurs. L'interface ultime pour suivre un match.</p>
-            </div>
-            <div class="card-feature animate-up delay-3">
-                <span class="icon">🏟️</span>
-                <h3>La Fan Zone</h3>
-                <p>Commentez les matchs en direct avec la communauté Élite. Partagez votre passion pendant les rencontres.</p>
-            </div>
+    <section id="abonnements" class="pricing-section">
+        <div class="pricing-header">
+            <h2>Choisissez votre abonnement</h2>
+            <p>Débloquez le contenu qui correspond à votre passion pour le ballon rond.</p>
         </div>
-    </section>
 
-    <section class="section" id="abonnements">
-        <h2 class="section-title animate-up">Rejoins l'Élite</h2>
-        <p class="section-subtitle animate-up delay-1">Choisis l'abonnement qui correspond à ta passion.</p>
-        
-        <div class="grid-pricing">
-            <div class="card-price animate-up delay-1">
-                <h3 class="price-title">Free</h3>
-                <div class="price-amount">0€ <span>/ à vie</span></div>
-                <ul class="price-list">
-                    <li>Accès à certains articles</li>
-                    <li>1 analyse de match par journée (Dimanche 17h15)</li>
-                    <li>1ère minute du podcast Élite Décrypte</li>
-                    <li>1ère minute de l'émission Élite Le Mag</li>
+        <div class="pricing-grid">
+            <!-- FREE -->
+            <div class="pricing-card">
+                <div class="plan-name">Free</div>
+                <div class="plan-price">0€<span>/mois</span></div>
+                <ul class="plan-features">
+                    <li>Accès aux articles d'actualité courts</li>
+                    <li>Accès au Fil Info de la rédaction en direct</li>
+                    <li>Classements et statistiques de la L1</li>
+                    <li class="locked">Résumés de matchs de la rédaction</li>
                 </ul>
-                <a href="compte.html" class="btn-price">Créer un compte gratuit</a>
+                <a href="compte.html" class="btn-plan btn-free">Créer un compte</a>
             </div>
-            <div class="card-price animate-up delay-2">
-                <h3 class="price-title">Classic</h3>
-                <div class="price-amount">4.99€ <span>/ mois</span></div>
-                <ul class="price-list">
-                    <li>Accès à 100% des articles</li>
-                    <li>7 analyses de matchs par journée</li>
-                    <li>Accès illimité au podcast Élite Décrypte</li>
-                    <li>2 émissions Élite Le Mag sur 3</li>
-                    <li>Accès complet à la Fan Zone</li>
+
+            <!-- CLASSIC -->
+            <div class="pricing-card">
+                <div class="plan-name classic-color">Classic</div>
+                <div class="plan-price">4.99€<span>/mois</span></div>
+                <ul class="plan-features">
+                    <li>Tous les articles et enquêtes de la rédaction</li>
+                    <li>Résumés détaillés écrits et vidéos de tous les matchs</li>
+                    <li>Accès complet aux podcasts audios "Décrypte"</li>
+                    <li class="locked">Exclusivités et grandes affiches</li>
                 </ul>
-                <a href="#" class="btn-price">S'abonner à Classic</a>
+                <a href="compte.html" class="btn-plan btn-classic">S'abonner Classic</a>
             </div>
-            <div class="card-price premium animate-up delay-3">
-                <div class="badge-premium">LE BEST</div>
-                <h3 class="price-title">Premium</h3>
-                <div class="price-amount">6.99€ <span>/ mois</span></div>
-                <ul class="price-list">
-                    <li>Accès à 100% des articles</li>
-                    <li>Toutes les analyses de matchs (100%)</li>
-                    <li>Accès illimité au podcast Élite Décrypte</li>
-                    <li>Toutes les émissions Élite Le Mag (Samedi inclus)</li>
-                    <li>Accès complet à la Fan Zone</li>
+
+            <!-- PREMIUM -->
+            <div class="pricing-card premium">
+                <div class="plan-name premium-color">Premium</div>
+                <div class="plan-price">9.99€<span>/mois</span></div>
+                <ul class="plan-features">
+                    <li>Accès total : 100% du site débloqué</li>
+                    <li>Les grandes affiches et matchs exclusifs en vidéo</li>
+                    <li>Émissions "Le Mag" en vidéo</li>
+                    <li>Expérience fluide et 100% sans publicité</li>
                 </ul>
-                <a href="#" class="btn-price">Débloquer le Premium</a>
+                <a href="compte.html" class="btn-plan btn-premium">Devenir Premium</a>
             </div>
         </div>
     </section>
-
-    <footer>
-        <p>© 2026 Élite Média. Tous droits réservés. L'univers de la Ligue 1.</p>
-    </footer>
 
 </body>
 </html>
