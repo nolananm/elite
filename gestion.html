@@ -9,92 +9,160 @@
     <style>
         :root { --bg-dark: #0a0b10; --bg-card: #151821; --accent: #e50046; --text-main: #ffffff; --text-muted: #9ba1a6; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; padding: 40px 20px; }
-        .admin-container { background: var(--bg-card); padding: 40px; border-radius: 20px; width: 100%; max-width: 700px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 40px 20px; display: flex; justify-content: center; }
+        
+        .admin-container { background: var(--bg-card); padding: 40px; border-radius: 20px; width: 100%; max-width: 900px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .admin-container h2 { text-align: center; margin-bottom: 25px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .tabs { display: flex; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.1); }
-        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s; position: relative; }
+        /* ONGLES */
+        .tabs { display: flex; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
+        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s; position: relative; min-width: 120px; }
         .tab:hover, .tab.active { color: white; }
         .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: var(--gradient); border-radius: 3px; }
         
-        label { display: block; margin-top: 15px; margin-bottom: 5px; font-size: 14px; font-weight: 600; color: var(--text-muted); }
-        input, select, textarea { width: 100%; padding: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; transition: 0.3s; }
+        /* FORMULAIRES */
+        .form-section { background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
+        .form-section h3 { margin-bottom: 15px; font-size: 18px; color: var(--accent); }
+        label { display: block; margin-top: 15px; margin-bottom: 5px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        input, select, textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; transition: 0.3s; }
         input:focus, select:focus, textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.05); }
         textarea { resize: vertical; min-height: 120px; }
-        input[type="file"] { padding: 10px; background: rgba(0,0,0,0.2); cursor: pointer; }
+        input[type="file"] { padding: 8px; background: rgba(0,0,0,0.2); cursor: pointer; }
         
-        button { width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: bold; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; margin-top: 25px; transition: 0.3s; text-transform: uppercase; }
-        button:hover { box-shadow: 0 5px 20px rgba(229, 0, 70, 0.4); transform: translateY(-2px); }
+        /* BOUTONS */
+        .btn-submit { width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: bold; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; margin-top: 25px; transition: 0.3s; text-transform: uppercase; }
+        .btn-submit:hover { box-shadow: 0 5px 20px rgba(229, 0, 70, 0.4); transform: translateY(-2px); }
+        .btn-cancel { width: 100%; padding: 15px; background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; display: none; transition: 0.3s; }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); color: white; }
+        
         .message-retour { text-align: center; font-weight: bold; margin-top: 15px; min-height: 20px; font-size: 14px; }
+        
+        /* LISTES ET CARTES DE GESTION */
+        .list-section h3 { margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .manage-card { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .manage-info { flex: 1; margin-right: 15px; }
+        .manage-title { font-weight: bold; font-size: 15px; margin-bottom: 5px; }
+        .manage-meta { font-size: 12px; color: var(--text-muted); }
+        .manage-actions { display: flex; gap: 10px; }
+        .btn-edit { background: #0055ff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-edit:hover { background: #0044cc; } .btn-delete:hover { background: #cc0000; }
+        
+        /* TABLEAU UTILISATEURS */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }
+        td select { width: auto; padding: 6px 10px; font-size: 13px; }
     </style>
 </head>
 <body>
     <div class="admin-container" id="admin-content" style="display: none;">
-        <h2>🛠️ Panel de Gestion</h2>
+        <h2>🛠️ Centre de Commandement</h2>
         
         <div class="tabs">
             <div class="tab active" id="tab-match" onclick="changerOnglet('match')">⚽ Matchs</div>
             <div class="tab" id="tab-media" onclick="changerOnglet('media')">🎙️ Médias</div>
             <div class="tab" id="tab-article" onclick="changerOnglet('article')">📝 Articles</div>
+            <div class="tab" id="tab-user" onclick="changerOnglet('user')">👥 Utilisateurs</div>
         </div>
 
-        <!-- ONGLETS MATCHS ET MEDIAS (Masqués ici pour gagner de la place, mais toujours fonctionnels) -->
+        <!-- ======================= ONGLET MATCHS ======================= -->
         <div id="form-match">
-            <label>Équipe Domicile :</label><input type="text" id="equipe-dom">
-            <label>Équipe Extérieur :</label><input type="text" id="equipe-ext">
-            <div style="display: flex; gap: 15px;">
-                <div style="flex: 1;"><label>Score Dom :</label><input type="number" id="score-dom" value="0"></div>
-                <div style="flex: 1;"><label>Score Ext :</label><input type="number" id="score-ext" value="0"></div>
+            <div class="form-section">
+                <h3 id="titre-section-match">Ajouter un match</h3>
+                <label>Équipe Domicile :</label><input type="text" id="equipe-dom">
+                <label>Équipe Extérieur :</label><input type="text" id="equipe-ext">
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex: 1;"><label>Score Dom :</label><input type="number" id="score-dom" value="0"></div>
+                    <div style="flex: 1;"><label>Score Ext :</label><input type="number" id="score-ext" value="0"></div>
+                </div>
+                <label>Accès requis :</label>
+                <select id="niveau-acces-match">
+                    <option value="free">Free</option><option value="classic" selected>Classic</option><option value="premium">Premium</option>
+                </select>
+                <button class="btn-submit" id="btn-submit-match" onclick="sauvegarderMatch()">Publier le match</button>
+                <button class="btn-cancel" id="btn-cancel-match" onclick="annulerEdition('match')">Annuler la modification</button>
+                <p class="message-retour" id="msg-match"></p>
             </div>
-            <label>Accès :</label>
-            <select id="niveau-acces-match">
-                <option value="free">Free</option><option value="classic" selected>Classic</option><option value="premium">Premium</option>
-            </select>
-            <button onclick="ajouterMatch()">Publier le match</button>
-            <p class="message-retour" id="msg-match"></p>
+            <div class="list-section">
+                <h3>Gérer les matchs publiés</h3>
+                <div id="liste-matchs">Chargement...</div>
+            </div>
         </div>
 
+        <!-- ======================= ONGLET MEDIAS ======================= -->
         <div id="form-media" style="display: none;">
-            <label>Type :</label>
-            <select id="type-media" onchange="adapterFormulaire()">
-                <option value="video">📺 Élite Le Mag (Vidéo YouTube)</option>
-                <option value="podcast">🎙️ Élite Décrypte (Upload Audio)</option>
-            </select>
-            <label>Titre :</label><input type="text" id="titre-media">
-            <label>Description :</label><textarea id="desc-media"></textarea>
-            
-            <div id="zone-url"><label>Lien YouTube :</label><input type="text" id="url-media"></div>
-            <div id="zone-upload" style="display: none;"><label>Fichier Audio (MP3) :</label><input type="file" id="file-media" accept="audio/*"></div>
+            <div class="form-section">
+                <h3 id="titre-section-media">Ajouter une émission</h3>
+                <label>Type d'émission :</label>
+                <select id="type-media" onchange="adapterFormulaireMedia()">
+                    <option value="video">📺 Élite Le Mag (Vidéo YouTube)</option>
+                    <option value="podcast">🎙️ Élite Décrypte (Upload Audio)</option>
+                </select>
+                <label>Titre :</label><input type="text" id="titre-media">
+                <label>Description :</label><textarea id="desc-media"></textarea>
+                
+                <div id="zone-url"><label>Lien YouTube :</label><input type="text" id="url-media"></div>
+                <div id="zone-upload" style="display: none;">
+                    <label>Fichier Audio (MP3) :</label><input type="file" id="file-media" accept="audio/*">
+                    <small style="color:var(--text-muted); display:block; margin-top:5px;" id="info-audio-existant"></small>
+                </div>
 
-            <label>Accès :</label>
-            <select id="niveau-acces-media">
-                <option value="classic" selected>Classic</option><option value="premium">Premium</option>
-            </select>
-            <button onclick="ajouterMedia()">Publier l'épisode</button>
-            <p class="message-retour" id="msg-media"></p>
+                <label>Accès requis :</label>
+                <select id="niveau-acces-media">
+                    <option value="classic" selected>Classic</option><option value="premium">Premium</option>
+                </select>
+                <button class="btn-submit" id="btn-submit-media" onclick="sauvegarderMedia()">Publier l'épisode</button>
+                <button class="btn-cancel" id="btn-cancel-media" onclick="annulerEdition('media')">Annuler la modification</button>
+                <p class="message-retour" id="msg-media"></p>
+            </div>
+            <div class="list-section">
+                <h3>Gérer les émissions publiées</h3>
+                <div id="liste-medias">Chargement...</div>
+            </div>
         </div>
 
-        <!-- NOUVEL ONGLET : ARTICLES -->
+        <!-- ======================= ONGLET ARTICLES ======================= -->
         <div id="form-article" style="display: none;">
-            <label>Titre de l'article :</label>
-            <input type="text" id="titre-article" placeholder="Ex: Pourquoi le PSG a raté son mercato">
-            
-            <label>Lien de l'image de couverture (URL) :</label>
-            <input type="text" id="image-article" placeholder="https://lien-vers-une-photo.jpg">
-            
-            <label>Contenu de l'article :</label>
-            <textarea id="contenu-article" style="height: 300px;" placeholder="Écris ton article ici... (Les retours à la ligne seront respectés)"></textarea>
-            
-            <label>Niveau d'accès :</label>
-            <select id="niveau-acces-article">
-                <option value="free">🟢 Free (Gratuit pour tous)</option>
-                <option value="classic">🔵 Classic (Abonnés Standard)</option>
-                <option value="premium">🟣 Premium (Exclusivité Absolue)</option>
-            </select>
-            
-            <button onclick="ajouterArticle()">Publier l'article</button>
-            <p class="message-retour" id="msg-article"></p>
+            <div class="form-section">
+                <h3 id="titre-section-article">Rédiger un article</h3>
+                <label>Titre de l'article :</label><input type="text" id="titre-article">
+                <label>Lien de l'image (URL) :</label><input type="text" id="image-article">
+                <label>Contenu :</label><textarea id="contenu-article"></textarea>
+                <label>Niveau d'accès :</label>
+                <select id="niveau-acces-article">
+                    <option value="free">Free</option><option value="classic">Classic</option><option value="premium">Premium</option>
+                </select>
+                <button class="btn-submit" id="btn-submit-article" onclick="sauvegarderArticle()">Publier l'article</button>
+                <button class="btn-cancel" id="btn-cancel-article" onclick="annulerEdition('article')">Annuler la modification</button>
+                <p class="message-retour" id="msg-article"></p>
+            </div>
+            <div class="list-section">
+                <h3>Gérer les articles publiés</h3>
+                <div id="liste-articles">Chargement...</div>
+            </div>
+        </div>
+
+        <!-- ======================= ONGLET UTILISATEURS ======================= -->
+        <div id="form-user" style="display: none;">
+            <div class="list-section">
+                <h3>Gestion des Abonnements</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Modifie le plan d'un utilisateur ci-dessous. Le changement est immédiat.</p>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Abonnement Actuel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liste-users">
+                            <tr><td colspan="3">Chargement des utilisateurs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -104,12 +172,20 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+        // Variables d'état pour les modifications
+        let idEnEdition = { match: null, media: null, article: null };
+        let donneesEnMemoire = { matchs: [], medias: [], articles: [], profils: [] };
+
         async function verifierAdmin() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) return window.location.href = 'compte.html';
             const { data: p } = await supabaseClient.from('profils').select('est_admin').eq('id', user.id).single();
-            if (p?.est_admin) document.getElementById('admin-content').style.display = "block";
-            else window.location.href = 'index.html';
+            if (p?.est_admin) {
+                document.getElementById('admin-content').style.display = "block";
+                chargerToutesLesListes();
+            } else {
+                window.location.href = 'index.html';
+            }
         }
 
         function changerOnglet(onglet) {
@@ -117,68 +193,236 @@
             document.querySelectorAll('div[id^="form-"]').forEach(f => f.style.display = 'none');
             document.getElementById('tab-' + onglet).classList.add('active');
             document.getElementById('form-' + onglet).style.display = 'block';
+            if (onglet === 'user') chargerUtilisateurs();
         }
 
-        function adapterFormulaire() {
+        function adapterFormulaireMedia() {
             const type = document.getElementById('type-media').value;
             document.getElementById('zone-url').style.display = type === 'video' ? 'block' : 'none';
             document.getElementById('zone-upload').style.display = type === 'podcast' ? 'block' : 'none';
         }
 
-        async function ajouterMatch() {
-            /* ... (Code existant pour les matchs) ... */
-            const eqDom = document.getElementById('equipe-dom').value, eqExt = document.getElementById('equipe-ext').value, scoreDom = parseInt(document.getElementById('score-dom').value), scoreExt = parseInt(document.getElementById('score-ext').value), acces = document.getElementById('niveau-acces-match').value, msg = document.getElementById('msg-match');
-            msg.textContent = "Envoi..."; msg.style.color = "white";
-            const { error } = await supabaseClient.from('matchs').insert([{ equipe_domicile: eqDom, equipe_exterieur: eqExt, score_domicile: scoreDom, score_exterieur: scoreExt, niveau_acces: acces, date_match: new Date().toISOString() }]);
-            if (error) { msg.textContent = "❌ Erreur"; msg.style.color = "red"; } else { msg.textContent = "✅ Validé !"; msg.style.color = "green"; }
+        // =========================================
+        // CHARGEMENT DES LISTES
+        // =========================================
+        async function chargerToutesLesListes() {
+            chargerMatchs(); chargerMedias(); chargerArticles();
         }
 
-        async function ajouterMedia() {
-            /* ... (Code existant pour les médias) ... */
-            const type = document.getElementById('type-media').value, titre = document.getElementById('titre-media').value, desc = document.getElementById('desc-media').value, acces = document.getElementById('niveau-acces-media').value, msg = document.getElementById('msg-media');
-            let urlFinale = ""; msg.textContent = "Traitement en cours..."; msg.style.color = "white";
+        async function chargerMatchs() {
+            const { data } = await supabaseClient.from('matchs').select('*');
+            donneesEnMemoire.matchs = data || [];
+            let html = '';
+            (data || []).forEach(m => {
+                html += `
+                <div class="manage-card">
+                    <div class="manage-info">
+                        <div class="manage-title">${m.equipe_domicile} ${m.score_domicile} - ${m.score_exterieur} ${m.equipe_exterieur}</div>
+                        <div class="manage-meta">Accès: ${m.niveau_acces.toUpperCase()}</div>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-edit" onclick="preparerEdition('match', '${m.id}')">✏️</button>
+                        <button class="btn-delete" onclick="supprimerElement('matchs', '${m.id}')">🗑️</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('liste-matchs').innerHTML = html || 'Aucun match trouvé.';
+        }
+
+        async function chargerMedias() {
+            const { data } = await supabaseClient.from('medias').select('*');
+            donneesEnMemoire.medias = data || [];
+            let html = '';
+            (data || []).forEach(m => {
+                html += `
+                <div class="manage-card">
+                    <div class="manage-info">
+                        <div class="manage-title">${m.type_media === 'video' ? '📺' : '🎙️'} ${m.titre}</div>
+                        <div class="manage-meta">Accès: ${m.niveau_acces.toUpperCase()}</div>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-edit" onclick="preparerEdition('media', '${m.id}')">✏️</button>
+                        <button class="btn-delete" onclick="supprimerElement('medias', '${m.id}')">🗑️</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('liste-medias').innerHTML = html || 'Aucun média trouvé.';
+        }
+
+        async function chargerArticles() {
+            const { data } = await supabaseClient.from('articles').select('*');
+            donneesEnMemoire.articles = data || [];
+            let html = '';
+            (data || []).forEach(a => {
+                html += `
+                <div class="manage-card">
+                    <div class="manage-info">
+                        <div class="manage-title">${a.titre}</div>
+                        <div class="manage-meta">Accès: ${a.niveau_acces.toUpperCase()}</div>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-edit" onclick="preparerEdition('article', '${a.id}')">✏️</button>
+                        <button class="btn-delete" onclick="supprimerElement('articles', '${a.id}')">🗑️</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('liste-articles').innerHTML = html || 'Aucun article trouvé.';
+        }
+
+        async function chargerUtilisateurs() {
+            const { data } = await supabaseClient.from('profils').select('*');
+            let html = '';
+            (data || []).forEach(u => {
+                let role = u.est_admin ? '<span style="color:var(--accent); font-weight:bold;">Admin</span>' : 'Membre';
+                html += `
+                <tr>
+                    <td>${u.email || 'Email caché'}</td>
+                    <td>${role}</td>
+                    <td>
+                        <select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333; border-radius: 4px;">
+                            <option value="free" ${u.plan === 'free' ? 'selected' : ''}>🟢 Free</option>
+                            <option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>🔵 Classic</option>
+                            <option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>🟣 Premium</option>
+                        </select>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('liste-users').innerHTML = html || '<tr><td colspan="3">Aucun utilisateur trouvé.</td></tr>';
+        }
+
+        // =========================================
+        // ACTIONS SUR LES UTILISATEURS
+        // =========================================
+        async function changerPlanUtilisateur(idProfil, nouveauPlan) {
+            const { error } = await supabaseClient.from('profils').update({ plan: nouveauPlan }).eq('id', idProfil);
+            if (error) { alert("❌ Erreur lors de la modification : " + error.message); }
+            else { alert("✅ Abonnement mis à jour !"); }
+        }
+
+        // =========================================
+        // PREPARATION EDITION / ANNULATION
+        // =========================================
+        function preparerEdition(type, id) {
+            idEnEdition[type] = id;
+            document.getElementById(`btn-submit-${type}`).textContent = "💾 Mettre à jour";
+            document.getElementById(`btn-cancel-${type}`).style.display = "block";
+            document.getElementById(`titre-section-${type}`).textContent = "Modifier l'élément";
+            document.getElementById(`msg-${type}`).textContent = "";
+            window.scrollTo(0, 0);
+
+            if (type === 'match') {
+                const m = donneesEnMemoire.matchs.find(x => x.id === id);
+                document.getElementById('equipe-dom').value = m.equipe_domicile; document.getElementById('equipe-ext').value = m.equipe_exterieur;
+                document.getElementById('score-dom').value = m.score_domicile; document.getElementById('score-ext').value = m.score_exterieur;
+                document.getElementById('niveau-acces-match').value = m.niveau_acces;
+            } else if (type === 'media') {
+                const m = donneesEnMemoire.medias.find(x => x.id === id);
+                document.getElementById('type-media').value = m.type_media; adapterFormulaireMedia();
+                document.getElementById('titre-media').value = m.titre; document.getElementById('desc-media').value = m.description;
+                document.getElementById('niveau-acces-media').value = m.niveau_acces;
+                if (m.type_media === 'video') { document.getElementById('url-media').value = m.url_media; } 
+                else { document.getElementById('info-audio-existant').textContent = "Fichier actuel : Laisse vide pour conserver l'ancien fichier."; }
+            } else if (type === 'article') {
+                const a = donneesEnMemoire.articles.find(x => x.id === id);
+                document.getElementById('titre-article').value = a.titre; document.getElementById('image-article').value = a.image_url || '';
+                document.getElementById('contenu-article').value = a.contenu; document.getElementById('niveau-acces-article').value = a.niveau_acces;
+            }
+        }
+
+        function annulerEdition(type) {
+            idEnEdition[type] = null;
+            document.getElementById(`btn-submit-${type}`).textContent = "Publier";
+            document.getElementById(`btn-cancel-${type}`).style.display = "none";
+            document.getElementById(`titre-section-${type}`).textContent = "Ajouter un élément";
+            
+            if (type === 'match') {
+                document.getElementById('equipe-dom').value = ''; document.getElementById('equipe-ext').value = '';
+                document.getElementById('score-dom').value = '0'; document.getElementById('score-ext').value = '0';
+            } else if (type === 'media') {
+                document.getElementById('titre-media').value = ''; document.getElementById('desc-media').value = ''; document.getElementById('url-media').value = '';
+                document.getElementById('info-audio-existant').textContent = ''; document.getElementById('file-media').value = '';
+            } else if (type === 'article') {
+                document.getElementById('titre-article').value = ''; document.getElementById('image-article').value = ''; document.getElementById('contenu-article').value = '';
+            }
+        }
+
+        // =========================================
+        // SAUVEGARDE (INSERT OU UPDATE)
+        // =========================================
+        async function executerSauvegarde(table, type, donnees) {
+            const msg = document.getElementById(`msg-${type}`);
+            msg.textContent = "Traitement en cours..."; msg.style.color = "white";
+            
+            let result;
+            if (idEnEdition[type]) {
+                result = await supabaseClient.from(table).update(donnees).eq('id', idEnEdition[type]);
+            } else {
+                result = await supabaseClient.from(table).insert([donnees]);
+            }
+
+            if (result.error) {
+                msg.textContent = "❌ Erreur : " + result.error.message; msg.style.color = "red";
+            } else {
+                msg.textContent = "✅ Opération réussie !"; msg.style.color = "green";
+                annulerEdition(type); // Reset form
+                chargerToutesLesListes(); // Reload
+            }
+        }
+
+        async function sauvegarderMatch() {
+            executerSauvegarde('matchs', 'match', {
+                equipe_domicile: document.getElementById('equipe-dom').value, equipe_exterieur: document.getElementById('equipe-ext').value,
+                score_domicile: parseInt(document.getElementById('score-dom').value), score_exterieur: parseInt(document.getElementById('score-ext').value),
+                niveau_acces: document.getElementById('niveau-acces-match').value, date_match: new Date().toISOString()
+            });
+        }
+
+        async function sauvegarderArticle() {
+            executerSauvegarde('articles', 'article', {
+                titre: document.getElementById('titre-article').value, image_url: document.getElementById('image-article').value,
+                contenu: document.getElementById('contenu-article').value, niveau_acces: document.getElementById('niveau-acces-article').value
+            });
+        }
+
+        async function sauvegarderMedia() {
+            const type = document.getElementById('type-media').value;
+            const titre = document.getElementById('titre-media').value;
+            const msg = document.getElementById('msg-media');
+            let urlFinale = "";
+
             if (type === 'video') {
                 urlFinale = document.getElementById('url-media').value;
-                if(!urlFinale) return msg.textContent = "❌ L'URL YouTube est requise.", msg.style.color = "red";
             } else {
                 const fileInput = document.getElementById('file-media');
-                if(!fileInput.files || fileInput.files.length === 0) return msg.textContent = "❌ Sélectionne un fichier audio.", msg.style.color = "red";
-                const file = fileInput.files[0];
-                const nomFichier = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
-                const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('podcasts').upload(nomFichier, file);
-                if (uploadError) return msg.textContent = "❌ Erreur upload: " + uploadError.message, msg.style.color = "red";
-                urlFinale = supabaseClient.storage.from('podcasts').getPublicUrl(uploadData.path).data.publicUrl;
+                // Si on est en mode édition et qu'on ne met pas de nouveau fichier, on garde l'ancienne URL
+                if (idEnEdition['media'] && (!fileInput.files || fileInput.files.length === 0)) {
+                    urlFinale = donneesEnMemoire.medias.find(x => x.id === idEnEdition['media']).url_media;
+                } else if (!fileInput.files || fileInput.files.length === 0) {
+                    return msg.textContent = "❌ Sélectionne un fichier audio.", msg.style.color = "red";
+                } else {
+                    msg.textContent = "Upload du fichier..."; msg.style.color = "white";
+                    const file = fileInput.files[0];
+                    const nomFichier = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
+                    const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('podcasts').upload(nomFichier, file);
+                    if (uploadError) return msg.textContent = "❌ Erreur upload: " + uploadError.message, msg.style.color = "red";
+                    urlFinale = supabaseClient.storage.from('podcasts').getPublicUrl(uploadData.path).data.publicUrl;
+                }
             }
-            const { error } = await supabaseClient.from('medias').insert([{ type_media: type, titre: titre, description: desc, url_media: urlFinale, niveau_acces: acces }]);
-            if (error) { msg.textContent = "❌ Erreur"; msg.style.color = "red"; } else { msg.textContent = "✅ Épisode en ligne !"; msg.style.color = "green"; }
+
+            executerSauvegarde('medias', 'media', {
+                type_media: type, titre: titre, description: document.getElementById('desc-media').value, 
+                url_media: urlFinale, niveau_acces: document.getElementById('niveau-acces-media').value
+            });
         }
 
-        // FONCTION POUR AJOUTER UN ARTICLE
-        async function ajouterArticle() {
-            const titre = document.getElementById('titre-article').value;
-            const image = document.getElementById('image-article').value;
-            const contenu = document.getElementById('contenu-article').value;
-            const acces = document.getElementById('niveau-acces-article').value;
-            const msg = document.getElementById('msg-article');
-
-            if(!titre || !contenu) {
-                msg.textContent = "❌ Le titre et le contenu sont obligatoires."; msg.style.color = "red";
-                return;
-            }
-
-            msg.textContent = "Publication en cours..."; msg.style.color = "white";
-
-            const { error } = await supabaseClient.from('articles').insert([
-                { titre: titre, image_url: image, contenu: contenu, niveau_acces: acces }
-            ]);
-
-            if (error) {
-                msg.textContent = "❌ Erreur lors de la publication : " + error.message; msg.style.color = "red";
-            } else {
-                msg.textContent = "✅ Article publié avec succès !"; msg.style.color = "#00e676";
-                document.getElementById('titre-article').value = "";
-                document.getElementById('image-article').value = "";
-                document.getElementById('contenu-article').value = "";
+        // =========================================
+        // SUPPRESSION
+        // =========================================
+        async function supprimerElement(table, id) {
+            if (confirm("⚠️ Es-tu sûr de vouloir supprimer cet élément définitivement ?")) {
+                const { error } = await supabaseClient.from(table).delete().eq('id', id);
+                if (error) alert("❌ Erreur : " + error.message);
+                else chargerToutesLesListes();
             }
         }
 
