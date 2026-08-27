@@ -138,9 +138,7 @@
 
         let profilActuel = 'none'; 
         
-        // =========================================================================
-        // URL DE TON WORKER CLOUDFLARE 
-        // =========================================================================
+        // Ton Worker Cloudflare (Ne pas modifier !)
         const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
 
         async function initialiserPage() {
@@ -156,10 +154,12 @@
 
         async function chargerMatchsSupabase() {
             const container = document.getElementById('matchs-container');
-            const { data: matchs, error } = await supabaseClient.from('matchs').select('*').order('created_at', { ascending: false });
+            
+            // J'AI ENLEVÉ L'ERREUR SUPABASE ICI ! On prend juste les données.
+            const { data: matchs, error } = await supabaseClient.from('matchs').select('*');
 
             if (error) {
-                container.innerHTML = `<div class="loading-text" style="color:red;">❌ Erreur: ${error.message}</div>`;
+                container.innerHTML = `<div class="loading-text" style="color:red;">❌ Erreur Supabase: ${error.message}</div>`;
                 return;
             }
 
@@ -167,6 +167,9 @@
                 container.innerHTML = '<div class="loading-text">Aucun match disponible. Publiez-en un depuis l\'administration !</div>';
                 return;
             }
+
+            // TRI MANUEL : On demande à JavaScript de trier les matchs du plus récent au plus ancien via la colonne date_match
+            matchs.sort((a, b) => new Date(b.date_match || 0) - new Date(a.date_match || 0));
 
             let html = '';
             matchs.forEach(m => {
