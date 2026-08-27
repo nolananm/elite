@@ -145,12 +145,55 @@
         let profilActuel = 'none'; 
         let tousLesArticles = [];
 
+        // --- FONCTION DE SÉCURITÉ : COMPTE A REBOURS ---
+        async function verifierCompteARebours(estAdmin) {
+            const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
+            if (data && data.compte_a_rebours_actif && !estAdmin) {
+                document.body.innerHTML = `
+                    <div style="height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), #07080b; color: white; text-align: center; padding: 20px; font-family: 'Poppins', sans-serif;">
+                        <h1 style="font-size: 60px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; text-transform: uppercase;">L'Élite se prépare</h1>
+                        <p style="color: #8b92a5; font-size: 18px; max-width: 600px; margin-bottom: 50px;">Le nouveau média de référence du football français ouvre ses portes dans :</p>
+                        <div style="display: flex; gap: 30px; font-size: 50px; font-weight: 800;" id="timer-display">Chargement...</div>
+                    </div>
+                `;
+
+                const dateLancement = new Date(data.date_lancement).getTime();
+                setInterval(() => {
+                    const distance = dateLancement - new Date().getTime();
+                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "Ouverture !"; return; }
+
+                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const secondes = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.getElementById('timer-display').innerHTML = `
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${jours}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Jours</span></div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${heures}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Heures</span></div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${minutes}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Minutes</span></div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${secondes}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Secondes</span></div>
+                    `;
+                }, 1000);
+
+                return true; 
+            }
+            return false;
+        }
+
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
+            let estAdmin = false;
+
             if (user) {
-                const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
-                if (profil) profilActuel = profil.plan;
+                const { data: profil } = await supabaseClient.from('profils').select('plan, est_admin').eq('id', user.id).single();
+                if (profil) {
+                    profilActuel = profil.plan;
+                    estAdmin = profil.est_admin;
+                }
             }
+
+            // SÉCURITÉ
+            if (await verifierCompteARebours(estAdmin)) return;
 
             if (profilActuel === 'premium') {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
@@ -173,7 +216,7 @@
             const container = document.getElementById('articles-container');
 
             if (error || !articles || articles.length === 0) {
-                container.innerHTML = '<div class="loading-text">Aucun article disponible pour le moment.</div>';
+                container.innerHTML = '<div class="loading-text">Aucun article disponible.</div>';
                 return;
             }
 
@@ -260,10 +303,7 @@
         function fermerArticle() {
             const overlay = document.getElementById('reader-overlay');
             overlay.classList.remove('show');
-            setTimeout(() => { 
-                overlay.style.display = 'none'; 
-                document.body.style.overflow = 'auto'; 
-            }, 400);
+            setTimeout(() => { overlay.style.display = 'none'; document.body.style.overflow = 'auto'; }, 400);
         }
 
         initialiserPage();
