@@ -23,6 +23,7 @@
         .form-section h3 { margin-bottom: 15px; font-size: 18px; color: var(--accent); }
         label { display: block; margin-top: 15px; margin-bottom: 5px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; }
+        input[type="checkbox"] { width: auto; transform: scale(1.5); margin-right: 10px; cursor: pointer;}
         input:focus, select:focus, textarea:focus { border-color: var(--accent); }
         textarea { resize: vertical; min-height: 120px; }
         
@@ -46,16 +47,36 @@
         <h2>🛠️ Centre de Commandement</h2>
         
         <div class="tabs">
-            <div class="tab active" id="tab-match" onclick="changerOnglet('match')">⚽ Matchs</div>
-            <div class="tab" id="tab-abonnement" onclick="changerOnglet('abonnement')">💎 Abonnements</div>
-            <div class="tab" id="tab-flash" onclick="changerOnglet('flash')">⚡ Flash Info</div>
+            <div class="tab active" id="tab-lancement" onclick="changerOnglet('lancement')">🚀 Lancement</div>
+            <div class="tab" id="tab-match" onclick="changerOnglet('match')">⚽ Matchs</div>
+            <div class="tab" id="tab-abonnement" onclick="changerOnglet('abonnement')">💎 Offres</div>
+            <div class="tab" id="tab-flash" onclick="changerOnglet('flash')">⚡ Flash</div>
             <div class="tab" id="tab-media" onclick="changerOnglet('media')">🎙️ Médias</div>
             <div class="tab" id="tab-article" onclick="changerOnglet('article')">📝 Articles</div>
             <div class="tab" id="tab-user" onclick="changerOnglet('user')">👥 Abonnés</div>
         </div>
 
+        <!-- ONGLET LANCEMENT / COMPTE A REBOURS -->
+        <div id="form-lancement">
+            <div class="form-section">
+                <h3>Contrôle d'accès au site</h3>
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+                    Activez le compte à rebours pour bloquer totalement l'accès aux pages publiques du site. Seuls les administrateurs pourront naviguer normalement.
+                </p>
+                <div style="display: flex; align-items: center; margin-bottom: 20px; background: rgba(229, 0, 70, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(229,0,70,0.3);">
+                    <input type="checkbox" id="check-maintenance">
+                    <label style="margin: 0; color: white; font-size: 15px;">🔒 Activer la page de Lancement / Compte à rebours</label>
+                </div>
+                
+                <label>Date et heure d'ouverture officielle :</label>
+                <input type="datetime-local" id="date-lancement">
+                
+                <button class="btn-submit" onclick="sauvegarderLancement()">Appliquer la protection</button>
+            </div>
+        </div>
+
         <!-- ONGLET MATCHS -->
-        <div id="form-match">
+        <div id="form-match" style="display: none;">
             <div class="form-section" id="box-edition-match" style="display: none;">
                 <h3 id="titre-section-match">Ajouter du contenu au match</h3>
                 <input type="hidden" id="id-api-match">
@@ -198,10 +219,35 @@
             if (onglet === 'user') chargerUtilisateurs();
             if (onglet === 'match') chargerMatchs();
             if (onglet === 'abonnement') chargerAvantages();
+            if (onglet === 'lancement') chargerLancement();
         }
 
         async function chargerToutesLesListes() {
-            chargerMatchs(); chargerMedias(); chargerArticles(); chargerFlashes();
+            chargerLancement(); chargerMatchs(); chargerMedias(); chargerArticles(); chargerFlashes();
+        }
+
+        // --- LANCEMENT ---
+        async function chargerLancement() {
+            const { data, error } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
+            if (data) {
+                document.getElementById('check-maintenance').checked = data.compte_a_rebours_actif;
+                if (data.date_lancement) {
+                    const dateStr = new Date(data.date_lancement).toISOString().slice(0, 16);
+                    document.getElementById('date-lancement').value = dateStr;
+                }
+            } else if (error && error.code === 'PGRST116') {
+                console.log("Table reglages_site vide, pensez à exécuter le code SQL.");
+            }
+        }
+
+        async function sauvegarderLancement() {
+            const actif = document.getElementById('check-maintenance').checked;
+            const dateInput = document.getElementById('date-lancement').value;
+            let isoDate = new Date().toISOString();
+            if (dateInput) isoDate = new Date(dateInput).toISOString();
+
+            await supabaseClient.from('reglages_site').upsert([{ id: 1, compte_a_rebours_actif: actif, date_lancement: isoDate }]);
+            alert('Réglages de lancement sauvegardés avec succès !');
         }
 
         // --- AVANTAGES ABONNEMENT ---
@@ -213,27 +259,17 @@
                 let couleurPlan = av.plan === 'premium' ? 'var(--accent)' : (av.plan === 'classic' ? '#0055ff' : 'white');
                 html += `
                 <div class="manage-card">
-                    <div class="manage-info">
-                        <div class="manage-title" style="color:${couleurPlan}">[${av.plan.toUpperCase()}] ${icone} ${av.texte}</div>
-                    </div>
-                    <div class="manage-actions">
-                        <button class="btn-delete" onclick="supprimerElement('avantages', '${av.id}')">Supprimer</button>
-                    </div>
+                    <div class="manage-info"><div class="manage-title" style="color:${couleurPlan}">[${av.plan.toUpperCase()}] ${icone} ${av.texte}</div></div>
+                    <div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('avantages', '${av.id}')">Supprimer</button></div>
                 </div>`;
             });
             document.getElementById('liste-avantages').innerHTML = html || 'Aucun avantage configuré.';
         }
 
         async function sauvegarderAvantage() {
-            const donnees = {
-                plan: document.getElementById('plan-avantage').value,
-                texte: document.getElementById('texte-avantage').value,
-                type_icone: document.getElementById('type-icone-avantage').value
-            };
+            const donnees = { plan: document.getElementById('plan-avantage').value, texte: document.getElementById('texte-avantage').value, type_icone: document.getElementById('type-icone-avantage').value };
             if(!donnees.texte) return;
-            await supabaseClient.from('avantages').insert([donnees]);
-            document.getElementById('texte-avantage').value = '';
-            chargerAvantages();
+            await supabaseClient.from('avantages').insert([donnees]); document.getElementById('texte-avantage').value = ''; chargerAvantages();
         }
 
         // --- MATCHS ---
@@ -292,76 +328,43 @@
 
         async function sauvegarderMatch() {
             const donnees = { id_api: document.getElementById('id-api-match').value, niveau_acces: document.getElementById('niveau-acces-match').value, youtube_url: document.getElementById('youtube-match').value, resume_texte: document.getElementById('resume-match').value };
-            await supabaseClient.from('matchs_enrichis').upsert([donnees]);
-            document.getElementById('box-edition-match').style.display = 'none';
-            chargerMatchs();
+            await supabaseClient.from('matchs_enrichis').upsert([donnees]); document.getElementById('box-edition-match').style.display = 'none'; chargerMatchs();
         }
 
-        // --- FLASHES ---
+        // --- FLASHES, MEDIAS, ARTICLES ... (Identique) ---
         async function chargerFlashes() {
             const { data } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false });
-            let html = '';
-            (data || []).forEach(f => {
-                html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${f.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('flashes', '${f.id}')">Sup.</button></div></div>`;
-            });
+            let html = ''; (data || []).forEach(f => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${f.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('flashes', '${f.id}')">Sup.</button></div></div>`; });
             document.getElementById('liste-flashes').innerHTML = html || 'Aucun flash.';
         }
         async function sauvegarderFlash() {
-            const texte = document.getElementById('texte-flash').value;
-            if(!texte) return;
-            await supabaseClient.from('flashes').insert([{ texte: texte }]);
-            document.getElementById('texte-flash').value = ''; chargerFlashes();
+            const texte = document.getElementById('texte-flash').value; if(!texte) return; await supabaseClient.from('flashes').insert([{ texte: texte }]); document.getElementById('texte-flash').value = ''; chargerFlashes();
         }
-
-        // --- ARTICLES & MEDIAS ---
         async function chargerArticles() {
-            const { data } = await supabaseClient.from('articles').select('*');
-            let html = '';
-            (data || []).forEach(a => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${a.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('articles', '${a.id}')">Sup.</button></div></div>`; });
-            document.getElementById('liste-articles').innerHTML = html;
+            const { data } = await supabaseClient.from('articles').select('*'); let html = ''; (data || []).forEach(a => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${a.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('articles', '${a.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-articles').innerHTML = html;
         }
         async function sauvegarderArticle() {
-            const data = { titre: document.getElementById('titre-article').value, image_url: document.getElementById('image-article').value, contenu: document.getElementById('contenu-article').value, niveau_acces: document.getElementById('niveau-acces-article').value };
-            await supabaseClient.from('articles').insert([data]); chargerArticles();
+            const data = { titre: document.getElementById('titre-article').value, image_url: document.getElementById('image-article').value, contenu: document.getElementById('contenu-article').value, niveau_acces: document.getElementById('niveau-acces-article').value }; await supabaseClient.from('articles').insert([data]); chargerArticles();
         }
-
         async function chargerMedias() {
-            const { data } = await supabaseClient.from('medias').select('*');
-            let html = '';
-            (data || []).forEach(m => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${m.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('medias', '${m.id}')">Sup.</button></div></div>`; });
-            document.getElementById('liste-medias').innerHTML = html;
+            const { data } = await supabaseClient.from('medias').select('*'); let html = ''; (data || []).forEach(m => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${m.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('medias', '${m.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-medias').innerHTML = html;
         }
         async function sauvegarderMedia() {
-            const data = { type_media: document.getElementById('type-media').value, titre: document.getElementById('titre-media').value, description: document.getElementById('desc-media').value, url_media: document.getElementById('url-media').value, niveau_acces: document.getElementById('niveau-acces-media').value };
-            await supabaseClient.from('medias').insert([data]); chargerMedias();
+            const data = { type_media: document.getElementById('type-media').value, titre: document.getElementById('titre-media').value, description: document.getElementById('desc-media').value, url_media: document.getElementById('url-media').value, niveau_acces: document.getElementById('niveau-acces-media').value }; await supabaseClient.from('medias').insert([data]); chargerMedias();
         }
-
-        // --- UTILISATEURS ---
         async function chargerUtilisateurs() {
-            const { data } = await supabaseClient.from('profils').select('*');
-            tousLesUsers = data || [];
-            afficherUsers(tousLesUsers);
+            const { data } = await supabaseClient.from('profils').select('*'); tousLesUsers = data || []; afficherUsers(tousLesUsers);
         }
-
         function afficherUsers(liste) {
-            let html = '';
-            liste.forEach(u => {
-                html += `<tr><td>${u.email || 'Email caché'}</td><td><select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333;"><option value="free" ${u.plan === 'free' ? 'selected' : ''}>Free</option><option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>Classic</option><option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>Premium</option></select></td></tr>`;
-            });
+            let html = ''; liste.forEach(u => { html += `<tr><td>${u.email || 'Email caché'}</td><td><select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333;"><option value="free" ${u.plan === 'free' ? 'selected' : ''}>Free</option><option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>Classic</option><option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>Premium</option></select></td></tr>`; });
             document.getElementById('liste-users').innerHTML = html || '<tr><td colspan="2" style="text-align:center;">Aucun utilisateur trouvé.</td></tr>';
         }
-
         function filtrerUsers() {
             const query = document.getElementById('search-user').value.toLowerCase();
-            const filtered = tousLesUsers.filter(u => (u.email || '').toLowerCase().includes(query));
-            afficherUsers(filtered);
+            const filtered = tousLesUsers.filter(u => (u.email || '').toLowerCase().includes(query)); afficherUsers(filtered);
         }
-
         async function changerPlanUtilisateur(id, plan) { await supabaseClient.from('profils').update({ plan: plan }).eq('id', id); }
-
-        async function supprimerElement(table, id) {
-            if (confirm("Supprimer ?")) { await supabaseClient.from(table).delete().eq('id', id); changerOnglet(table.replace('es', 'e').replace('s', '')); chargerToutesLesListes();}
-        }
+        async function supprimerElement(table, id) { if (confirm("Supprimer ?")) { await supabaseClient.from(table).delete().eq('id', id); changerOnglet(table.replace('es', 'e').replace('s', '')); chargerToutesLesListes();} }
 
         verifierAdmin();
     </script>
