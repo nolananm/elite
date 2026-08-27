@@ -88,16 +88,11 @@
             <p>Analyses tactiques, enquêtes exclusives et éditos.</p>
         </div>
 
+        <!-- PUB 728x90 -->
         <div class="ad-zone">
             <span class="ad-label">Sponsorisé</span>
             <script>
-                atOptions = {
-                    'key' : 'a75626ad776c3791da4b7e1f47f54670',
-                    'format' : 'iframe',
-                    'height' : 90,
-                    'width' : 728,
-                    'params' : {}
-                };
+                atOptions = { 'key' : 'a75626ad776c3791da4b7e1f47f54670', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
             </script>
             <script src="https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js"></script>
         </div>
@@ -107,6 +102,7 @@
         </div>
     </div>
 
+    <!-- INTERFACE DE LECTURE -->
     <div id="reader-overlay">
         <div class="reader-nav">
             <div class="logo" style="font-size: 20px;">ÉLITE</div>
@@ -122,6 +118,16 @@
         </div>
         
         <div class="reader-body-wrapper" id="reader-body-wrapper">
+            
+            <!-- PUB INTRUSIVE DANS L'ARTICLE (Cachée pour Classic et Premium) -->
+            <div class="ad-zone ad-intrusive" style="margin: 20px auto; max-width: 320px; padding: 0; background: transparent; border: none;">
+                <span class="ad-label" style="position: static; margin-bottom: 5px;">Publicité</span>
+                <script>
+                    atOptions = { 'key' : 'c720d1dbca9531853ac018b1f3f493c5', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };
+                </script>
+                <script src="https://www.highrevenueformat.com/c720d1dbca9531853ac018b1f3f493c5/invoke.js"></script>
+            </div>
+
             <div class="reader-text" id="reader-content"></div>
             
             <div class="inline-paywall" id="inline-paywall">
@@ -148,13 +154,24 @@
                 if (profil) profilActuel = profil.plan;
             }
 
+            // LE BOUCLIER ANTI-PUB MULTI-NIVEAUX
             if (profilActuel === 'premium') {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
+            } else if (profilActuel === 'classic') {
+                // Classic = Bannières normales OUI, pubs intrusives NON
+                document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex');
+                document.querySelectorAll('.ad-intrusive').forEach(zone => zone.remove());
             } else {
+                // Free = TOUT (Bannières + Intrusive + Pop-under + Social Bar)
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
+                
                 const popScript = document.createElement('script');
                 popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js";
                 document.body.appendChild(popScript);
+
+                const socialScript = document.createElement('script');
+                socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js";
+                document.body.appendChild(socialScript);
             }
 
             const { data: articles, error } = await supabaseClient.from('articles').select('*');
@@ -180,7 +197,6 @@
                 let extraitTexte = contenuSecurise.replace(/\n/g, " ");
                 let extrait = extraitTexte.substring(0, 110) + '...';
 
-                // L'ID est passé de manière sécurisée pour éviter le bug de conversion string/nombre
                 html += `
                 <div class="article-card" onclick="ouvrirArticle('${art.id}')">
                     <div class="article-img" style="background-image: url('${img}');">
@@ -199,7 +215,6 @@
         }
 
         function ouvrirArticle(idArticle) {
-            // CORRECTION DU BUG : On utilise == au lieu de === pour que "1" soit égal à 1
             const article = tousLesArticles.find(a => a.id == idArticle);
             if (!article) return;
 
