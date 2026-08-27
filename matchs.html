@@ -88,12 +88,12 @@
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         .stats-box { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); font-size: 14px; text-align: center; color: var(--text-muted); }
 
-        /* Style Premium Box (utilisé pour Paywall et Messages) */
         .premium-box { max-width: 480px; text-align: center; padding: 40px; background: linear-gradient(145deg, #161a25, #0f111a); border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 60px rgba(0,0,0,0.8); }
         .premium-box .icon { font-size: 40px; margin-bottom: 20px; }
         .btn-upgrade { display: inline-block; width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: 800; border-radius: 8px; margin-top: 20px; text-transform: uppercase; cursor: pointer; border: none; }
         
-        .loading-text { text-align: center; color: var(--text-muted); font-size: 14px; padding: 30px; }
+        .loading-text { text-align: center; color: var(--text-muted); font-size: 14px; padding: 30px; width: 100%; }
+        .error-text { text-align: center; color: #ff4d4d; font-size: 15px; padding: 30px; width: 100%; font-weight: 600; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -177,7 +177,7 @@
         </div>
     </div>
 
-    <!-- MODAL : MESSAGE SIMPLE (En cours / À venir) -->
+    <!-- MODAL : MESSAGE SIMPLE -->
     <div class="site-modal" id="modal-message">
         <div class="modal-box premium-box" style="max-width: 400px; padding: 30px;">
             <button class="btn-close-modal" style="position: absolute; top: 15px; right: 15px;" onclick="fermerModal('modal-message')">✕</button>
@@ -215,8 +215,12 @@
                 if (matchsBdd) reglageMatchsBDD = matchsBdd;
 
                 const reponse = await fetch(API_URL);
-                if (!reponse.ok) throw new Error("Erreur Serveur API");
+                if (!reponse.ok) throw new Error(`Erreur du Worker (${reponse.status})`);
+
                 const data = await reponse.json();
+                if (data.standings?.errorCode || data.matches?.errorCode || data.errorCode) {
+                    throw new Error("L'API de Football a bloqué la requête (limite). Attends 60 secondes.");
+                }
 
                 const classement = data.standings.standings[0].table;
                 let htmlClassement = '';
@@ -237,7 +241,7 @@
 
                 const matchdays = [...new Set(tousLesMatchsAPI.map(m => m.matchday))].filter(d => d).sort((a, b) => a - b);
                 let currentMatchday = 1;
-                const matchsJoues = tousLesMatchsAPI.filter(m => m.status === 'FINISHED' || m.status === 'IN_PLAY');
+                const matchsJoues = tousLesMatchsAPI.filter(m => ['FINISHED', 'IN_PLAY', 'PAUSED'].includes(m.status));
                 if(matchsJoues.length > 0) currentMatchday = Math.max(...matchsJoues.map(m => m.matchday));
 
                 let optionsHtml = '';
@@ -250,7 +254,9 @@
 
             } catch (erreur) {
                 console.error(erreur);
-                document.getElementById('matchs-container').innerHTML = `<div class="loading-text">Erreur de chargement.</div>`;
+                let msgErreur = erreur.message || "Erreur de connexion à l'API.";
+                document.getElementById('body-classement').innerHTML = `<tr><td colspan="5" class="error-text">❌ ${msgErreur}</td></tr>`;
+                document.getElementById('matchs-container').innerHTML = `<div class="error-text">❌ ${msgErreur}</div>`;
             }
         }
 
@@ -259,9 +265,7 @@
             const { data: flashes, error } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false }).limit(15);
             
             if (error || !flashes || flashes.length === 0) {
-                container.innerHTML = `
-                    <div class="flash-item"><span class="flash-time">19:00</span><span class="flash-text">Bienvenue sur la nouvelle Fan Zone Élite. Les infos en continu apparaîtront ici.</span></div>
-                `;
+                container.innerHTML = `<div class="flash-item"><span class="flash-text" style="color:var(--text-muted)">Aucun flash info pour le moment.</span></div>`;
                 return;
             }
 
@@ -284,8 +288,9 @@
                 let nomDom = m.homeTeam.shortName || m.homeTeam.name;
                 let nomExt = m.awayTeam.shortName || m.awayTeam.name;
                 
+                // ICI ON FORCE LE CLASSIC PAR DÉFAUT POUR TOUS LES MATCHS !
                 let reglageAdmin = reglageMatchsBDD.find(r => r.id_api == m.id);
-                let acces = reglageAdmin ? reglageAdmin.niveau_acces : "free"; 
+                let acces = reglageAdmin ? reglageAdmin.niveau_acces : "classic"; 
                 let badgeClass = acces === "premium" ? "badge-premium" : (acces === "classic" ? "badge-classic" : "badge-free");
 
                 let scoreText = "";
