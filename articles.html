@@ -27,7 +27,7 @@
         /* GRILLE DES ARTICLES */
         .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
         
-        .article-card { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; display: flex; flex-direction: column; }
+        .article-card { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; display: flex; flex-direction: column; position: relative;}
         .article-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: rgba(229,0,70,0.3); }
         
         .article-img { width: 100%; height: 220px; background-size: cover; background-position: center; position: relative; }
@@ -44,7 +44,7 @@
         .article-excerpt { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .read-more { margin-top: auto; color: var(--accent); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* INTERFACE DE LECTURE (FULLSCREEN MODAL) */
+        /* INTERFACE DE LECTURE */
         #reader-overlay { display: none; position: fixed; inset: 0; background: var(--bg-dark); z-index: 2000; overflow-y: auto; opacity: 0; transition: opacity 0.4s; }
         #reader-overlay.show { opacity: 1; }
         
@@ -52,27 +52,46 @@
         .btn-close-reader { background: rgba(255,255,255,0.1); border: none; color: white; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
         .btn-close-reader:hover { background: rgba(255,255,255,0.2); }
         
-        .reader-header { width: 100%; height: 50vh; background-size: cover; background-position: center; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 40px; }
+        .reader-header { width: 100%; height: 55vh; background-size: cover; background-position: center; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 50px; }
         .reader-header::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-dark) 0%, rgba(0,0,0,0.4) 100%); }
         .reader-title-box { position: relative; z-index: 2; max-width: 800px; text-align: center; padding: 0 20px; }
         .reader-title { font-size: 48px; font-weight: 800; line-height: 1.2; margin-bottom: 15px; }
         .reader-meta { font-size: 14px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         
-        .reader-body { max-width: 750px; margin: 50px auto 100px auto; padding: 0 20px; }
-        /* Police serif pour le confort de lecture de l'article */
-        .reader-text { font-family: 'Merriweather', serif; font-size: 18px; line-height: 1.8; color: #e0e0e0; white-space: pre-wrap; }
+        .reader-body-wrapper { max-width: 750px; margin: 50px auto 100px auto; padding: 0 20px; position: relative; }
+        
+        .reader-text { font-family: 'Merriweather', serif; font-size: 18px; line-height: 1.9; color: #e0e0e0; white-space: pre-wrap; transition: max-height 0.3s; }
+        
+        /* LE SYSTEME DE PAYWALL INTEGRE */
+        .reader-body-wrapper.locked .reader-text {
+            max-height: 200px; /* Ne montre que les 200 premiers pixels du texte */
+            overflow: hidden;
+            /* Effet d'effacement vers le noir */
+            -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+        }
 
-        /* MODAL DE BLOCAGE (PAYWALL) */
-        #upgrade-modal { display: none; position: fixed; inset: 0; background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 3000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.4s ease; }
-        #upgrade-modal.show { opacity: 1; }
-        .upgrade-box { background: linear-gradient(145deg, #161a25, #0f111a); padding: 50px 40px; border-radius: 24px; width: 100%; max-width: 480px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 60px rgba(0,0,0,0.8); text-align: center; transform: scale(0.95) translateY(20px); transition: transform 0.4s; }
-        #upgrade-modal.show .upgrade-box { transform: scale(1) translateY(0); }
+        .inline-paywall {
+            display: none;
+            position: relative;
+            margin-top: -50px; /* Remonte sur le texte effacé */
+            background: linear-gradient(145deg, #161a25, #0f111a);
+            padding: 50px 40px; border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.08); 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .reader-body-wrapper.locked .inline-paywall {
+            display: block; /* S'affiche si l'article est bloqué */
+        }
+
         .icon-lock { width: 70px; height: 70px; margin: 0 auto 20px auto; background: linear-gradient(135deg, rgba(229,0,70,0.1), rgba(128,0,255,0.1)); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; border: 1px solid rgba(229,0,70,0.3); }
-        .upgrade-box h2 { font-size: 26px; margin-bottom: 15px; font-weight: 800; text-transform: uppercase; color: white; }
-        .upgrade-box p { color: #a0a5b0; margin-bottom: 35px; font-size: 15px; line-height: 1.6; }
+        .inline-paywall h2 { font-size: 26px; margin-bottom: 15px; font-weight: 800; text-transform: uppercase; color: white; }
+        .inline-paywall p { color: #a0a5b0; margin-bottom: 35px; font-size: 15px; line-height: 1.6; }
         .btn-upgrade { display: block; width: 100%; padding: 18px; background: var(--gradient); color: white; font-weight: 800; border-radius: 12px; font-size: 16px; border: none; cursor: pointer; text-decoration: none; text-transform: uppercase; }
-        .btn-close { margin-top: 25px; display: inline-block; color: #707580; font-size: 13px; font-weight: 600; cursor: pointer; background: none; border: none; transition: 0.3s; text-transform: uppercase; }
-        .btn-close:hover { color: white; }
+        .btn-upgrade:hover { opacity: 0.9; transform: translateY(-2px); transition: 0.3s; }
 
         .loading-text { text-align: center; color: var(--text-muted); font-size: 18px; width: 100%; grid-column: 1/-1; padding: 50px; }
     </style>
@@ -92,44 +111,40 @@
     <div class="container">
         <div class="page-header">
             <h1>La Rédac' Élite</h1>
-            <p>Analyses tactiques, interviews exclusives et éditos.</p>
+            <p>Analyses tactiques, enquêtes exclusives et éditos.</p>
         </div>
 
         <div class="articles-grid" id="articles-container">
-            <div class="loading-text">Chargement des articles...</div>
+            <div class="loading-text">Recherche des articles...</div>
         </div>
     </div>
 
-    <!-- INTERFACE DE LECTURE D'ARTICLE -->
+    <!-- INTERFACE DE LECTURE D'ARTICLE (Avec le nouveau Paywall intégré) -->
     <div id="reader-overlay">
         <div class="reader-nav">
             <div class="logo" style="font-size: 20px;">ÉLITE</div>
-            <button class="btn-close-reader" onclick="fermerArticle()">← Retour aux articles</button>
+            <button class="btn-close-reader" onclick="fermerArticle()">← Retour</button>
         </div>
         
         <div class="reader-header" id="reader-header">
             <div class="reader-title-box">
-                <span class="badge-acces" id="reader-badge" style="position: static; margin-bottom: 20px;"></span>
-                <h1 class="reader-title" id="reader-title">Titre de l'article</h1>
-                <div class="reader-meta" id="reader-date">Publié le --</div>
+                <span class="badge-acces" id="reader-badge" style="position: static; margin-bottom: 20px; display: inline-block;"></span>
+                <h1 class="reader-title" id="reader-title">Chargement...</h1>
+                <div class="reader-meta" id="reader-date">--</div>
             </div>
         </div>
         
-        <div class="reader-body">
-            <div class="reader-text" id="reader-content">
-                Contenu de l'article...
+        <div class="reader-body-wrapper" id="reader-body-wrapper">
+            <!-- Le texte de l'article (sera coupé si bloqué) -->
+            <div class="reader-text" id="reader-content"></div>
+            
+            <!-- Le bloc d'abonnement qui se pose sur le texte effacé -->
+            <div class="inline-paywall" id="inline-paywall">
+                <div class="icon-lock">🔒</div>
+                <h2 id="paywall-title">Abonnement Requis</h2>
+                <p id="paywall-message">Cet article est réservé aux abonnés. Continue ta lecture en débloquant l'accès à ce contenu.</p>
+                <a href="index.html#abonnements" class="btn-upgrade">Voir les offres d'abonnement</a>
             </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE PAYWALL -->
-    <div id="upgrade-modal">
-        <div class="upgrade-box">
-            <div class="icon-lock">🔒</div>
-            <h2 id="upgrade-title">Abonnement Requis</h2>
-            <p id="upgrade-message">Cet article est réservé aux abonnés. Passe au niveau supérieur pour lire nos meilleures enquêtes.</p>
-            <a href="index.html#abonnements" class="btn-upgrade">Découvrir les offres</a>
-            <button class="btn-close" onclick="fermerPaywall()">Retour aux articles</button>
         </div>
     </div>
 
@@ -139,7 +154,7 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let profilActuel = 'none'; 
-        let tousLesArticles = []; // On stocke les articles en mémoire pour les ouvrir vite
+        let tousLesArticles = [];
 
         async function initialiserPage() {
             // 1. Vérifier l'abonnement
@@ -166,18 +181,17 @@
                 if (art.niveau_acces === 'classic') badgeClass = 'badge-classic';
                 if (art.niveau_acces === 'premium') badgeClass = 'badge-premium';
                 
-                // On met une image par défaut s'il n'y en a pas
                 let img = art.image_url ? art.image_url : 'https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&w=1000&auto=format&fit=crop';
                 
-                // Formater la date
                 let dateObj = new Date(art.created_at);
                 let dateString = dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-                // Créer un extrait court
-                let extrait = art.contenu.substring(0, 120) + '...';
+                // Retirer les sauts de ligne pour l'extrait
+                let extraitTexte = art.contenu.replace(/\n/g, " ");
+                let extrait = extraitTexte.substring(0, 120) + '...';
 
                 html += `
-                <div class="article-card" onclick="tenterOuvertureArticle('${art.id}')">
+                <div class="article-card" onclick="ouvrirArticle('${art.id}')">
                     <div class="article-img" style="background-image: url('${img}');">
                         <span class="badge-acces ${badgeClass}">${art.niveau_acces}</span>
                     </div>
@@ -193,8 +207,7 @@
             container.innerHTML = html;
         }
 
-        // VÉRIFIER SI ON A LE DROIT DE LIRE
-        function tenterOuvertureArticle(idArticle) {
+        function ouvrirArticle(idArticle) {
             const article = tousLesArticles.find(a => a.id === idArticle);
             if (!article) return;
 
@@ -206,18 +219,10 @@
             else if (accesRequis === 'classic' && (profilActuel === 'classic' || profilActuel === 'premium')) aLeDroit = true;
             else if (accesRequis === 'premium' && profilActuel === 'premium') aLeDroit = true;
 
-            if (aLeDroit) {
-                ouvrirLecteur(article);
-            } else {
-                afficherPaywall(accesRequis);
-            }
-        }
-
-        // AFFICHER L'ARTICLE
-        function ouvrirLecteur(article) {
             const overlay = document.getElementById('reader-overlay');
+            const wrapper = document.getElementById('reader-body-wrapper');
             
-            // Remplir les données
+            // On remplit le contenu visuel
             let img = article.image_url ? article.image_url : 'https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&w=1000&auto=format&fit=crop';
             document.getElementById('reader-header').style.backgroundImage = `url('${img}')`;
             
@@ -233,12 +238,33 @@
             
             document.getElementById('reader-content').textContent = article.contenu;
 
-            // Afficher (avec animation fade-in)
+            // ON APPLIQUE LE PAYWALL SI BESOIN
+            if (aLeDroit) {
+                // Il a le droit : on enlève le cadenas et on montre tout le texte
+                wrapper.classList.remove('locked');
+            } else {
+                // Il n'a pas le droit : on met le filtre de dégradé et on configure le cadenas
+                wrapper.classList.add('locked');
+                
+                const titreElement = document.getElementById('paywall-title');
+                if (accesRequis === 'premium') {
+                    titreElement.innerHTML = "Élite <span style='color: var(--accent)'>Premium</span>";
+                    document.getElementById('paywall-message').textContent = "La suite de cette enquête est une exclusivité absolue Premium.";
+                } else {
+                    titreElement.innerHTML = "Élite <span style='color: #0055ff'>Classic</span>";
+                    document.getElementById('paywall-message').textContent = "La suite de cet article est réservée aux abonnés.";
+                }
+            }
+
+            // On affiche le lecteur en plein écran
             overlay.style.display = 'block';
             setTimeout(() => { overlay.classList.add('show'); }, 10);
             
-            // Bloquer le scroll de la page derrière
+            // On bloque le scroll de la page principale pour ne scroller que dans l'article
             document.body.style.overflow = 'hidden';
+            
+            // Remonter tout en haut du lecteur
+            overlay.scrollTo(0, 0);
         }
 
         function fermerArticle() {
@@ -248,28 +274,6 @@
                 overlay.style.display = 'none'; 
                 document.body.style.overflow = 'auto'; // Remettre le scroll normal
             }, 400);
-        }
-
-        // AFFICHER LE PAYWALL
-        function afficherPaywall(planRequis) {
-            const titreElement = document.getElementById('upgrade-title');
-            if (planRequis === 'premium') {
-                titreElement.innerHTML = "Élite <span style='color: var(--accent)'>Premium</span>";
-                document.getElementById('upgrade-message').textContent = "Cet article est une exclusivité Premium. Rejoins l'élite pour le lire.";
-            } else {
-                titreElement.innerHTML = "Élite <span style='color: #0055ff'>Classic</span>";
-                document.getElementById('upgrade-message').textContent = "Cet article est réservé aux abonnés. Débloque-le en passant Classic.";
-            }
-
-            const modal = document.getElementById('upgrade-modal');
-            modal.style.display = 'flex';
-            setTimeout(() => { modal.classList.add('show'); }, 10);
-        }
-
-        function fermerPaywall() {
-            const modal = document.getElementById('upgrade-modal');
-            modal.classList.remove('show');
-            setTimeout(() => { modal.style.display = 'none'; }, 400);
         }
 
         initialiserPage();
