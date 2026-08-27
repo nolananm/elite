@@ -24,16 +24,18 @@
         .page-header h1 { font-size: 44px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
         .page-header p { color: var(--text-muted); font-size: 18px; }
 
+        /* ZONE DE PUB */
+        .ad-zone { display: none; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin: 0 auto 40px auto; overflow: hidden; justify-content: center; align-items: center; flex-direction: column; min-height: 90px; max-width: 900px; position: relative; }
+        .ad-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
         /* GRILLE DES ARTICLES */
         .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
-        
         .article-card { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; display: flex; flex-direction: column; position: relative;}
         .article-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: rgba(229,0,70,0.3); }
-        
         .article-img { width: 100%; height: 220px; background-size: cover; background-position: center; position: relative; }
         .article-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%); }
         
-        .badge-acces { position: absolute; top: 15px; left: 15px; z-index: 2; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .badge-acces { position: absolute; top: 15px; left: 15px; z-index: 2; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
         .badge-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.2); }
         .badge-classic { background: #0055ff; color: white; }
         .badge-premium { background: var(--gradient); color: white; }
@@ -47,7 +49,6 @@
         /* INTERFACE DE LECTURE */
         #reader-overlay { display: none; position: fixed; inset: 0; background: var(--bg-dark); z-index: 2000; overflow-y: auto; opacity: 0; transition: opacity 0.4s; }
         #reader-overlay.show { opacity: 1; }
-        
         .reader-nav { position: fixed; top: 0; width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.9), transparent); z-index: 2001; }
         .btn-close-reader { background: rgba(255,255,255,0.1); border: none; color: white; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
         .btn-close-reader:hover { background: rgba(255,255,255,0.2); }
@@ -59,36 +60,15 @@
         .reader-meta { font-size: 14px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         
         .reader-body-wrapper { max-width: 750px; margin: 50px auto 100px auto; padding: 0 20px; position: relative; }
-        
         .reader-text { font-family: 'Merriweather', serif; font-size: 18px; line-height: 1.9; color: #e0e0e0; white-space: pre-wrap; transition: max-height 0.3s; }
         
-        /* PAYWALL INTEGRE */
-        .reader-body-wrapper.locked .reader-text {
-            max-height: 250px; 
-            overflow: hidden;
-            -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-        }
-
-        .inline-paywall {
-            display: none;
-            position: relative;
-            margin-top: -60px;
-            background: linear-gradient(145deg, #161a25, #0f111a);
-            padding: 50px 40px; border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.08); 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-            text-align: center;
-            z-index: 10;
-        }
-
+        .reader-body-wrapper.locked .reader-text { max-height: 250px; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%); mask-image: linear-gradient(to bottom, black 40%, transparent 100%); }
+        .inline-paywall { display: none; position: relative; margin-top: -60px; background: linear-gradient(145deg, #161a25, #0f111a); padding: 50px 40px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 60px rgba(0,0,0,0.8); text-align: center; z-index: 10; }
         .reader-body-wrapper.locked .inline-paywall { display: block; }
-
         .icon-lock { width: 70px; height: 70px; margin: 0 auto 20px auto; background: linear-gradient(135deg, rgba(229,0,70,0.1), rgba(128,0,255,0.1)); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; border: 1px solid rgba(229,0,70,0.3); }
         .inline-paywall h2 { font-size: 26px; margin-bottom: 15px; font-weight: 800; text-transform: uppercase; color: white; }
         .inline-paywall p { color: #a0a5b0; margin-bottom: 35px; font-size: 15px; line-height: 1.6; }
         .btn-upgrade { display: block; width: 100%; padding: 18px; background: var(--gradient); color: white; font-weight: 800; border-radius: 12px; font-size: 16px; border: none; cursor: pointer; text-decoration: none; text-transform: uppercase; }
-        .btn-upgrade:hover { opacity: 0.9; transform: translateY(-2px); transition: 0.3s; }
 
         .loading-text { text-align: center; color: var(--text-muted); font-size: 18px; width: 100%; grid-column: 1/-1; padding: 50px; }
     </style>
@@ -111,11 +91,27 @@
             <p>Analyses tactiques, enquêtes exclusives et éditos.</p>
         </div>
 
+        <!-- ZONE PUB ARTICLES (BANNIÈRE 728x90) -->
+        <div class="ad-zone">
+            <span class="ad-label">Sponsorisé</span>
+            <script>
+                atOptions = {
+                    'key' : 'a75626ad776c3791da4b7e1f47f54670',
+                    'format' : 'iframe',
+                    'height' : 90,
+                    'width' : 728,
+                    'params' : {}
+                };
+            </script>
+            <script src="https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js"></script>
+        </div>
+
         <div class="articles-grid" id="articles-container">
             <div class="loading-text">Recherche des articles...</div>
         </div>
     </div>
 
+    <!-- INTERFACE DE LECTURE -->
     <div id="reader-overlay">
         <div class="reader-nav">
             <div class="logo" style="font-size: 20px;">ÉLITE</div>
@@ -136,7 +132,7 @@
             <div class="inline-paywall" id="inline-paywall">
                 <div class="icon-lock">🔒</div>
                 <h2 id="paywall-title">Abonnement Requis</h2>
-                <p id="paywall-message">Cet article est réservé aux abonnés.</p>
+                <p id="paywall-message">Cet article est réservé aux abonnés. Continue ta lecture en débloquant l'accès à ce contenu.</p>
                 <a href="index.html#abonnements" class="btn-upgrade">Voir les offres d'abonnement</a>
             </div>
         </div>
@@ -150,83 +146,63 @@
         let profilActuel = 'none'; 
         let tousLesArticles = [];
 
-        // Les articles de démo de secours
-        const articlesDemo = [
-            { id: 'demo-1', titre: "Enquête : Le retour du 4-3-3 en Ligue 1", contenu: "Le retour aux sources est flagrant cette saison. Après des années de domination du 3-5-2 et de ses pistons infatigables, les entraîneurs de l'élite reviennent au traditionnel 4-3-3.\n\nCe choix tactique n'est pas anodin. Il permet de densifier le milieu de terrain tout en libérant des espaces pour les ailiers purs. L'exemple le plus frappant cette saison reste l'animation offensive déployée lors du dernier grand choc, où la maîtrise de l'entrejeu a été la clé de la victoire.\n\nNous avons interrogé plusieurs tacticiens qui nous expliquent ce revirement de situation et comment le football français est en train de muter à nouveau vers un jeu de possession plus vertical.", image_url: "https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?auto=format&fit=crop&w=1000&q=80", niveau_acces: "free", created_at: new Date().toISOString() },
-            { id: 'demo-2', titre: "Dans les vestiaires : La crise couve chez les cadors", contenu: "Des tensions éclatent. Notre envoyé spécial a pu recueillir des témoignages exclusifs de joueurs cadres qui remettent en cause les choix de la direction sportive. Ce qui se passe en coulisses est bien différent de l'image lisse renvoyée devant les caméras.\n\n« Les promesses de l'été n'ont pas été tenues », nous confie un membre clé du vestiaire sous couvert d'anonymat. Entre les retards de primes, les transferts avortés à la dernière minute et les relations glaciales avec l'entraîneur, la bombe à retardement est enclenchée.\n\nPlongée exclusive au cœur d'un vestiaire au bord de l'implosion, où chaque entraînement ressemble désormais à un terrain miné.", image_url: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1000&q=80", niveau_acces: "classic", created_at: new Date(Date.now() - 86400000).toISOString() },
-            { id: 'demo-3', titre: "Exclusif : Les vrais chiffres du transfert de l'année", contenu: "On vous a menti sur les montants officiels. En épluchant des dizaines de documents confidentiels liés à la transaction, nous avons découvert que les commissions d'agents ont explosé tous les plafonds autorisés par la ligue.\n\nPréparez-vous à une révélation choc qui pourrait faire trembler les instances dirigeantes du football européen. Les montages financiers offshore, les sociétés écrans basées aux îles Caïmans, les intermédiaires de l'ombre... tout a été pensé pour contourner le fair-play financier.\n\nDécouvrez dans notre grande enquête comment 45 millions d'euros se sont évaporés dans la nature lors de la signature du contrat, et qui sont les véritables bénéficiaires de cette opération opaque.", image_url: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1000&q=80", niveau_acces: "premium", created_at: new Date(Date.now() - 172800000).toISOString() }
-        ];
-
         async function initialiserPage() {
-            const container = document.getElementById('articles-container');
-            
-            try {
-                // 1. Vérifier l'abonnement
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                if (user) {
-                    const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
-                    if (profil) profilActuel = profil.plan;
-                }
-
-                // 2. Charger les articles (SANS LE TRI SUPABASE POUR ÉVITER L'ERREUR 400)
-                const { data: articles, error } = await supabaseClient.from('articles').select('*');
-
-                if (error) {
-                    throw error;
-                }
-
-                // 3. Tri manuel en Javascript par date décroissante
-                if (articles && articles.length > 0) {
-                    articles.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-                    tousLesArticles = articles;
-                } else {
-                    // Fallback sur la démo si la base est vide
-                    tousLesArticles = articlesDemo;
-                }
-
-                // Affichage des cartes
-                let html = '';
-                tousLesArticles.forEach(art => {
-                    let badgeClass = art.niveau_acces === 'premium' ? 'badge-premium' : (art.niveau_acces === 'classic' ? 'badge-classic' : 'badge-free');
-                    let img = art.image_url ? art.image_url : 'https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop';
-                    
-                    let dateString = '';
-                    if (art.created_at) {
-                        let dateObj = new Date(art.created_at);
-                        dateString = dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
-                    }
-
-                    let contenuSecurise = art.contenu ? art.contenu : "";
-                    let extraitTexte = contenuSecurise.replace(/\n/g, " ");
-                    let extrait = extraitTexte.substring(0, 110) + '...';
-
-                    html += `
-                    <div class="article-card" onclick="ouvrirArticle('${art.id}')">
-                        <div class="article-img" style="background-image: url('${img}');">
-                            <span class="badge-acces ${badgeClass}">${art.niveau_acces || 'free'}</span>
-                        </div>
-                        <div class="article-content">
-                            <div class="article-date">${dateString}</div>
-                            <div class="article-title">${art.titre || 'Sans titre'}</div>
-                            <div class="article-excerpt">${extrait}</div>
-                            <div class="read-more">Lire l'article →</div>
-                        </div>
-                    </div>`;
-                });
-
-                container.innerHTML = html;
-                
-            } catch (err) {
-                container.innerHTML = `
-                <div style="grid-column: 1/-1; background: #ff4d4d; color: white; padding: 30px; border-radius: 12px; text-align: center; font-size: 18px;">
-                    <strong>❌ Erreur Base de Données :</strong><br>${err.message}
-                </div>`;
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
+                if (profil) profilActuel = profil.plan;
             }
+
+            // LE BOUCLIER ANTI-PUB !
+            if (profilActuel === 'premium') {
+                document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
+            } else {
+                document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
+                const popScript = document.createElement('script');
+                popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js";
+                document.body.appendChild(popScript);
+            }
+
+            const { data: articles, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+            const container = document.getElementById('articles-container');
+
+            if (error || !articles || articles.length === 0) {
+                container.innerHTML = '<div class="loading-text">Aucun article disponible pour le moment.</div>';
+                return;
+            }
+
+            tousLesArticles = articles;
+            let html = '';
+
+            tousLesArticles.forEach(art => {
+                let badgeClass = art.niveau_acces === 'premium' ? 'badge-premium' : (art.niveau_acces === 'classic' ? 'badge-classic' : 'badge-free');
+                let img = art.image_url ? art.image_url : 'https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop';
+                let dateString = art.created_at ? new Date(art.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+                let contenuSecurise = art.contenu ? art.contenu : "";
+                let extraitTexte = contenuSecurise.replace(/\n/g, " ");
+                let extrait = extraitTexte.substring(0, 110) + '...';
+
+                html += `
+                <div class="article-card" onclick="ouvrirArticle('${art.id}')">
+                    <div class="article-img" style="background-image: url('${img}');">
+                        <span class="badge-acces ${badgeClass}">${art.niveau_acces || 'free'}</span>
+                    </div>
+                    <div class="article-content">
+                        <div class="article-date">${dateString}</div>
+                        <div class="article-title">${art.titre || 'Sans titre'}</div>
+                        <div class="article-excerpt">${extrait}</div>
+                        <div class="read-more">Lire l'article →</div>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
         }
 
         function ouvrirArticle(idArticle) {
             const article = tousLesArticles.find(a => a.id === idArticle);
             if (!article) return;
+
             const accesRequis = article.niveau_acces || 'free';
             let aLeDroit = false;
             if (accesRequis === 'free') aLeDroit = true;
@@ -274,7 +250,10 @@
         function fermerArticle() {
             const overlay = document.getElementById('reader-overlay');
             overlay.classList.remove('show');
-            setTimeout(() => { overlay.style.display = 'none'; document.body.style.overflow = 'auto'; }, 400);
+            setTimeout(() => { 
+                overlay.style.display = 'none'; 
+                document.body.style.overflow = 'auto'; 
+            }, 400);
         }
 
         initialiserPage();
