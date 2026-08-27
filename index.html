@@ -25,9 +25,9 @@
         .btn-hero { display: inline-block; padding: 15px 40px; background: var(--gradient); color: white; border-radius: 30px; font-weight: 800; text-transform: uppercase; font-size: 16px; box-shadow: 0 10px 20px rgba(229,0,70,0.3); transition: 0.3s; }
         .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(229,0,70,0.5); }
 
-        /* ZONE DE PUBLICITÉ ADSTERRA */
-        .ad-zone { background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin: 0 auto 80px auto; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 90px; max-width: 900px; position: relative;}
-        .ad-label { position: absolute; top: 5px; left: 10px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        /* ZONE PUB (Cachée par défaut) */
+        .ad-zone { display: none; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin: 0 auto 80px auto; overflow: hidden; justify-content: center; align-items: center; flex-direction: column; min-height: 90px; max-width: 900px; position: relative; }
+        .ad-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
 
         .pricing-section { max-width: 1200px; margin: 0 auto 100px auto; padding: 0 20px; }
         .pricing-header { text-align: center; margin-bottom: 60px; }
@@ -42,7 +42,7 @@
         .pricing-card.classic:hover { transform: scale(1.05) translateY(-5px); }
         .pricing-card.premium { border-color: rgba(229,0,70,0.3); }
 
-        .badge-popular { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #0055ff; color: white; font-size: 11px; font-weight: 800; padding: 6px 15px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(0,85,255,0.4); }
+        .badge-popular { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #0055ff; color: white; font-size: 11px; font-weight: 800; padding: 6px 15px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
 
         .plan-title { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; color: var(--text-muted); }
         .classic .plan-title { color: #0055ff; }
@@ -55,17 +55,13 @@
         .features { list-style: none; margin-bottom: 40px; flex: 1; }
         .features li { font-size: 14px; margin-bottom: 15px; color: #e0e0e0; display: flex; align-items: flex-start; gap: 10px; }
         .features li.no { color: #555; text-decoration: line-through; }
-        
         .icon-yes { color: #00e676; font-weight: bold; }
         .icon-no { color: #555; font-weight: bold; }
 
         .btn-plan { display: block; width: 100%; padding: 15px; text-align: center; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; transition: 0.3s; text-decoration: none; }
         .btn-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-free:hover { background: #333; }
-        .btn-classic { background: #0055ff; color: white; box-shadow: 0 10px 20px rgba(0,85,255,0.3); }
-        .btn-classic:hover { background: #0044cc; }
+        .btn-classic { background: #0055ff; color: white; }
         .btn-premium { background: var(--gradient); color: white; }
-        .btn-premium:hover { opacity: 0.9; box-shadow: 0 10px 20px rgba(229,0,70,0.3); }
     </style>
 </head>
 <body>
@@ -86,11 +82,19 @@
         <a href="#abonnements" class="btn-hero">Voir les abonnements</a>
     </section>
 
-    <!-- ZONE PUB ACCUEIL -->
+    <!-- ZONE PUB ACCUEIL (BANNIÈRE 728x90) -->
     <div class="ad-zone">
-        <span class="ad-label">Publicité</span>
-        <!-- 🚨 COLLE LE SCRIPT ADSTERRA ICI 🚨 -->
-        <div style="color:var(--text-muted); padding-top:15px;">[Emplacement Bannière Adsterra Accueil]</div>
+        <span class="ad-label">Publicité Sponsorisée</span>
+        <script>
+            atOptions = {
+                'key' : 'a75626ad776c3791da4b7e1f47f54670',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+            };
+        </script>
+        <script src="https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js"></script>
     </div>
 
     <section id="abonnements" class="pricing-section">
@@ -153,12 +157,23 @@
 
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
+            let profilActuel = 'none';
+
             if (user) {
                 const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
-                if (profil && profil.plan === 'premium') {
-                    // LE BOUCLIER PREMIUM 🛡️ (Détruit toutes les zones de pub de la page)
-                    document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
-                }
+                if (profil) profilActuel = profil.plan;
+            }
+
+            if (profilActuel === 'premium') {
+                // BOUCLIER PREMIUM : On détruit la zone de pub
+                document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
+            } else {
+                // VISITEUR OU CLASSIC : On affiche la bannière ET on injecte le Pop-Under Adsterra
+                document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
+                
+                const popScript = document.createElement('script');
+                popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js";
+                document.body.appendChild(popScript);
             }
         }
 
