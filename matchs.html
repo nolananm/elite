@@ -26,7 +26,7 @@
 
         .section-title { font-size: 24px; font-weight: 600; margin-bottom: 30px; color: white; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--accent); padding-left: 15px; }
 
-        /* MATCHS SUPABASE (Cartes) */
+        /* MATCHS SUPABASE */
         .matchs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 80px; }
         
         .match-card { background: var(--bg-card); border-radius: 16px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
@@ -45,7 +45,7 @@
         
         .match-date { margin-top: 25px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 1px; }
 
-        /* CLASSEMENT LIGUE 1 (API) */
+        /* CLASSEMENT LIGUE 1 */
         .standings-container { background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; padding: 20px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 15px; }
@@ -98,8 +98,8 @@
             <div class="loading-text">Chargement de vos matchs...</div>
         </div>
 
-        <!-- SECTION 2 : CLASSEMENT EN DIRECT (API FOOTBALL-DATA) -->
-        <h2 class="section-title" style="border-left-color: #00e676;">Classement Ligue 1 (En direct)</h2>
+        <!-- SECTION 2 : CLASSEMENT LIGUE 1 -->
+        <h2 class="section-title" style="border-left-color: #00e676;">Classement Ligue 1 (Simulation)</h2>
         <div class="standings-container">
             <table>
                 <thead>
@@ -114,7 +114,7 @@
                     </tr>
                 </thead>
                 <tbody id="body-classement">
-                    <tr><td colspan="7" class="loading-text">Connexion à la Ligue de Football Professionnel...</td></tr>
+                    <!-- Généré par JS -->
                 </tbody>
             </table>
         </div>
@@ -132,34 +132,23 @@
     </div>
 
     <script>
-        // CONFIGURATION SUPABASE
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let profilActuel = 'none'; 
 
-        // L'URL pointe maintenant vers ta fonction Cloudflare locale
-        const API_URL = '/api/classement';
-
         async function initialiserPage() {
-            // 1. Gérer l'utilisateur
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (user) {
                 const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
                 if (profil) profilActuel = profil.plan;
             }
 
-            // 2. Charger les matchs depuis Supabase
             chargerMatchsSupabase();
-
-            // 3. Charger le classement depuis Cloudflare
-            chargerClassementLigue1();
+            chargerClassementSimule();
         }
 
-        // ============================================
-        // PARTIE 1 : MATCHS SUPABASE
-        // ============================================
         async function chargerMatchsSupabase() {
             const container = document.getElementById('matchs-container');
             const { data: matchs, error } = await supabaseClient.from('matchs').select('*').order('created_at', { ascending: false });
@@ -170,19 +159,14 @@
             }
 
             if (!matchs || matchs.length === 0) {
-                container.innerHTML = '<div class="loading-text">Aucun match disponible.</div>';
+                container.innerHTML = '<div class="loading-text">Aucun match disponible. Publiez-en un depuis l\'administration !</div>';
                 return;
             }
 
             let html = '';
             matchs.forEach(m => {
                 let badgeClass = m.niveau_acces === 'premium' ? 'badge-premium' : (m.niveau_acces === 'classic' ? 'badge-classic' : 'badge-free');
-                
-                let dateString = '';
-                if (m.date_match) {
-                    let d = new Date(m.date_match);
-                    dateString = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-                }
+                let dateString = m.date_match ? new Date(m.date_match).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
 
                 html += `
                 <div class="match-card" onclick="clicMatch('${m.niveau_acces}')">
@@ -212,48 +196,40 @@
         }
 
         // ============================================
-        // PARTIE 2 : API FOOTBALL-DATA.ORG VIA CLOUDFLARE
+        // SIMULATEUR DE CLASSEMENT (Solution instantanée)
         // ============================================
-        async function chargerClassementLigue1() {
+        function chargerClassementSimule() {
             const tbody = document.getElementById('body-classement');
             
-            try {
-                // Plus besoin de headers ici, Cloudflare gère la clé API secrètement
-                const reponse = await fetch(API_URL);
+            // Faux tableau de données imitant l'API
+            const classementData = [
+                { position: 1, team: { name: "Paris Saint-Germain FC", crest: "https://crests.football-data.org/524.png" }, playedGames: 12, won: 9, draw: 3, lost: 0, points: 30 },
+                { position: 2, team: { name: "Olympique de Marseille", crest: "https://crests.football-data.org/516.png" }, playedGames: 12, won: 8, draw: 2, lost: 2, points: 26 },
+                { position: 3, team: { name: "AS Monaco FC", crest: "https://crests.football-data.org/548.png" }, playedGames: 12, won: 7, draw: 3, lost: 2, points: 24 },
+                { position: 4, team: { name: "LOSC Lille", crest: "https://crests.football-data.org/521.png" }, playedGames: 12, won: 6, draw: 4, lost: 2, points: 22 },
+                { position: 5, team: { name: "RC Lens", crest: "https://crests.football-data.org/546.png" }, playedGames: 12, won: 6, draw: 3, lost: 3, points: 21 },
+                { position: 6, team: { name: "Olympique Lyonnais", crest: "https://crests.football-data.org/523.png" }, playedGames: 12, won: 5, draw: 4, lost: 3, points: 19 },
+                { position: 7, team: { name: "OGC Nice", crest: "https://crests.football-data.org/522.png" }, playedGames: 12, won: 5, draw: 3, lost: 4, points: 18 }
+            ];
+            
+            let html = '';
+            classementData.forEach(equipe => {
+                html += `
+                <tr>
+                    <td class="pos-col">${equipe.position}</td>
+                    <td class="team-cell">
+                        <img src="${equipe.team.crest}" alt="Logo">
+                        ${equipe.team.name}
+                    </td>
+                    <td>${equipe.playedGames}</td>
+                    <td>${equipe.won}</td>
+                    <td>${equipe.draw}</td>
+                    <td>${equipe.lost}</td>
+                    <td class="pts-col">${equipe.points}</td>
+                </tr>`;
+            });
 
-                if (!reponse.ok) {
-                    throw new Error("Erreur lors de la récupération via Cloudflare.");
-                }
-
-                const data = await reponse.json();
-                const classement = data.standings[0].table;
-                
-                let html = '';
-                classement.forEach(equipe => {
-                    html += `
-                    <tr>
-                        <td class="pos-col">${equipe.position}</td>
-                        <td class="team-cell">
-                            <img src="${equipe.team.crest}" alt="Logo">
-                            ${equipe.team.name}
-                        </td>
-                        <td>${equipe.playedGames}</td>
-                        <td>${equipe.won}</td>
-                        <td>${equipe.draw}</td>
-                        <td>${equipe.lost}</td>
-                        <td class="pts-col">${equipe.points}</td>
-                    </tr>`;
-                });
-
-                tbody.innerHTML = html;
-
-            } catch (erreur) {
-                console.error(erreur);
-                tbody.innerHTML = `<tr><td colspan="7" style="color:#ff4d4d; padding:30px;">
-                    ❌ Impossible de charger le classement.<br>
-                    <small>Vérifie que Cloudflare a bien déployé ton dossier "functions" avec le fichier classement.js.</small>
-                </td></tr>`;
-            }
+            tbody.innerHTML = html;
         }
 
         // ============================================
