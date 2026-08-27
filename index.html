@@ -81,6 +81,7 @@
         <a href="#abonnements" class="btn-hero">Voir les abonnements</a>
     </section>
 
+    <!-- PUB 728x90 -->
     <div class="ad-zone">
         <span class="ad-label">Publicité Sponsorisée</span>
         <script>
@@ -147,11 +148,18 @@
 
             if (profilActuel === 'premium') {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
+            } else if (profilActuel === 'classic') {
+                document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex');
             } else {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
+                
                 const popScript = document.createElement('script');
                 popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js";
                 document.body.appendChild(popScript);
+
+                const socialScript = document.createElement('script');
+                socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js";
+                document.body.appendChild(socialScript);
             }
 
             chargerAvantages();
@@ -161,7 +169,6 @@
             const { data: avantages } = await supabaseClient.from('avantages').select('*');
             if (!avantages || avantages.length === 0) return;
 
-            // Algorithme de tri : 1 = check (Vert), 2 = dash (Orange), 3 = cross (Rouge)
             const ordreMap = { 'check': 1, 'dash': 2, 'cross': 3 };
             avantages.sort((a, b) => {
                 let valA = ordreMap[a.type_icone || 'check'] || 1;
@@ -181,7 +188,7 @@
                     iconeHtml = '<span style="color:#ff9800; font-weight:bold;">—</span>';
                 } else {
                     iconeHtml = '<span class="icon-no">✕</span>';
-                    classeTexte = 'class="no"'; // Rendu barré
+                    classeTexte = 'class="no"';
                 }
 
                 let ligne = `<li ${classeTexte}>${iconeHtml} ${av.texte}</li>`;
