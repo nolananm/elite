@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accueil - Élite</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -17,25 +18,26 @@
         nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
 
-        .hero { text-align: center; padding: 180px 20px 100px 20px; }
+        .hero { text-align: center; padding: 180px 20px 80px 20px; }
         .hero h1 { font-size: 64px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; line-height: 1.1; }
         .hero p { color: var(--text-muted); font-size: 20px; max-width: 600px; margin: 0 auto 40px auto; }
         
         .btn-hero { display: inline-block; padding: 15px 40px; background: var(--gradient); color: white; border-radius: 30px; font-weight: 800; text-transform: uppercase; font-size: 16px; box-shadow: 0 10px 20px rgba(229,0,70,0.3); transition: 0.3s; }
         .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(229,0,70,0.5); }
 
-        /* NOUVEAU DESIGN PRICING */
+        /* ZONE DE PUBLICITÉ ADSTERRA */
+        .ad-zone { background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin: 0 auto 80px auto; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 90px; max-width: 900px; position: relative;}
+        .ad-label { position: absolute; top: 5px; left: 10px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
         .pricing-section { max-width: 1200px; margin: 0 auto 100px auto; padding: 0 20px; }
         .pricing-header { text-align: center; margin-bottom: 60px; }
         .pricing-header h2 { font-size: 36px; font-weight: 800; text-transform: uppercase; }
         .pricing-header p { color: var(--text-muted); font-size: 16px; margin-top: 10px; }
 
         .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; align-items: center; }
-        
         .pricing-card { background: rgba(18, 21, 28, 0.6); backdrop-filter: blur(10px); border-radius: 20px; padding: 40px 30px; border: 1px solid rgba(255,255,255,0.05); text-align: left; transition: 0.3s; display: flex; flex-direction: column; position: relative; }
         .pricing-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); }
         
-        /* Spécificités des cartes */
         .pricing-card.classic { background: rgba(0, 85, 255, 0.05); border: 2px solid #0055ff; transform: scale(1.05); box-shadow: 0 20px 40px rgba(0, 85, 255, 0.2); z-index: 2; padding: 50px 30px; }
         .pricing-card.classic:hover { transform: scale(1.05) translateY(-5px); }
         .pricing-card.premium { border-color: rgba(229,0,70,0.3); }
@@ -84,6 +86,13 @@
         <a href="#abonnements" class="btn-hero">Voir les abonnements</a>
     </section>
 
+    <!-- ZONE PUB ACCUEIL -->
+    <div class="ad-zone">
+        <span class="ad-label">Publicité</span>
+        <!-- 🚨 COLLE LE SCRIPT ADSTERRA ICI 🚨 -->
+        <div style="color:var(--text-muted); padding-top:15px;">[Emplacement Bannière Adsterra Accueil]</div>
+    </div>
+
     <section id="abonnements" class="pricing-section">
         <div class="pricing-header">
             <h2>Passez à la vitesse supérieure</h2>
@@ -92,12 +101,10 @@
 
         <div class="pricing-grid">
             
-            <!-- PLAN FREE -->
             <div class="pricing-card">
                 <div class="plan-title">Visiteur</div>
                 <div class="plan-price">0€<span>/mois</span></div>
                 <div class="plan-desc">Pour suivre l'essentiel de l'actualité de la Ligue 1.</div>
-                
                 <ul class="features">
                     <li><span class="icon-yes">✓</span> Accès au Fil Info en direct</li>
                     <li><span class="icon-yes">✓</span> Classements & Statistiques</li>
@@ -108,13 +115,11 @@
                 <a href="compte.html" class="btn-plan btn-free">Créer un compte</a>
             </div>
 
-            <!-- PLAN CLASSIC -->
             <div class="pricing-card classic">
                 <div class="badge-popular">Le choix n°1</div>
                 <div class="plan-title">Classic</div>
                 <div class="plan-price">4.99€<span>/mois</span></div>
                 <div class="plan-desc">Le pass incontournable pour les vrais supporters qui ne veulent rien manquer.</div>
-                
                 <ul class="features">
                     <li><span class="icon-yes">✓</span> <strong>Tous les résumés vidéos des matchs</strong></li>
                     <li><span class="icon-yes">✓</span> <strong>Tous les articles et éditos</strong></li>
@@ -125,12 +130,10 @@
                 <a href="compte.html" class="btn-plan btn-classic">S'abonner Classic</a>
             </div>
 
-            <!-- PLAN PREMIUM -->
             <div class="pricing-card premium">
                 <div class="plan-title">Premium</div>
                 <div class="plan-price">9.99€<span>/mois</span></div>
                 <div class="plan-desc">L'expérience ultime. Accès VIP à l'intégralité des contenus du site.</div>
-                
                 <ul class="features">
                     <li><span class="icon-yes">✓</span> <strong>Accès illimité à TOUT le site</strong></li>
                     <li><span class="icon-yes">✓</span> Les Grosses Affiches débloquées</li>
@@ -143,5 +146,23 @@
         </div>
     </section>
 
+    <script>
+        const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function initialiserPage() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
+                if (profil && profil.plan === 'premium') {
+                    // LE BOUCLIER PREMIUM 🛡️ (Détruit toutes les zones de pub de la page)
+                    document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
+                }
+            }
+        }
+
+        initialiserPage();
+    </script>
 </body>
 </html>
