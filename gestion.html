@@ -34,6 +34,7 @@
         .manage-title { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
         .manage-meta { font-size: 12px; color: var(--text-muted); }
         .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-edit { background: #0055ff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px;}
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
@@ -76,7 +77,7 @@
             </div>
         </div>
 
-        <!-- ONGLET ABONNEMENTS (NOUVEAU) -->
+        <!-- ONGLET ABONNEMENTS -->
         <div id="form-abonnement" style="display: none;">
             <div class="form-section">
                 <h3>Gérer les avantages des offres</h3>
@@ -90,10 +91,11 @@
                 <label>Texte de l'avantage :</label>
                 <input type="text" id="texte-avantage" placeholder="Ex: Tous les résumés vidéos des matchs">
                 
-                <label>Type d'affichage :</label>
-                <select id="inclus-avantage">
-                    <option value="true">✅ Coche verte (Inclus)</option>
-                    <option value="false">❌ Croix rouge barrée (Non inclus)</option>
+                <label>Type d'icône :</label>
+                <select id="type-icone-avantage">
+                    <option value="check">✅ Coche verte (Inclus)</option>
+                    <option value="dash">➖ Trait orange (Partiel / Neutre)</option>
+                    <option value="cross">❌ Croix rouge (Non inclus)</option>
                 </select>
                 
                 <button class="btn-submit" onclick="sauvegarderAvantage()">Ajouter cet avantage</button>
@@ -144,6 +146,8 @@
         <!-- ONGLET USERS -->
         <div id="form-user" style="display: none;">
             <div class="list-section">
+                <h3>Liste des abonnés</h3>
+                <input type="text" id="search-user" onkeyup="filtrerUsers()" placeholder="🔍 Rechercher un email..." style="margin-bottom: 15px; border-radius: 20px;">
                 <table>
                     <thead><tr><th>Email</th><th>Abonnement Actuel</th></tr></thead>
                     <tbody id="liste-users"></tbody>
@@ -160,6 +164,7 @@
 
         const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
         let donneesEnMemoire = { matchsAPI: [], matchsBDD: [] };
+        let tousLesUsers = []; // Pour la barre de recherche
 
         async function verifierAdmin() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -192,7 +197,7 @@
             const { data } = await supabaseClient.from('avantages').select('*').order('plan', { ascending: true }).order('created_at', { ascending: true });
             let html = '';
             (data || []).forEach(av => {
-                let icone = av.est_inclus ? '✅' : '❌';
+                let icone = av.type_icone === 'check' ? '✅' : (av.type_icone === 'dash' ? '➖' : '❌');
                 let couleurPlan = av.plan === 'premium' ? 'var(--accent)' : (av.plan === 'classic' ? '#0055ff' : 'white');
                 html += `
                 <div class="manage-card">
@@ -211,7 +216,7 @@
             const donnees = {
                 plan: document.getElementById('plan-avantage').value,
                 texte: document.getElementById('texte-avantage').value,
-                est_inclus: document.getElementById('inclus-avantage').value === 'true'
+                type_icone: document.getElementById('type-icone-avantage').value
             };
             if(!donnees.texte) return;
             await supabaseClient.from('avantages').insert([donnees]);
@@ -256,7 +261,7 @@
                 html += `
                 <div class="manage-card">
                     <div class="manage-info"><div class="manage-title">${dom} VS ${ext}</div><div class="manage-meta">${status}</div></div>
-                    <div class="manage-actions"><button class="btn-edit" style="background:#0055ff;" onclick="editerMatch('${m.id}', '${safeName}')">Modifier</button></div>
+                    <div class="manage-actions"><button class="btn-edit" onclick="editerMatch('${m.id}', '${safeName}')">Modifier</button></div>
                 </div>`;
             });
             document.getElementById('liste-matchs').innerHTML = html;
@@ -274,12 +279,7 @@
         }
 
         async function sauvegarderMatch() {
-            const donnees = {
-                id_api: document.getElementById('id-api-match').value,
-                niveau_acces: document.getElementById('niveau-acces-match').value,
-                youtube_url: document.getElementById('youtube-match').value,
-                resume_texte: document.getElementById('resume-match').value
-            };
+            const donnees = { id_api: document.getElementById('id-api-match').value, niveau_acces: document.getElementById('niveau-acces-match').value, youtube_url: document.getElementById('youtube-match').value, resume_texte: document.getElementById('resume-match').value };
             await supabaseClient.from('matchs_enrichis').upsert([donnees]);
             document.getElementById('box-edition-match').style.display = 'none';
             chargerMatchs();
@@ -324,15 +324,27 @@
             await supabaseClient.from('medias').insert([data]); chargerMedias();
         }
 
-        // --- UTILISATEURS ---
+        // --- UTILISATEURS (AVEC RECHERCHE) ---
         async function chargerUtilisateurs() {
             const { data } = await supabaseClient.from('profils').select('*');
+            tousLesUsers = data || [];
+            afficherUsers(tousLesUsers);
+        }
+
+        function afficherUsers(liste) {
             let html = '';
-            (data || []).forEach(u => {
+            liste.forEach(u => {
                 html += `<tr><td>${u.email || 'Email caché'}</td><td><select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333;"><option value="free" ${u.plan === 'free' ? 'selected' : ''}>Free</option><option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>Classic</option><option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>Premium</option></select></td></tr>`;
             });
-            document.getElementById('liste-users').innerHTML = html;
+            document.getElementById('liste-users').innerHTML = html || '<tr><td colspan="2" style="text-align:center;">Aucun utilisateur trouvé.</td></tr>';
         }
+
+        function filtrerUsers() {
+            const query = document.getElementById('search-user').value.toLowerCase();
+            const filtered = tousLesUsers.filter(u => (u.email || '').toLowerCase().includes(query));
+            afficherUsers(filtered);
+        }
+
         async function changerPlanUtilisateur(id, plan) { await supabaseClient.from('profils').update({ plan: plan }).eq('id', id); }
 
         async function supprimerElement(table, id) {
