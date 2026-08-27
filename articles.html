@@ -24,18 +24,16 @@
         .page-header h1 { font-size: 44px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
         .page-header p { color: var(--text-muted); font-size: 18px; }
 
-        /* ZONE DE PUB */
-        .ad-zone { display: none; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin: 0 auto 40px auto; overflow: hidden; justify-content: center; align-items: center; flex-direction: column; min-height: 90px; max-width: 900px; position: relative; }
-        .ad-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .ad-zone { display: none; margin: 0 auto 40px auto; width: 100%; max-width: 900px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; min-height: 90px; }
+        .ad-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; display: block; }
 
-        /* GRILLE DES ARTICLES */
         .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
         .article-card { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; display: flex; flex-direction: column; position: relative;}
         .article-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: rgba(229,0,70,0.3); }
         .article-img { width: 100%; height: 220px; background-size: cover; background-position: center; position: relative; }
         .article-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%); }
         
-        .badge-acces { position: absolute; top: 15px; left: 15px; z-index: 2; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .badge-acces { position: absolute; top: 15px; left: 15px; z-index: 2; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .badge-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.2); }
         .badge-classic { background: #0055ff; color: white; }
         .badge-premium { background: var(--gradient); color: white; }
@@ -46,7 +44,6 @@
         .article-excerpt { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .read-more { margin-top: auto; color: var(--accent); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* INTERFACE DE LECTURE */
         #reader-overlay { display: none; position: fixed; inset: 0; background: var(--bg-dark); z-index: 2000; overflow-y: auto; opacity: 0; transition: opacity 0.4s; }
         #reader-overlay.show { opacity: 1; }
         .reader-nav { position: fixed; top: 0; width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.9), transparent); z-index: 2001; }
@@ -91,7 +88,6 @@
             <p>Analyses tactiques, enquêtes exclusives et éditos.</p>
         </div>
 
-        <!-- ZONE PUB ARTICLES (BANNIÈRE 728x90) -->
         <div class="ad-zone">
             <span class="ad-label">Sponsorisé</span>
             <script>
@@ -111,7 +107,6 @@
         </div>
     </div>
 
-    <!-- INTERFACE DE LECTURE -->
     <div id="reader-overlay">
         <div class="reader-nav">
             <div class="logo" style="font-size: 20px;">ÉLITE</div>
@@ -153,7 +148,6 @@
                 if (profil) profilActuel = profil.plan;
             }
 
-            // LE BOUCLIER ANTI-PUB !
             if (profilActuel === 'premium') {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
             } else {
@@ -163,7 +157,8 @@
                 document.body.appendChild(popScript);
             }
 
-            const { data: articles, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+            // CORRECTION DU BUG SUPABASE : On ne force pas le tri côté SQL pour éviter l'erreur si created_at manque
+            const { data: articles, error } = await supabaseClient.from('articles').select('*');
             const container = document.getElementById('articles-container');
 
             if (error || !articles || articles.length === 0) {
@@ -171,7 +166,12 @@
                 return;
             }
 
-            tousLesArticles = articles;
+            // Tri côté JavaScript du plus récent au plus ancien (si la date est présente, sinon ordre inverse d'insertion)
+            tousLesArticles = articles.sort((a, b) => {
+                if(a.created_at && b.created_at) return new Date(b.created_at) - new Date(a.created_at);
+                return -1;
+            });
+            
             let html = '';
 
             tousLesArticles.forEach(art => {
