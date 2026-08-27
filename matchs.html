@@ -139,9 +139,9 @@
         let profilActuel = 'none'; 
         
         // =========================================================================
-        // 🚨 NOLAN, C'EST ICI QU'IL FAUT COLLER L'URL DE TON NOUVEAU WORKER ! 🚨
+        // URL DE TON WORKER CLOUDFLARE 
         // =========================================================================
-        const API_URL = 'COLLE_L_URL_DE_TON_WORKER_ICI';
+        const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
 
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -206,18 +206,6 @@
         async function chargerClassementLigue1() {
             const tbody = document.getElementById('body-classement');
             
-            // LA SÉCURITÉ ANTI-OUBLI
-            if(API_URL === 'COLLE_L_URL_DE_TON_WORKER_ICI') {
-                tbody.innerHTML = `<tr><td colspan="7" style="background:#e50046; color:white; padding:30px; font-weight:bold; font-size:18px;">
-                    🛑 STOP NOLAN ! 🛑<br><br>
-                    Tu as oublié l'étape finale !<br>
-                    1. Va sur Cloudflare, clique sur "Workers & Pages" (à gauche), puis "Create Worker".<br>
-                    2. Nomme-le "api-foot" et colle le code JavaScript que je t'ai donné tout à l'heure.<br>
-                    3. Copie l'URL du Worker et colle-la à la ligne 185 de ce fichier !
-                </td></tr>`;
-                return;
-            }
-
             try {
                 const reponse = await fetch(API_URL);
 
