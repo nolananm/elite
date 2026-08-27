@@ -7,120 +7,72 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-dark: #0a0b10;
-            --bg-card: #151821;
-            --accent: #e50046;
-            --text-main: #ffffff;
-            --text-muted: #9ba1a6;
-            --gradient: linear-gradient(135deg, #e50046, #8000ff);
-        }
-
+        :root { --bg-dark: #0a0b10; --bg-card: #151821; --accent: #e50046; --text-main: #ffffff; --text-muted: #9ba1a6; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; padding: 40px 20px; }
-        
         .admin-container { background: var(--bg-card); padding: 40px; border-radius: 20px; width: 100%; max-width: 600px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .admin-container h2 { text-align: center; margin-bottom: 25px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        /* Onglets de navigation */
         .tabs { display: flex; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.1); }
         .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s; position: relative; }
-        .tab:hover { color: white; }
-        .tab.active { color: white; }
+        .tab:hover, .tab.active { color: white; }
         .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: var(--gradient); border-radius: 3px; }
-
         label { display: block; margin-top: 15px; margin-bottom: 5px; font-size: 14px; font-weight: 600; color: var(--text-muted); }
-        input, select, textarea { width: 100%; padding: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; transition: 0.3s; font-family: 'Poppins', sans-serif; }
+        input, select, textarea { width: 100%; padding: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; transition: 0.3s; }
         input:focus, select:focus, textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.05); }
         textarea { resize: vertical; min-height: 100px; }
-
+        input[type="file"] { padding: 10px; background: rgba(0,0,0,0.2); cursor: pointer; }
         button { width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: bold; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; margin-top: 25px; transition: 0.3s; text-transform: uppercase; }
         button:hover { box-shadow: 0 5px 20px rgba(229, 0, 70, 0.4); transform: translateY(-2px); }
-
         .message-retour { text-align: center; font-weight: bold; margin-top: 15px; min-height: 20px; font-size: 14px; }
-        
-        /* Message d'erreur (Accès refusé) */
-        .error-box { text-align: center; }
-        .btn-retour { background: rgba(255,255,255,0.1); margin-top: 15px; }
-        .btn-retour:hover { background: rgba(255,255,255,0.2); box-shadow: none; }
     </style>
 </head>
 <body>
-
-    <!-- Message si l'utilisateur n'est pas Admin -->
-    <div class="admin-container error-box" id="unauthorized-message" style="display: none;">
-        <h2 style="-webkit-text-fill-color: var(--accent);">⛔ Accès Refusé</h2>
-        <p style="color: var(--text-muted); margin-bottom: 20px;">Tu n'as pas les autorisations nécessaires pour accéder au panel d'administration d'Élite.</p>
-        <button class="btn-retour" onclick="window.location.href='compte.html'">Se connecter en tant qu'Admin</button>
-        <button class="btn-retour" onclick="window.location.href='index.html'">Retourner à l'accueil</button>
-    </div>
-
-    <!-- Panel de gestion affiché si Admin -->
     <div class="admin-container" id="admin-content" style="display: none;">
         <h2>🛠️ Panel de Gestion</h2>
-        
         <div class="tabs">
             <div class="tab active" id="tab-match" onclick="changerOnglet('match')">⚽ Matchs</div>
             <div class="tab" id="tab-media" onclick="changerOnglet('media')">🎙️ Médias</div>
         </div>
 
-        <!-- FORMULAIRE MATCHS -->
         <div id="form-match">
-            <label>Équipe à domicile :</label>
-            <input type="text" id="equipe-dom" placeholder="Ex: Paris Saint-Germain">
-            
-            <label>Équipe à l'extérieur :</label>
-            <input type="text" id="equipe-ext" placeholder="Ex: Olympique de Marseille">
-            
+            <label>Équipe Domicile :</label><input type="text" id="equipe-dom">
+            <label>Équipe Extérieur :</label><input type="text" id="equipe-ext">
             <div style="display: flex; gap: 15px;">
-                <div style="flex: 1;">
-                    <label>Score Dom :</label>
-                    <input type="number" id="score-dom" value="0">
-                </div>
-                <div style="flex: 1;">
-                    <label>Score Ext :</label>
-                    <input type="number" id="score-ext" value="0">
-                </div>
+                <div style="flex: 1;"><label>Score Dom :</label><input type="number" id="score-dom" value="0"></div>
+                <div style="flex: 1;"><label>Score Ext :</label><input type="number" id="score-ext" value="0"></div>
             </div>
-
             <label>Accès requis :</label>
             <select id="niveau-acces-match">
-                <option value="free">Free (Match du dimanche 17h15)</option>
-                <option value="classic" selected>Classic (Standard)</option>
-                <option value="premium">Premium</option>
+                <option value="free">Free</option><option value="classic" selected>Classic</option><option value="premium">Premium</option>
             </select>
-
             <button onclick="ajouterMatch()">Publier le match</button>
             <p class="message-retour" id="msg-match"></p>
         </div>
 
-        <!-- FORMULAIRE MÉDIAS -->
         <div id="form-media" style="display: none;">
             <label>Type d'émission :</label>
-            <select id="type-media">
-                <option value="video">📺 Élite Le Mag (Vidéo)</option>
-                <option value="podcast">🎙️ Élite Décrypte (Podcast)</option>
+            <select id="type-media" onchange="adapterFormulaire()">
+                <option value="video">📺 Élite Le Mag (Vidéo YouTube)</option>
+                <option value="podcast">🎙️ Élite Décrypte (Upload Audio)</option>
             </select>
-
-            <label>Titre de l'épisode :</label>
-            <input type="text" id="titre-media" placeholder="Ex: Débrief de la 12ème journée">
-
-            <label>Description (Sujets abordés) :</label>
-            <textarea id="desc-media" placeholder="Ex: Retour sur les erreurs d'arbitrage..."></textarea>
-
-            <label>Lien du fichier (URL MP4 ou MP3) :</label>
-            <input type="text" id="url-media" placeholder="https://...">
+            <label>Titre :</label><input type="text" id="titre-media">
+            <label>Description :</label><textarea id="desc-media"></textarea>
+            
+            <!-- Bascule entre URL et Fichier selon le type -->
+            <div id="zone-url">
+                <label>Lien YouTube :</label><input type="text" id="url-media" placeholder="https://youtube.com/...">
+            </div>
+            <div id="zone-upload" style="display: none;">
+                <label>Fichier Audio (MP3) :</label><input type="file" id="file-media" accept="audio/*">
+            </div>
 
             <label>Accès requis :</label>
             <select id="niveau-acces-media">
-                <option value="classic" selected>Classic (Standard)</option>
-                <option value="premium">Premium (Exclusivité)</option>
+                <option value="classic" selected>Classic</option><option value="premium">Premium</option>
             </select>
-
             <button onclick="ajouterMedia()">Publier l'épisode</button>
             <p class="message-retour" id="msg-media"></p>
         </div>
-
     </div>
     
     <script>
@@ -128,90 +80,72 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        /* VÉRIFICATION ADMIN */
         async function verifierAdmin() {
-            const adminContent = document.getElementById('admin-content');
-            const errorContent = document.getElementById('unauthorized-message');
-
             const { data: { user } } = await supabaseClient.auth.getUser();
-            
-            if (!user) {
-                errorContent.style.display = "block";
-                return;
-            }
-
-            const { data: profil } = await supabaseClient.from('profils').select('est_admin').eq('id', user.id).single();
-
-            if (!profil || profil.est_admin !== true) {
-                errorContent.style.display = "block";
-            } else {
-                adminContent.style.display = "block";
-            }
+            if (!user) return window.location.href = 'compte.html';
+            const { data: p } = await supabaseClient.from('profils').select('est_admin').eq('id', user.id).single();
+            if (p?.est_admin) document.getElementById('admin-content').style.display = "block";
+            else window.location.href = 'index.html';
         }
 
-        /* GESTION DES ONGLETS */
         function changerOnglet(onglet) {
-            document.getElementById('tab-match').classList.remove('active');
-            document.getElementById('tab-media').classList.remove('active');
-            document.getElementById('form-match').style.display = 'none';
-            document.getElementById('form-media').style.display = 'none';
-
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('div[id^="form-"]').forEach(f => f.style.display = 'none');
             document.getElementById('tab-' + onglet).classList.add('active');
             document.getElementById('form-' + onglet).style.display = 'block';
         }
 
-        /* AJOUTER UN MATCH */
-        async function ajouterMatch() {
-            const eqDom = document.getElementById('equipe-dom').value;
-            const eqExt = document.getElementById('equipe-ext').value;
-            const scoreDom = parseInt(document.getElementById('score-dom').value);
-            const scoreExt = parseInt(document.getElementById('score-ext').value);
-            const acces = document.getElementById('niveau-acces-match').value;
-            const message = document.getElementById('msg-match');
-
-            message.textContent = "Envoi en cours..."; message.style.color = "var(--text-muted)";
-
-            const { error } = await supabaseClient.from('matchs').insert([
-                { equipe_domicile: eqDom, equipe_exterieur: eqExt, score_domicile: scoreDom, score_exterieur: scoreExt, niveau_acces: acces, date_match: new Date().toISOString() }
-            ]);
-
-            if (error) {
-                message.textContent = "❌ Erreur : " + error.message; message.style.color = "#ff4d4d";
-            } else {
-                message.textContent = "✅ Match ajouté avec succès !"; message.style.color = "#00e676";
-                document.getElementById('equipe-dom').value = ""; document.getElementById('equipe-ext').value = "";
-                document.getElementById('score-dom').value = "0"; document.getElementById('score-ext').value = "0";
-            }
+        function adapterFormulaire() {
+            const type = document.getElementById('type-media').value;
+            document.getElementById('zone-url').style.display = type === 'video' ? 'block' : 'none';
+            document.getElementById('zone-upload').style.display = type === 'podcast' ? 'block' : 'none';
         }
 
-        /* AJOUTER UN MÉDIA (Nouveau !) */
+        async function ajouterMatch() {
+            const eqDom = document.getElementById('equipe-dom').value, eqExt = document.getElementById('equipe-ext').value, scoreDom = parseInt(document.getElementById('score-dom').value), scoreExt = parseInt(document.getElementById('score-ext').value), acces = document.getElementById('niveau-acces-match').value, msg = document.getElementById('msg-match');
+            msg.textContent = "Envoi..."; msg.style.color = "white";
+            const { error } = await supabaseClient.from('matchs').insert([{ equipe_domicile: eqDom, equipe_exterieur: eqExt, score_domicile: scoreDom, score_exterieur: scoreExt, niveau_acces: acces, date_match: new Date().toISOString() }]);
+            if (error) { msg.textContent = "❌ Erreur"; msg.style.color = "red"; } 
+            else { msg.textContent = "✅ Validé !"; msg.style.color = "green"; }
+        }
+
         async function ajouterMedia() {
             const type = document.getElementById('type-media').value;
             const titre = document.getElementById('titre-media').value;
             const desc = document.getElementById('desc-media').value;
-            const url = document.getElementById('url-media').value;
             const acces = document.getElementById('niveau-acces-media').value;
-            const message = document.getElementById('msg-media');
+            const msg = document.getElementById('msg-media');
+            let urlFinale = "";
 
-            if(!titre || !url) {
-                message.textContent = "❌ Le titre et l'URL sont obligatoires."; message.style.color = "#ff4d4d";
-                return;
+            msg.textContent = "Traitement en cours..."; msg.style.color = "white";
+
+            if (type === 'video') {
+                urlFinale = document.getElementById('url-media').value;
+                if(!urlFinale) return msg.textContent = "❌ L'URL YouTube est requise.", msg.style.color = "red";
+            } else {
+                const fileInput = document.getElementById('file-media');
+                if(!fileInput.files || fileInput.files.length === 0) return msg.textContent = "❌ Sélectionne un fichier audio.", msg.style.color = "red";
+                
+                const file = fileInput.files[0];
+                const nomFichier = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`; // Nettoie le nom
+                
+                // Upload sur Supabase
+                msg.textContent = "Upload du fichier en cours (ça peut prendre quelques secondes)...";
+                const { data: uploadData, error: uploadError } = await supabaseClient.storage.from('podcasts').upload(nomFichier, file);
+                
+                if (uploadError) return msg.textContent = "❌ Erreur upload: " + uploadError.message, msg.style.color = "red";
+                
+                // Récupération de l'URL publique
+                urlFinale = supabaseClient.storage.from('podcasts').getPublicUrl(uploadData.path).data.publicUrl;
             }
 
-            message.textContent = "Envoi en cours..."; message.style.color = "var(--text-muted)";
-
-            const { error } = await supabaseClient.from('medias').insert([
-                { type_media: type, titre: titre, description: desc, url_media: url, niveau_acces: acces }
-            ]);
-
-            if (error) {
-                message.textContent = "❌ Erreur : " + error.message; message.style.color = "#ff4d4d";
-            } else {
-                message.textContent = "✅ Épisode publié avec succès !"; message.style.color = "#00e676";
+            const { error } = await supabaseClient.from('medias').insert([{ type_media: type, titre: titre, description: desc, url_media: urlFinale, niveau_acces: acces }]);
+            if (error) { msg.textContent = "❌ Erreur Base de données"; msg.style.color = "red"; } 
+            else { 
+                msg.textContent = "✅ Épisode en ligne !"; msg.style.color = "green"; 
                 document.getElementById('titre-media').value = ""; document.getElementById('desc-media').value = ""; document.getElementById('url-media').value = "";
             }
         }
-
         verifierAdmin();
     </script>
 </body>
