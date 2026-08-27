@@ -55,7 +55,6 @@
         .pts-col { font-weight: 800; color: var(--accent); font-size: 16px; }
         
         tbody tr:hover { background: rgba(255,255,255,0.02); }
-        /* Couleurs pour l'Europe et la relégation */
         tbody tr:nth-child(1) td.pos-col, tbody tr:nth-child(2) td.pos-col, tbody tr:nth-child(3) td.pos-col { color: #00e676; font-weight: 800; }
         tbody tr:nth-child(4) td.pos-col { color: #0055ff; font-weight: 800; }
         tbody tr:nth-last-child(1) td.pos-col, tbody tr:nth-last-child(2) td.pos-col { color: #ff4d4d; font-weight: 800; }
@@ -140,10 +139,8 @@
 
         let profilActuel = 'none'; 
 
-        // CONFIGURATION API FOOTBALL-DATA
-        const API_TOKEN = '3c123cf5b05642dc97a5df41179ed1ef';
-        // URL de l'API avec un proxy sécurisé pour éviter le blocage CORS du navigateur
-        const API_URL = 'https://corsproxy.io/?' + encodeURIComponent('https://api.football-data.org/v4/competitions/FL1/standings');
+        // L'URL pointe maintenant vers ta fonction Cloudflare locale
+        const API_URL = '/api/classement';
 
         async function initialiserPage() {
             // 1. Gérer l'utilisateur
@@ -156,7 +153,7 @@
             // 2. Charger les matchs depuis Supabase
             chargerMatchsSupabase();
 
-            // 3. Charger le classement depuis l'API Externe
+            // 3. Charger le classement depuis Cloudflare
             chargerClassementLigue1();
         }
 
@@ -215,19 +212,17 @@
         }
 
         // ============================================
-        // PARTIE 2 : API FOOTBALL-DATA.ORG
+        // PARTIE 2 : API FOOTBALL-DATA.ORG VIA CLOUDFLARE
         // ============================================
         async function chargerClassementLigue1() {
             const tbody = document.getElementById('body-classement');
             
             try {
-                const reponse = await fetch(API_URL, {
-                    method: 'GET',
-                    headers: { 'X-Auth-Token': API_TOKEN }
-                });
+                // Plus besoin de headers ici, Cloudflare gère la clé API secrètement
+                const reponse = await fetch(API_URL);
 
                 if (!reponse.ok) {
-                    throw new Error("L'API a refusé la connexion (Code: " + reponse.status + ").");
+                    throw new Error("Erreur lors de la récupération via Cloudflare.");
                 }
 
                 const data = await reponse.json();
@@ -255,9 +250,8 @@
             } catch (erreur) {
                 console.error(erreur);
                 tbody.innerHTML = `<tr><td colspan="7" style="color:#ff4d4d; padding:30px;">
-                    ❌ Impossible de charger le classement en direct.<br>
-                    <small>Si tu vois ce message, c'est que l'API bloque la requête via le navigateur (Erreur CORS).<br>
-                    Il faudra utiliser une fonction serveur (Netlify Edge) pour masquer la clé, mais le code est 100% prêt !</small>
+                    ❌ Impossible de charger le classement.<br>
+                    <small>Vérifie que Cloudflare a bien déployé ton dossier "functions" avec le fichier classement.js.</small>
                 </td></tr>`;
             }
         }
