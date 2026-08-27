@@ -9,7 +9,8 @@
     <style>
         :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; scroll-behavior: smooth; }
+        /* ASTUCE SÉCURITÉ : Le body commence invisible */
+        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; scroll-behavior: smooth; visibility: hidden; opacity: 0; transition: opacity 0.5s ease; }
         a { text-decoration: none; color: inherit; }
 
         header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -137,48 +138,54 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // --- FONCTION DE SÉCURITÉ : COMPTE A REBOURS ---
+        // --- FONCTION DE SÉCURITÉ : NOUVEAU COMPTE A REBOURS ---
         async function verifierCompteARebours(estAdmin) {
             const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
             if (data && data.compte_a_rebours_actif && !estAdmin) {
-                // EFFACEMENT TOTAL DU DOM POUR LA SÉCURITÉ
+                // Remplacement total par le nouveau design Premium
                 document.body.innerHTML = `
-                    <div style="height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), #07080b; color: white; text-align: center; padding: 20px; font-family: 'Poppins', sans-serif;">
-                        <h1 style="font-size: 60px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; text-transform: uppercase;">L'Élite se prépare</h1>
-                        <p style="color: #8b92a5; font-size: 18px; max-width: 600px; margin-bottom: 50px;">Le nouveau média de référence du football français ouvre ses portes dans :</p>
-                        <div style="display: flex; gap: 30px; font-size: 50px; font-weight: 800;" id="timer-display">
-                            Chargement...
+                    <div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b), url('https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop') center/cover; position: relative; font-family: 'Poppins', sans-serif;">
+                        <div style="position: relative; z-index: 10; text-align: center; padding: 20px; width: 100%;">
+                            <div style="font-size: 20px; font-weight: 800; letter-spacing: 6px; color: white; margin-bottom: 20px; opacity: 0.8;">ÉLITE</div>
+                            <h1 style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; line-height: 1.1;">L'expérience ultime<br>du football arrive.</h1>
+                            <p style="color: #a0a5b0; font-size: 18px; max-width: 600px; margin: 0 auto 50px auto;">Nous préparons la plateforme. Analyses tactiques, résumés vidéos et immersion totale en Ligue 1.</p>
+                            
+                            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;" id="timer-display">
+                                <!-- Le timer va s'injecter ici -->
+                            </div>
                         </div>
                     </div>
                 `;
+                
+                // Rendre visible UNIQUEMENT la page d'attente
+                document.body.style.visibility = 'visible';
+                document.body.style.opacity = '1';
 
                 const dateLancement = new Date(data.date_lancement).getTime();
-                
                 setInterval(() => {
-                    const maintenant = new Date().getTime();
-                    const distance = dateLancement - maintenant;
-                    
-                    if (distance < 0) {
-                        document.getElementById('timer-display').innerHTML = "Le site est ouvert ! Rechargez la page.";
-                        return;
-                    }
+                    const distance = dateLancement - new Date().getTime();
+                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
 
                     const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
                     const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                     const secondes = Math.floor((distance % (1000 * 60)) / 1000);
 
+                    const boxStyle = "background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px 20px; min-width: 130px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);";
+                    const numStyle = "font-size: 48px; font-weight: 800; color: white; line-height: 1;";
+                    const labelStyle = "font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; font-weight: 600;";
+
                     document.getElementById('timer-display').innerHTML = `
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${jours}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Jours</span></div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${heures}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Heures</span></div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${minutes}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Minutes</span></div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${secondes}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Secondes</span></div>
+                        <div style="${boxStyle}"><div style="${numStyle}">${jours}</div><div style="${labelStyle}">Jours</div></div>
+                        <div style="${boxStyle}"><div style="${numStyle}">${heures}</div><div style="${labelStyle}">Heures</div></div>
+                        <div style="${boxStyle}"><div style="${numStyle}">${minutes}</div><div style="${labelStyle}">Minutes</div></div>
+                        <div style="${boxStyle}"><div style="${numStyle}">${secondes}</div><div style="${labelStyle}">Secondes</div></div>
                     `;
                 }, 1000);
 
-                return true; // Blocage actif
+                return true; 
             }
-            return false; // Pas de blocage
+            return false;
         }
 
         async function initialiserPage() {
@@ -187,16 +194,21 @@
             let estAdmin = false;
 
             if (user) {
-                const { data: profil } = await supabaseClient.from('profils').select('*').eq('id', user.id).single();
+                const { data: profil } = await supabaseClient.from('profils').select('plan, est_admin').eq('id', user.id).single();
                 if (profil) {
                     profilActuel = profil.plan;
                     estAdmin = profil.est_admin;
                 }
             }
 
-            // SÉCURITÉ : VÉRIFICATION COMPTE A REBOURS AVANT DE CHARGER LE RESTE
+            // SÉCURITÉ : VÉRIFICATION COMPTE A REBOURS
             const siteBloque = await verifierCompteARebours(estAdmin);
-            if (siteBloque) return; // Arrête tout si le site est bloqué
+            if (siteBloque) return; // Arrête tout, ne télécharge aucune donnée, aucune pub !
+
+            // --- SI ON ARRIVE ICI, LE SITE N'EST PAS BLOQUÉ ---
+            // On affiche enfin le site principal
+            document.body.style.visibility = 'visible';
+            document.body.style.opacity = '1';
 
             if (profilActuel === 'premium') {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
@@ -204,14 +216,8 @@
                 document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex');
             } else {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
-                
-                const popScript = document.createElement('script');
-                popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js";
-                document.body.appendChild(popScript);
-
-                const socialScript = document.createElement('script');
-                socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js";
-                document.body.appendChild(socialScript);
+                const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
+                const socialScript = document.createElement('script'); socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js"; document.body.appendChild(socialScript);
             }
 
             chargerAvantages();
@@ -231,20 +237,12 @@
             let htmlFree = '', htmlClassic = '', htmlPremium = '';
 
             avantages.forEach(av => {
-                let iconeHtml = '';
-                let classeTexte = 'style="color: #e0e0e0;"'; 
-                
-                if (av.type_icone === 'check') {
-                    iconeHtml = '<span class="icon-yes">✓</span>';
-                } else if (av.type_icone === 'dash') {
-                    iconeHtml = '<span style="color:#ff9800; font-weight:bold;">—</span>';
-                } else {
-                    iconeHtml = '<span class="icon-no">✕</span>';
-                    classeTexte = 'class="no"';
-                }
+                let iconeHtml = ''; let classeTexte = 'style="color: #e0e0e0;"'; 
+                if (av.type_icone === 'check') { iconeHtml = '<span class="icon-yes">✓</span>'; }
+                else if (av.type_icone === 'dash') { iconeHtml = '<span style="color:#ff9800; font-weight:bold;">—</span>'; }
+                else { iconeHtml = '<span class="icon-no">✕</span>'; classeTexte = 'class="no"'; }
 
                 let ligne = `<li ${classeTexte}>${iconeHtml} ${av.texte}</li>`;
-                
                 if(av.plan === 'free') htmlFree += ligne;
                 else if(av.plan === 'classic') htmlClassic += ligne;
                 else if(av.plan === 'premium') htmlPremium += ligne;
