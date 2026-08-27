@@ -3,7 +3,6 @@ export async function onRequest(context) {
     const url = 'https://api.football-data.org/v4/competitions/FL1/standings';
 
     try {
-        // C'est Cloudflare qui fait la requête, donc aucun blocage CORS !
         const response = await fetch(url, {
             headers: {
                 'X-Auth-Token': apiToken
@@ -12,7 +11,6 @@ export async function onRequest(context) {
         
         const data = await response.json();
 
-        // On renvoie les données à ton site web
         return new Response(JSON.stringify(data), {
             headers: {
                 'Content-Type': 'application/json',
