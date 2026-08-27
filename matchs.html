@@ -26,7 +26,7 @@
 
         .section-title { font-size: 24px; font-weight: 600; margin-bottom: 30px; color: white; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--accent); padding-left: 15px; }
 
-        /* HEADER DE LA SECTION MATCHS (Titre + Menu déroulant) */
+        /* HEADER DE LA SECTION MATCHS */
         .filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
         select { background: var(--bg-card); color: white; padding: 10px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; outline: none; cursor: pointer; transition: 0.3s; }
         select:hover, select:focus { border-color: var(--accent); }
@@ -46,9 +46,7 @@
         .team-name { font-size: 13px; font-weight: 700; margin-top: 10px; text-transform: uppercase; text-align: center; }
         .team img { height: 45px; object-fit: contain; }
         
-        /* DESIGN DES SCORES (Terminé, A venir, En direct) */
         .score-box { background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 12px; font-size: 28px; font-weight: 800; border: 1px solid rgba(255,255,255,0.05); color: var(--accent); margin: 0 15px; min-width: 100px; text-align: center; }
-        
         .score-upcoming { font-size: 20px !important; color: var(--text-muted) !important; background: transparent !important; border: 1px dashed rgba(255,255,255,0.2) !important; }
         
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(229, 0, 70, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(229, 0, 70, 0); } 100% { box-shadow: 0 0 0 0 rgba(229, 0, 70, 0); } }
@@ -84,6 +82,7 @@
         .btn-close:hover { color: white; }
         
         .loading-text { text-align: center; color: var(--text-muted); font-size: 16px; padding: 30px; width: 100%; }
+        .error-text { text-align: center; color: #ff4d4d; font-size: 15px; padding: 30px; width: 100%; font-weight: 600; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -104,13 +103,11 @@
             <p>Vivez la Ligue 1 en direct. Matchs, résumés et statistiques officielles.</p>
         </div>
 
-        <!-- SECTION 0 : MATCHS EN DIRECT (Cachée si aucun match) -->
         <div id="live-section" style="display: none;">
             <h2 class="section-title" style="border-left-color: #ff4d4d; color: #ff4d4d;">🔴 En Direct</h2>
             <div class="matchs-grid" id="live-container"></div>
         </div>
 
-        <!-- SECTION 1 : TOUS LES MATCHS (Avec Menu Déroulant) -->
         <div class="filter-bar">
             <h2 class="section-title" style="margin-bottom: 0;">Calendrier & Résumés</h2>
             <select id="matchday-selector" onchange="changerJournee()">
@@ -121,7 +118,6 @@
             <div class="loading-text">Synchronisation avec la LFP...</div>
         </div>
 
-        <!-- SECTION 2 : CLASSEMENT LIGUE 1 (VRAIE API) -->
         <h2 class="section-title" style="border-left-color: #00e676;">Classement Ligue 1 (En direct)</h2>
         <div class="standings-container">
             <table>
@@ -143,7 +139,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE PAYWALL -->
+    <!-- MODAL PAYWALL -->
     <div id="upgrade-modal">
         <div class="upgrade-box">
             <div class="icon-lock">🔒</div>
@@ -160,7 +156,7 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let profilActuel = 'none'; 
-        let tousLesMatchsAPI = []; // On stocke tous les matchs ici pour pouvoir les filtrer
+        let tousLesMatchsAPI = []; 
         
         // Ton Worker Cloudflare
         const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
@@ -171,7 +167,6 @@
                 const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
                 if (profil) profilActuel = profil.plan;
             }
-
             chargerDonneesAPI();
         }
 
@@ -187,7 +182,16 @@
                 if (!reponse.ok) throw new Error(`Erreur du Worker (${reponse.status})`);
 
                 const data = await reponse.json();
-                if(data.error) throw new Error(data.error);
+                
+                // --- DÉTECTEUR D'ERREURS ---
+                // 1. Limite d'API atteinte (Trop de rafraîchissements)
+                if (data.standings?.errorCode || data.matches?.errorCode || data.errorCode) {
+                    throw new Error("L'API de Football a bloqué la requête car tu as rafraîchi la page trop vite (limite gratuite).<br>⏳ Attends 60 secondes chrono et recharge la page !");
+                }
+                // 2. Le Worker n'est pas à jour
+                if (!data.matches || !data.standings) {
+                    throw new Error("Ton Worker Cloudflare n'est pas à jour !<br>Tu dois retourner sur Cloudflare, modifier le code de `api-foot` avec le code 'Double Action', et cliquer sur Deploy.");
+                }
 
                 // --- 1. GESTION DU CLASSEMENT ---
                 const classement = data.standings.standings[0].table;
@@ -196,10 +200,7 @@
                     htmlClassement += `
                     <tr>
                         <td class="pos-col">${equipe.position}</td>
-                        <td class="team-cell">
-                            <img src="${equipe.team.crest}" alt="Logo">
-                            ${equipe.team.name}
-                        </td>
+                        <td class="team-cell"><img src="${equipe.team.crest}" alt="Logo"> ${equipe.team.name}</td>
                         <td>${equipe.playedGames}</td>
                         <td>${equipe.won}</td>
                         <td>${equipe.draw}</td>
@@ -212,7 +213,7 @@
                 // --- 2. GESTION DES MATCHS ---
                 tousLesMatchsAPI = data.matches.matches;
 
-                // A. Les Matchs en DIRECT (S'il y en a)
+                // Matchs en direct
                 const liveMatches = tousLesMatchsAPI.filter(m => m.status === 'IN_PLAY' || m.status === 'PAUSED');
                 if (liveMatches.length > 0) {
                     liveSection.style.display = 'block';
@@ -221,44 +222,37 @@
                     liveSection.style.display = 'none';
                 }
 
-                // B. Configuration du Menu Déroulant (Journées)
-                // Trouver toutes les journées existantes (1 à 34 en général)
+                // Trouver les journées (Matchdays)
                 const matchdays = [...new Set(tousLesMatchsAPI.map(m => m.matchday))].filter(d => d).sort((a, b) => a - b);
-                
-                // Trouver la journée actuelle (la plus haute qui a commencé ou fini)
                 let currentMatchday = 1;
                 const matchsDemarres = tousLesMatchsAPI.filter(m => ['FINISHED', 'IN_PLAY', 'PAUSED'].includes(m.status));
                 if(matchsDemarres.length > 0) {
                     currentMatchday = Math.max(...matchsDemarres.map(m => m.matchday));
                 }
 
-                // Remplir le menu déroulant
                 let optionsHtml = '';
                 matchdays.forEach(day => {
                     optionsHtml += `<option value="${day}" ${day === currentMatchday ? 'selected' : ''}>Journée ${day}</option>`;
                 });
                 selectMenu.innerHTML = optionsHtml;
 
-                // C. Afficher la journée actuelle
                 changerJournee();
 
             } catch (erreur) {
                 console.error(erreur);
-                tbodyClassement.innerHTML = `<tr><td colspan="7" style="color:#ff4d4d; padding:30px;">❌ Impossible de charger le classement.</td></tr>`;
-                containerMatchs.innerHTML = `<div class="loading-text" style="color:#ff4d4d;">❌ Impossible de charger les matchs depuis l'API.</div>`;
+                let msgErreur = erreur.message || "Erreur de connexion à l'API.";
+                tbodyClassement.innerHTML = `<tr><td colspan="7" class="error-text">❌ ${msgErreur}</td></tr>`;
+                containerMatchs.innerHTML = `<div class="error-text">❌ ${msgErreur}</div>`;
             }
         }
 
-        // Fonction déclenchée quand on change le menu déroulant
         function changerJournee() {
             const daySelected = parseInt(document.getElementById('matchday-selector').value);
             const matchsJournee = tousLesMatchsAPI.filter(m => m.matchday === daySelected);
             const container = document.getElementById('matchs-container');
-            
             container.innerHTML = genererHtmlMatchs(matchsJournee, false);
         }
 
-        // Fonction pour générer le code HTML des cartes
         function genererHtmlMatchs(listeMatchs, isLiveCategory) {
             if(listeMatchs.length === 0) return '<div class="loading-text" style="grid-column: 1/-1;">Aucun match à afficher.</div>';
             
@@ -267,19 +261,16 @@
                 let nomDom = m.homeTeam.shortName || m.homeTeam.name;
                 let nomExt = m.awayTeam.shortName || m.awayTeam.name;
                 
-                // Gros matchs réservés aux Premium
                 let isPremium = nomDom.includes("Paris") || nomDom.includes("Marseille") || nomExt.includes("Paris") || nomExt.includes("Marseille");
                 let acces = isPremium ? "premium" : "free";
                 let badgeClass = acces === "premium" ? "badge-premium" : "badge-free";
 
-                // Design du score ou de l'heure
                 let scoreText = "";
                 let boxClass = "score-box";
                 let libelleDate = "";
                 let isLiveMatch = (m.status === 'IN_PLAY' || m.status === 'PAUSED');
 
                 if (m.status === 'FINISHED' || isLiveMatch) {
-                    // Match terminé ou en cours : on affiche le score
                     let scoreDom = m.score.fullTime.home !== null ? m.score.fullTime.home : 0;
                     let scoreExt = m.score.fullTime.away !== null ? m.score.fullTime.away : 0;
                     scoreText = `${scoreDom} - ${scoreExt}`;
@@ -291,7 +282,6 @@
                         libelleDate = `Terminé le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}`;
                     }
                 } else {
-                    // Match à venir (SCHEDULED, TIMED) : on affiche l'heure
                     scoreText = new Date(m.utcDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                     boxClass += " score-upcoming";
                     libelleDate = `Le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}`;
@@ -317,28 +307,22 @@
             return html;
         }
 
-        // Actions au clic sur un match
         function clicMatch(accesRequis, status) {
-            // Vérification des droits d'accès
             let aLeDroit = false;
             if (accesRequis === 'free') aLeDroit = true;
             else if (accesRequis === 'premium' && profilActuel === 'premium') aLeDroit = true;
 
             if (!aLeDroit) {
-                // Pas le droit : Paywall !
                 const titreElement = document.getElementById('upgrade-title');
                 titreElement.innerHTML = "Élite <span style='color: var(--accent)'>Premium</span>";
-                
-                let message = "Pour visionner le flux ou le résumé de ce match, vous devez être abonné Premium.";
-                document.getElementById('upgrade-message').textContent = message;
+                document.getElementById('upgrade-message').textContent = "Pour visionner le flux ou le résumé de ce match, vous devez être abonné Premium.";
                 
                 const modal = document.getElementById('upgrade-modal');
                 modal.style.display = 'flex';
                 setTimeout(() => { modal.classList.add('show'); }, 10);
-                return; // On arrête là
+                return;
             }
 
-            // Il a le droit ! Que fait-on selon le statut du match ?
             if (status === 'SCHEDULED' || status === 'TIMED') {
                 alert("⏳ Ce match n'a pas encore commencé ! L'accès au flux direct s'ouvrira 15 minutes avant le coup d'envoi.");
             } else if (status === 'IN_PLAY' || status === 'PAUSED') {
