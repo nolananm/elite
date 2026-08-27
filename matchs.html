@@ -26,22 +26,22 @@
 
         .section-title { font-size: 24px; font-weight: 600; margin-bottom: 30px; color: white; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--accent); padding-left: 15px; }
 
-        /* MATCHS SUPABASE */
+        /* MATCHS API GRID */
         .matchs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 80px; }
         
-        .match-card { background: var(--bg-card); border-radius: 16px; padding: 30px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .match-card { background: var(--bg-card); border-radius: 16px; padding: 30px 20px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .match-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-color: rgba(229,0,70,0.3); }
         
         .badge-acces { position: absolute; top: 15px; left: 15px; font-size: 10px; font-weight: 800; padding: 5px 12px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
         .badge-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.2); }
-        .badge-classic { background: #0055ff; color: white; }
         .badge-premium { background: var(--gradient); color: white; }
 
         .teams-container { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px; }
-        .team { text-align: center; flex: 1; }
-        .team-name { font-size: 16px; font-weight: 700; margin-top: 10px; text-transform: uppercase; }
+        .team { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .team-name { font-size: 13px; font-weight: 700; margin-top: 10px; text-transform: uppercase; text-align: center; }
+        .team img { height: 45px; object-fit: contain; }
         
-        .score-box { background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 12px; font-size: 28px; font-weight: 800; border: 1px solid rgba(255,255,255,0.05); color: var(--accent); }
+        .score-box { background: rgba(0,0,0,0.4); padding: 10px 20px; border-radius: 12px; font-size: 28px; font-weight: 800; border: 1px solid rgba(255,255,255,0.05); color: var(--accent); margin: 0 15px; }
         
         .match-date { margin-top: 25px; font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 1px; }
 
@@ -89,16 +89,16 @@
     <div class="container">
         <div class="page-header">
             <h1>Fan Zone Élite</h1>
-            <p>Vivez la Ligue 1 en direct. Matchs exclusifs et statistiques officielles.</p>
+            <p>Vivez la Ligue 1 en direct. Derniers résultats et statistiques officielles.</p>
         </div>
 
-        <!-- SECTION 1 : MATCHS EXCLUSIFS SUPABASE -->
-        <h2 class="section-title">Matchs Exclusifs (Replays)</h2>
+        <!-- SECTION 1 : MATCHS API -->
+        <h2 class="section-title">Derniers Résultats</h2>
         <div class="matchs-grid" id="matchs-container">
-            <div class="loading-text">Chargement de vos matchs...</div>
+            <div class="loading-text">Synchronisation des matchs avec l'API...</div>
         </div>
 
-        <!-- SECTION 2 : CLASSEMENT LIGUE 1 (VRAIE API) -->
+        <!-- SECTION 2 : CLASSEMENT API -->
         <h2 class="section-title" style="border-left-color: #00e676;">Classement Ligue 1 (En direct)</h2>
         <div class="standings-container">
             <table>
@@ -125,7 +125,7 @@
         <div class="upgrade-box">
             <div class="icon-lock">🔒</div>
             <h2 id="upgrade-title">Abonnement Requis</h2>
-            <p id="upgrade-message">Pour visionner ce match en intégralité, vous devez augmenter le niveau de votre abonnement.</p>
+            <p id="upgrade-message">Pour visionner le résumé de ce match, vous devez être abonné Premium.</p>
             <a href="index.html#abonnements" class="btn-upgrade">Voir les offres</a>
             <button class="btn-close" onclick="fermerPaywall()">Retour aux matchs</button>
         </div>
@@ -138,7 +138,7 @@
 
         let profilActuel = 'none'; 
         
-        // Ton Worker Cloudflare (Ne pas modifier !)
+        // Ton Worker Cloudflare
         const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
 
         async function initialiserPage() {
@@ -148,66 +148,16 @@
                 if (profil) profilActuel = profil.plan;
             }
 
-            chargerMatchsSupabase();
-            chargerClassementLigue1();
-        }
-
-        async function chargerMatchsSupabase() {
-            const container = document.getElementById('matchs-container');
-            
-            // J'AI ENLEVÉ L'ERREUR SUPABASE ICI ! On prend juste les données.
-            const { data: matchs, error } = await supabaseClient.from('matchs').select('*');
-
-            if (error) {
-                container.innerHTML = `<div class="loading-text" style="color:red;">❌ Erreur Supabase: ${error.message}</div>`;
-                return;
-            }
-
-            if (!matchs || matchs.length === 0) {
-                container.innerHTML = '<div class="loading-text">Aucun match disponible. Publiez-en un depuis l\'administration !</div>';
-                return;
-            }
-
-            // TRI MANUEL : On demande à JavaScript de trier les matchs du plus récent au plus ancien via la colonne date_match
-            matchs.sort((a, b) => new Date(b.date_match || 0) - new Date(a.date_match || 0));
-
-            let html = '';
-            matchs.forEach(m => {
-                let badgeClass = m.niveau_acces === 'premium' ? 'badge-premium' : (m.niveau_acces === 'classic' ? 'badge-classic' : 'badge-free');
-                let dateString = m.date_match ? new Date(m.date_match).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
-
-                html += `
-                <div class="match-card" onclick="clicMatch('${m.niveau_acces}')">
-                    <span class="badge-acces ${badgeClass}">${m.niveau_acces}</span>
-                    <div class="teams-container">
-                        <div class="team"><div class="team-name">${m.equipe_domicile}</div></div>
-                        <div class="score-box">${m.score_domicile} - ${m.score_exterieur}</div>
-                        <div class="team"><div class="team-name">${m.equipe_exterieur}</div></div>
-                    </div>
-                    <div class="match-date">Joué le ${dateString}</div>
-                </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function clicMatch(accesRequis) {
-            let aLeDroit = false;
-            if (accesRequis === 'free') aLeDroit = true;
-            else if (accesRequis === 'classic' && (profilActuel === 'classic' || profilActuel === 'premium')) aLeDroit = true;
-            else if (accesRequis === 'premium' && profilActuel === 'premium') aLeDroit = true;
-
-            if (aLeDroit) {
-                alert("🎉 Redirection vers le lecteur vidéo du match... (À développer !)");
-            } else {
-                afficherPaywall(accesRequis);
-            }
+            // On lance la récupération globale
+            chargerDonneesAPI();
         }
 
         // ============================================
-        // VRAI CLASSEMENT (Via ton Worker Cloudflare)
+        // VRAI CLASSEMENT ET MATCHS (Automatisé par API)
         // ============================================
-        async function chargerClassementLigue1() {
-            const tbody = document.getElementById('body-classement');
+        async function chargerDonneesAPI() {
+            const tbodyClassement = document.getElementById('body-classement');
+            const containerMatchs = document.getElementById('matchs-container');
             
             try {
                 const reponse = await fetch(API_URL);
@@ -217,15 +167,13 @@
                 }
 
                 const data = await reponse.json();
-                
                 if(data.error) throw new Error(data.error);
-                if(!data.standings) throw new Error("Les données du classement sont introuvables.");
 
-                const classement = data.standings[0].table;
-                
-                let html = '';
+                // --- 1. GESTION DU CLASSEMENT ---
+                const classement = data.standings.standings[0].table;
+                let htmlClassement = '';
                 classement.forEach(equipe => {
-                    html += `
+                    htmlClassement += `
                     <tr>
                         <td class="pos-col">${equipe.position}</td>
                         <td class="team-cell">
@@ -239,28 +187,71 @@
                         <td class="pts-col">${equipe.points}</td>
                     </tr>`;
                 });
+                tbodyClassement.innerHTML = htmlClassement;
 
-                tbody.innerHTML = html;
+                // --- 2. GESTION DES MATCHS ---
+                const tousLesMatchs = data.matches.matches;
+                
+                // On filtre pour ne garder que les matchs qui ont un score final ("FINISHED")
+                const matchsTermines = tousLesMatchs.filter(m => m.status === 'FINISHED');
+                
+                // On récupère les 6 derniers matchs pour remplir la grille proprement
+                const derniersMatchs = matchsTermines.slice(-6).reverse();
+
+                let htmlMatchs = '';
+                derniersMatchs.forEach(m => {
+                    let nomDom = m.homeTeam.shortName || m.homeTeam.name;
+                    let nomExt = m.awayTeam.shortName || m.awayTeam.name;
+                    
+                    // Logique Paywall : Si c'est un gros match (ex: Paris ou Marseille), c'est réservé aux Premium !
+                    let isPremium = nomDom.includes("Paris") || nomDom.includes("Marseille") || nomExt.includes("Paris") || nomExt.includes("Marseille");
+                    let acces = isPremium ? "premium" : "free";
+                    let badgeClass = acces === "premium" ? "badge-premium" : "badge-free";
+
+                    let dateString = new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+                    htmlMatchs += `
+                    <div class="match-card" onclick="clicMatch('${acces}')">
+                        <span class="badge-acces ${badgeClass}">${acces}</span>
+                        <div class="teams-container">
+                            <div class="team">
+                                <img src="${m.homeTeam.crest}" alt="Logo">
+                                <div class="team-name">${nomDom}</div>
+                            </div>
+                            <div class="score-box">${m.score.fullTime.home} - ${m.score.fullTime.away}</div>
+                            <div class="team">
+                                <img src="${m.awayTeam.crest}" alt="Logo">
+                                <div class="team-name">${nomExt}</div>
+                            </div>
+                        </div>
+                        <div class="match-date">Joué le ${dateString}</div>
+                    </div>`;
+                });
+                
+                containerMatchs.innerHTML = htmlMatchs || '<div class="loading-text">Aucun match terminé à afficher pour le moment.</div>';
 
             } catch (erreur) {
                 console.error(erreur);
-                tbody.innerHTML = `<tr><td colspan="7" style="color:#ff4d4d; padding:30px;">
-                    ❌ Impossible de charger le classement en direct.<br>
-                    <small>Raison : ${erreur.message}</small>
-                </td></tr>`;
+                tbodyClassement.innerHTML = `<tr><td colspan="7" style="color:#ff4d4d; padding:30px;">❌ Impossible de charger le classement.</td></tr>`;
+                containerMatchs.innerHTML = `<div class="loading-text" style="color:#ff4d4d;">❌ Impossible de charger les matchs depuis l'API.</div>`;
             }
         }
 
-        function afficherPaywall(planRequis) {
-            const titreElement = document.getElementById('upgrade-title');
-            if (planRequis === 'premium') {
-                titreElement.innerHTML = "Élite <span style='color: var(--accent)'>Premium</span>";
+        // ============================================
+        // GESTION DU PAYWALL
+        // ============================================
+        function clicMatch(accesRequis) {
+            let aLeDroit = false;
+            if (accesRequis === 'free') aLeDroit = true;
+            else if (accesRequis === 'premium' && profilActuel === 'premium') aLeDroit = true;
+
+            if (aLeDroit) {
+                alert("🎉 Lancement de la vidéo du résumé du match... (À développer !)");
             } else {
-                titreElement.innerHTML = "Élite <span style='color: #0055ff'>Classic</span>";
+                const modal = document.getElementById('upgrade-modal');
+                modal.style.display = 'flex';
+                setTimeout(() => { modal.classList.add('show'); }, 10);
             }
-            const modal = document.getElementById('upgrade-modal');
-            modal.style.display = 'flex';
-            setTimeout(() => { modal.classList.add('show'); }, 10);
         }
 
         function fermerPaywall() {
