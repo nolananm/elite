@@ -70,7 +70,9 @@
                 
                 <label>Accès requis pour voir le résumé :</label>
                 <select id="niveau-acces-match">
-                    <option value="free">Free</option><option value="classic">Classic</option><option value="premium">Premium</option>
+                    <option value="free">Free</option>
+                    <option value="classic" selected>Classic</option>
+                    <option value="premium">Premium</option>
                 </select>
                 
                 <label>Lien YouTube (Les images) :</label>
@@ -131,7 +133,9 @@
 
                 <label>Accès requis :</label>
                 <select id="niveau-acces-media">
-                    <option value="classic" selected>Classic</option><option value="premium">Premium</option>
+                    <option value="free">Free</option>
+                    <option value="classic" selected>Classic</option>
+                    <option value="premium">Premium</option>
                 </select>
                 <button class="btn-submit" id="btn-submit-media" onclick="sauvegarderMedia()">Publier l'épisode</button>
                 <button class="btn-cancel" id="btn-cancel-media" onclick="annulerEdition('media')">Annuler la modification</button>
@@ -152,7 +156,9 @@
                 <label>Contenu :</label><textarea id="contenu-article"></textarea>
                 <label>Niveau d'accès :</label>
                 <select id="niveau-acces-article">
-                    <option value="free">Free</option><option value="classic">Classic</option><option value="premium">Premium</option>
+                    <option value="free">Free</option>
+                    <option value="classic" selected>Classic</option>
+                    <option value="premium">Premium</option>
                 </select>
                 <button class="btn-submit" id="btn-submit-article" onclick="sauvegarderArticle()">Publier l'article</button>
                 <button class="btn-cancel" id="btn-cancel-article" onclick="annulerEdition('article')">Annuler la modification</button>
@@ -218,27 +224,20 @@
             if (onglet === 'flash') chargerFlashes();
         }
 
-        // =========================================
-        // GESTION DES MATCHS (API + BDD)
-        // =========================================
         async function chargerMatchs() {
             try {
-                // 1. Récupération API
                 const reponse = await fetch(API_URL);
                 const data = await reponse.json();
                 donneesEnMemoire.matchsAPI = data.matches.matches;
 
-                // 2. Récupération BDD (Les réglages customisés)
                 const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*');
                 donneesEnMemoire.matchsBDD = matchsBdd || [];
 
-                // 3. Construction du Menu des journées
                 const matchdays = [...new Set(donneesEnMemoire.matchsAPI.map(m => m.matchday))].filter(d => d).sort((a, b) => a - b);
                 let optionsHtml = '';
                 matchdays.forEach(day => { optionsHtml += `<option value="${day}">Journée ${day}</option>`; });
                 document.getElementById('filtre-journee-admin').innerHTML = optionsHtml;
                 
-                // On pré-sélectionne la journée actuelle
                 let currentMatchday = 1;
                 const matchsJoues = donneesEnMemoire.matchsAPI.filter(m => ['FINISHED', 'IN_PLAY'].includes(m.status));
                 if(matchsJoues.length > 0) currentMatchday = Math.max(...matchsJoues.map(m => m.matchday));
@@ -261,11 +260,9 @@
                 let ext = m.awayTeam.name;
                 let status = m.status === 'FINISHED' ? 'Terminé' : (m.status === 'IN_PLAY' ? 'En cours' : 'À venir');
                 
-                // A-t-on customisé ce match ?
                 let reglage = donneesEnMemoire.matchsBDD.find(r => parseInt(r.id_api) === m.id);
                 let badge = reglage ? `<span style="color:var(--accent); font-weight:bold; font-size:11px;">[Enrichi : ${reglage.niveau_acces}]</span>` : '';
 
-                // On encode pour le bouton Edit
                 let safeName = `${dom} - ${ext}`.replace(/'/g, "\\'");
 
                 html += `
@@ -287,16 +284,14 @@
             document.getElementById('id-api-match').value = idApi;
             document.getElementById('label-nom-match').textContent = "Édition : " + nomMatch;
             
-            // Si on a déjà des données en base, on pré-remplit
             let reglage = donneesEnMemoire.matchsBDD.find(r => r.id_api == idApi);
             if (reglage) {
                 document.getElementById('niveau-acces-match').value = reglage.niveau_acces;
                 document.getElementById('youtube-match').value = reglage.youtube_url || "";
                 document.getElementById('resume-match').value = reglage.resume_texte || "";
             } else {
-                // Par défaut, proposer Premium pour OM/PSG, sinon Free
-                let defaultAccess = (nomMatch.includes("Paris") || nomMatch.includes("Marseille")) ? "premium" : "free";
-                document.getElementById('niveau-acces-match').value = defaultAccess;
+                // CLASSIC par défaut partout !
+                document.getElementById('niveau-acces-match').value = "classic";
                 document.getElementById('youtube-match').value = "";
                 document.getElementById('resume-match').value = "";
             }
@@ -313,21 +308,17 @@
             };
 
             document.getElementById('msg-match').textContent = "Enregistrement...";
-            // L'UPSERT permet d'insérer ou de mettre à jour si la ligne existe déjà
             const { error } = await supabaseClient.from('matchs_enrichis').upsert([donnees]);
 
             if (error) {
                 document.getElementById('msg-match').textContent = "❌ Erreur : " + error.message;
             } else {
                 document.getElementById('msg-match').textContent = "✅ Match mis à jour !";
-                chargerMatchs(); // Rafraîchit les listes
+                chargerMatchs(); 
                 setTimeout(() => { document.getElementById('box-edition-match').style.display = 'none'; document.getElementById('msg-match').textContent = ""; }, 1500);
             }
         }
 
-        // =========================================
-        // GESTION DU FLASH INFO
-        // =========================================
         async function chargerFlashes() {
             const { data } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false });
             let html = '';
@@ -359,14 +350,10 @@
             chargerFlashes();
         }
 
-        // =========================================
-        // AUTRES FONCTIONS (Médias, Articles, Users)
-        // =========================================
         async function chargerToutesLesListes() {
             chargerMatchs(); chargerMedias(); chargerArticles(); chargerFlashes();
         }
 
-        // (Ici je remets les fonctions existantes pour Médias, Articles et Users pour que ton panneau reste 100% fonctionnel)
         function adapterFormulaireMedia() {
             const type = document.getElementById('type-media').value;
             document.getElementById('zone-url').style.display = type === 'video' ? 'block' : 'none';
@@ -473,7 +460,7 @@
 
         async function sauvegarderMedia() {
             const type = document.getElementById('type-media').value;
-            let urlFinale = type === 'video' ? document.getElementById('url-media').value : ""; // Simplifié pour la fluidité (garder l'upload complexe si besoin plus tard)
+            let urlFinale = type === 'video' ? document.getElementById('url-media').value : ""; 
             
             const data = {
                 type_media: type, titre: document.getElementById('titre-media').value, description: document.getElementById('desc-media').value, 
