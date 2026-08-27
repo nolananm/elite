@@ -7,201 +7,262 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-card: #151821;
-            --accent: #e50046;
-            --text-main: #ffffff;
-            --text-muted: #9ba1a6;
-            --gradient: linear-gradient(135deg, #e50046, #8000ff);
-        }
+        :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+        a { text-decoration: none; color: inherit; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .logo { font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
+        nav { display: flex; gap: 30px; align-items: center; }
+        nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
+        nav a:hover { color: var(--accent); }
+
+        /* FORMULAIRE DE CONNEXION (Si non connecté) */
+        .auth-container { max-width: 400px; margin: 150px auto; background: var(--bg-card); padding: 40px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
+        .auth-container h2 { font-size: 24px; font-weight: 800; margin-bottom: 25px; text-transform: uppercase; }
+        .auth-container input { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-family: 'Poppins'; }
+        .auth-container input:focus { outline: none; border-color: var(--accent); }
+        .btn-submit { width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: bold; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; text-transform: uppercase; }
+        .toggle-text { margin-top: 15px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+        .toggle-text:hover { color: white; }
+
+        /* LE TABLEAU DE BORD (Si connecté) */
+        .dashboard-wrapper { display: none; max-width: 1200px; margin: 120px auto 50px auto; width: 100%; padding: 0 20px; flex: 1; }
+        .dashboard-layout { display: flex; gap: 40px; }
         
-        /* FOND DOUX ET REPOSANT */
-        body { 
-            background: radial-gradient(circle at center, #151821 0%, #0a0b10 100%);
-            color: var(--text-main); 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            flex-direction: column;
-        }
+        .sidebar { width: 250px; flex-shrink: 0; }
+        .sidebar-menu { display: flex; flex-direction: column; gap: 10px; }
+        .menu-item { padding: 15px 20px; border-radius: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; }
+        .menu-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .menu-item.active { background: var(--gradient); color: white; }
 
-        .logo-top { font-size: 40px; font-weight: 800; margin-bottom: 25px; color: white; letter-spacing: 2px; text-decoration: none; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .content-area { flex: 1; background: var(--bg-card); border-radius: 20px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); min-height: 500px; }
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* BOÎTE AVEC LÉGER HALO LUMINEUX */
-        .auth-box { 
-            background: var(--bg-card); 
-            padding: 40px; 
-            border-radius: 20px; 
-            width: 100%; 
-            max-width: 450px; 
-            border: 1px solid rgba(255,255,255,0.05); 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(229, 0, 70, 0.1);
-            animation: fadeUp 0.6s ease-out forwards;
-        }
+        .section-header { margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; }
+        .section-header h2 { font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        .section-header p { color: var(--text-muted); font-size: 14px; }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .tabs { display: flex; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.1); }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s; position: relative; }
-        .tab:hover { color: white; }
-        .tab.active { color: white; }
-        .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background: var(--accent); border-radius: 2px; }
-
-        input { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
-
-        .btn-action { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--gradient); color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-action:hover { box-shadow: 0 5px 20px rgba(229, 0, 70, 0.5); transform: translateY(-2px); }
-
-        .btn-logout { background: rgba(255,255,255,0.1); color: white; margin-top: 20px; }
-        .btn-logout:hover { background: rgba(255,255,255,0.2); box-shadow: none; }
-
-        #auth-message { text-align: center; font-size: 14px; margin-top: 15px; min-height: 20px; }
-        .msg-error { color: #ff4d4d; }
-        .msg-success { color: #00e676; }
-
-        #section-compte { text-align: center; }
-        #section-compte h3 { font-size: 24px; margin-bottom: 10px; }
-        .plan-badge { display: inline-block; padding: 8px 20px; background: var(--gradient); color: white; border-radius: 30px; font-size: 14px; font-weight: bold; margin: 20px 0; letter-spacing: 1px; }
+        /* CARTE ABONNEMENT */
+        .plan-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 30px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .plan-info h3 { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .plan-name { font-size: 32px; font-weight: 800; text-transform: uppercase; }
         
-        .retour-accueil { margin-top: 25px; color: rgba(255,255,255,0.5); font-size: 14px; text-decoration: none; transition: 0.3s; }
-        .retour-accueil:hover { color: white; }
+        /* Couleurs des plans */
+        .color-free { color: white; }
+        .color-classic { color: #0055ff; }
+        .color-premium { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .btn-action { padding: 12px 25px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: none; }
+        .btn-primary { background: white; color: black; }
+        .btn-primary:hover { background: #e0e0e0; }
+        .btn-secondary { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; display: block; width: 100%; text-align: center;}
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+        .billing-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        .billing-row:last-child { border-bottom: none; }
+        .billing-label { color: var(--text-muted); }
+        .billing-value { font-weight: 600; }
+
+        /* GRILLE FAVORIS */
+        .favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .fav-card { background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .fav-img { height: 120px; background-size: cover; background-position: center; position: relative; }
+        .fav-type { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; }
+        .fav-title { padding: 15px; font-size: 14px; font-weight: 600; line-height: 1.4; }
+
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="logo-top">ÉLITE</a>
+    <header>
+        <a href="index.html" class="logo">ÉLITE</a>
+        <nav>
+            <a href="articles.html">Articles</a>
+            <a href="matchs.html">Matchs & Fan Zone</a>
+            <a href="medias.html">Émissions & Podcasts</a>
+            <a href="compte.html" style="color: var(--accent);">Compte</a>
+        </nav>
+    </header>
 
-    <div class="auth-box">
-        <div id="section-auth">
-            <div class="tabs">
-                <div class="tab active" id="tab-login" onclick="changerMode('login')">Se connecter</div>
-                <div class="tab" id="tab-register" onclick="changerMode('register')">S'inscrire</div>
-            </div>
-
-            <input type="email" id="email" placeholder="Adresse e-mail">
-            <input type="password" id="password" placeholder="Mot de passe">
-            
-            <button class="btn-action" id="btn-submit" onclick="soumettre()">Connexion</button>
-            <p id="auth-message"></p>
-        </div>
-
-        <div id="section-compte" style="display: none;">
-            <h3>Ton Profil Élite</h3>
-            <p style="color: var(--text-muted);">Voici ton abonnement actuel :</p>
-            <div class="plan-badge" id="plan-display">Chargement...</div>
-            <button class="btn-action btn-logout" onclick="deconnexion()">Se déconnecter</button>
-        </div>
+    <!-- ÉCRAN DE CONNEXION -->
+    <div class="auth-container" id="auth-section">
+        <h2 id="form-title">Connexion</h2>
+        <input type="email" id="email" placeholder="Adresse e-mail">
+        <input type="password" id="password" placeholder="Mot de passe">
+        <button class="btn-submit" onclick="gererAuth()" id="btn-action">Se connecter</button>
+        <p class="toggle-text" onclick="toggleMode()" id="toggle-msg">Pas encore de compte ? S'inscrire</p>
+        <p id="error-msg" style="color: #ff4d4d; margin-top: 15px; font-size: 14px;"></p>
     </div>
 
-    <a href="index.html" class="retour-accueil">← Retour à l'accueil</a>
+    <!-- LE TABLEAU DE BORD (Connecté) -->
+    <div class="dashboard-wrapper" id="dashboard-section">
+        <div class="dashboard-layout">
+            
+            <!-- MENU LATÉRAL -->
+            <div class="sidebar">
+                <div class="sidebar-menu">
+                    <div class="menu-item active" onclick="switchTab('overview')">📊 Vue d'ensemble</div>
+                    <div class="menu-item" onclick="switchTab('billing')">💳 Facturation & Plan</div>
+                    <div class="menu-item" onclick="switchTab('favorites')">⭐ Mes Favoris</div>
+                    <div class="menu-item" onclick="switchTab('settings')">⚙️ Paramètres</div>
+                    <div class="menu-item" onclick="deconnexion()" style="color: #ff4d4d; margin-top: 20px;">🚪 Se déconnecter</div>
+                </div>
+            </div>
+
+            <!-- CONTENU -->
+            <div class="content-area">
+                
+                <!-- VUE D'ENSEMBLE -->
+                <div class="content-section active" id="tab-overview">
+                    <div class="section-header">
+                        <h2>Bienvenue dans l'Élite</h2>
+                        <p id="user-email-display">user@email.com</p>
+                    </div>
+                    
+                    <div class="plan-box">
+                        <div class="plan-info">
+                            <h3>Abonnement actuel</h3>
+                            <div class="plan-name" id="dash-plan-name">CHARGEMENT...</div>
+                        </div>
+                        <button class="btn-action btn-primary" onclick="switchTab('billing')">Gérer mon plan</button>
+                    </div>
+
+                    <h3 style="font-size: 16px; margin-bottom: 15px; margin-top: 30px;">Activité récente</h3>
+                    <p style="color: var(--text-muted); font-size: 14px;">Aucune activité récente. Parcourez la Fan Zone pour ajouter des matchs en favoris !</p>
+                </div>
+
+                <!-- FACTURATION -->
+                <div class="content-section" id="tab-billing">
+                    <div class="section-header">
+                        <h2>Facturation & Plan</h2>
+                        <p>Gérez vos moyens de paiement et votre abonnement.</p>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.02); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+                        <div class="billing-row">
+                            <span class="billing-label">Statut du plan</span>
+                            <span class="billing-value" style="color: #00e676;">Actif</span>
+                        </div>
+                        <div class="billing-row">
+                            <span class="billing-label">Prochaine facturation</span>
+                            <span class="billing-value">27 Septembre 2026</span>
+                        </div>
+                        <div class="billing-row">
+                            <span class="billing-label">Moyen de paiement</span>
+                            <span class="billing-value">💳 Carte terminant par 4242</span>
+                        </div>
+                    </div>
+                    
+                    <a href="index.html#abonnements" class="btn-action btn-primary" style="display:block; text-align:center;">Changer d'abonnement</a>
+                    <button class="btn-action btn-secondary" onclick="alert('Le portail de paiement Stripe sera bientôt connecté !')">Mettre à jour la carte de paiement</button>
+                </div>
+
+                <!-- FAVORIS -->
+                <div class="content-section" id="tab-favorites">
+                    <div class="section-header">
+                        <h2>Mes Favoris</h2>
+                        <p>Retrouvez vos articles et matchs sauvegardés.</p>
+                    </div>
+
+                    <div class="favorites-grid" id="favorites-container">
+                        <!-- Exemple visuel (sera remplacé par la BDD) -->
+                        <div class="loading-text" style="color: var(--text-muted); font-size: 14px; grid-column: 1/-1;">
+                            Vos favoris apparaîtront ici. (La fonctionnalité d'ajout depuis les articles arrive bientôt !)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PARAMETRES -->
+                <div class="content-section" id="tab-settings">
+                    <div class="section-header">
+                        <h2>Paramètres du compte</h2>
+                        <p>Gérez vos préférences.</p>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 14px;">Modification de mot de passe et préférences de notifications à venir.</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <script>
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let modeActuel = 'login';
-        const tabLogin = document.getElementById('tab-login');
-        const tabRegister = document.getElementById('tab-register');
-        const btnSubmit = document.getElementById('btn-submit');
-        const message = document.getElementById('auth-message');
+        let isLogin = true;
+        let currentUser = null;
 
-        function changerMode(mode) {
-            modeActuel = mode;
-            message.textContent = "";
-            message.className = "";
-            document.getElementById('email').value = "";
-            document.getElementById('password').value = "";
-
-            if (mode === 'login') {
-                tabLogin.classList.add('active');
-                tabRegister.classList.remove('active');
-                btnSubmit.textContent = "Connexion";
-            } else {
-                tabRegister.classList.add('active');
-                tabLogin.classList.remove('active');
-                btnSubmit.textContent = "Créer mon compte";
-            }
+        function toggleMode() {
+            isLogin = !isLogin;
+            document.getElementById('form-title').innerText = isLogin ? 'Connexion' : 'Créer un compte';
+            document.getElementById('btn-action').innerText = isLogin ? 'Se connecter' : "S'inscrire";
+            document.getElementById('toggle-msg').innerText = isLogin ? "Pas encore de compte ? S'inscrire" : "Déjà un compte ? Se connecter";
+            document.getElementById('error-msg').innerText = '';
         }
 
-        function soumettre() {
-            if (modeActuel === 'login') {
-                connexion();
-            } else {
-                inscription();
-            }
-        }
-
-        async function inscription() {
+        async function gererAuth() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            message.textContent = "Création du compte...";
-            message.className = "";
-            
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
-            
-            if (error) {
-                message.className = "msg-error";
-                message.textContent = "❌ " + error.message;
+            const errorElement = document.getElementById('error-msg');
+            errorElement.innerText = "Chargement...";
+
+            if (isLogin) {
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) errorElement.innerText = "❌ Erreur : " + error.message;
+                else window.location.reload();
             } else {
-                const { data: { user } } = await supabaseClient.auth.getUser();
-                if (user) {
-                    window.location.href = 'index.html';
-                } else {
-                    message.className = "msg-success";
-                    message.textContent = "✅ Compte créé ! Connecte-toi.";
-                    changerMode('login');
+                const { error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) errorElement.innerText = "❌ Erreur : " + error.message;
+                else {
+                    errorElement.style.color = "#00e676";
+                    errorElement.innerText = "✅ Compte créé ! Vous pouvez maintenant vous connecter.";
+                    setTimeout(toggleMode, 2000);
                 }
-            }
-        }
-
-        async function connexion() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            message.textContent = "Connexion en cours...";
-            message.className = "";
-            
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                message.className = "msg-error";
-                message.textContent = "❌ Identifiants incorrects.";
-            } else {
-                window.location.href = 'index.html';
             }
         }
 
         async function deconnexion() {
             await supabaseClient.auth.signOut();
-            window.location.href = 'index.html';
+            window.location.reload();
         }
 
-        async function verifierSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            const sectionAuth = document.getElementById('section-auth');
-            const sectionCompte = document.getElementById('section-compte');
-            const planDisplay = document.getElementById('plan-display');
+        function switchTab(tabId) {
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            event.currentTarget.classList.add('active');
             
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        async function checkUser() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
             if (user) {
-                sectionAuth.style.display = "none";
-                sectionCompte.style.display = "block";
+                currentUser = user;
+                document.getElementById('auth-section').style.display = 'none';
+                document.getElementById('dashboard-section').style.display = 'flex';
                 
+                document.getElementById('user-email-display').textContent = user.email;
+
+                // Chercher le plan en BDD
                 const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
-                if (profil) { planDisplay.textContent = "ÉLITE " + profil.plan.toUpperCase(); }
+                let plan = profil ? profil.plan : 'free';
+                
+                let planDisplay = document.getElementById('dash-plan-name');
+                planDisplay.textContent = plan;
+                planDisplay.className = `plan-name color-${plan}`; // Applique la couleur selon le plan
+
             } else {
-                sectionAuth.style.display = "block";
-                sectionCompte.style.display = "none";
+                document.getElementById('auth-section').style.display = 'block';
+                document.getElementById('dashboard-section').style.display = 'none';
             }
         }
 
-        verifierSession();
+        checkUser();
     </script>
 </body>
 </html>
