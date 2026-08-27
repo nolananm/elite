@@ -98,8 +98,8 @@
             <div class="loading-text">Chargement de vos matchs...</div>
         </div>
 
-        <!-- SECTION 2 : CLASSEMENT LIGUE 1 -->
-        <h2 class="section-title" style="border-left-color: #00e676;">Classement Ligue 1 (Simulation)</h2>
+        <!-- SECTION 2 : CLASSEMENT LIGUE 1 (VRAIE API) -->
+        <h2 class="section-title" style="border-left-color: #00e676;">Classement Ligue 1 (En direct)</h2>
         <div class="standings-container">
             <table>
                 <thead>
@@ -114,7 +114,7 @@
                     </tr>
                 </thead>
                 <tbody id="body-classement">
-                    <!-- Généré par JS -->
+                    <tr><td colspan="7" class="loading-text">Connexion à l'API de Football...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -137,6 +137,11 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let profilActuel = 'none'; 
+        
+        // =========================================================================
+        // 🚨 NOLAN, C'EST ICI QU'IL FAUT COLLER L'URL DE TON NOUVEAU WORKER ! 🚨
+        // =========================================================================
+        const API_URL = 'COLLE_L_URL_DE_TON_WORKER_ICI';
 
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -146,7 +151,7 @@
             }
 
             chargerMatchsSupabase();
-            chargerClassementSimule();
+            chargerClassementLigue1();
         }
 
         async function chargerMatchsSupabase() {
@@ -196,45 +201,65 @@
         }
 
         // ============================================
-        // SIMULATEUR DE CLASSEMENT (Solution instantanée)
+        // VRAI CLASSEMENT (Via ton Worker Cloudflare)
         // ============================================
-        function chargerClassementSimule() {
+        async function chargerClassementLigue1() {
             const tbody = document.getElementById('body-classement');
             
-            // Faux tableau de données imitant l'API
-            const classementData = [
-                { position: 1, team: { name: "Paris Saint-Germain FC", crest: "https://crests.football-data.org/524.png" }, playedGames: 12, won: 9, draw: 3, lost: 0, points: 30 },
-                { position: 2, team: { name: "Olympique de Marseille", crest: "https://crests.football-data.org/516.png" }, playedGames: 12, won: 8, draw: 2, lost: 2, points: 26 },
-                { position: 3, team: { name: "AS Monaco FC", crest: "https://crests.football-data.org/548.png" }, playedGames: 12, won: 7, draw: 3, lost: 2, points: 24 },
-                { position: 4, team: { name: "LOSC Lille", crest: "https://crests.football-data.org/521.png" }, playedGames: 12, won: 6, draw: 4, lost: 2, points: 22 },
-                { position: 5, team: { name: "RC Lens", crest: "https://crests.football-data.org/546.png" }, playedGames: 12, won: 6, draw: 3, lost: 3, points: 21 },
-                { position: 6, team: { name: "Olympique Lyonnais", crest: "https://crests.football-data.org/523.png" }, playedGames: 12, won: 5, draw: 4, lost: 3, points: 19 },
-                { position: 7, team: { name: "OGC Nice", crest: "https://crests.football-data.org/522.png" }, playedGames: 12, won: 5, draw: 3, lost: 4, points: 18 }
-            ];
-            
-            let html = '';
-            classementData.forEach(equipe => {
-                html += `
-                <tr>
-                    <td class="pos-col">${equipe.position}</td>
-                    <td class="team-cell">
-                        <img src="${equipe.team.crest}" alt="Logo">
-                        ${equipe.team.name}
-                    </td>
-                    <td>${equipe.playedGames}</td>
-                    <td>${equipe.won}</td>
-                    <td>${equipe.draw}</td>
-                    <td>${equipe.lost}</td>
-                    <td class="pts-col">${equipe.points}</td>
-                </tr>`;
-            });
+            // LA SÉCURITÉ ANTI-OUBLI
+            if(API_URL === 'COLLE_L_URL_DE_TON_WORKER_ICI') {
+                tbody.innerHTML = `<tr><td colspan="7" style="background:#e50046; color:white; padding:30px; font-weight:bold; font-size:18px;">
+                    🛑 STOP NOLAN ! 🛑<br><br>
+                    Tu as oublié l'étape finale !<br>
+                    1. Va sur Cloudflare, clique sur "Workers & Pages" (à gauche), puis "Create Worker".<br>
+                    2. Nomme-le "api-foot" et colle le code JavaScript que je t'ai donné tout à l'heure.<br>
+                    3. Copie l'URL du Worker et colle-la à la ligne 185 de ce fichier !
+                </td></tr>`;
+                return;
+            }
 
-            tbody.innerHTML = html;
+            try {
+                const reponse = await fetch(API_URL);
+
+                if (!reponse.ok) {
+                    throw new Error(`Erreur du Worker (${reponse.status})`);
+                }
+
+                const data = await reponse.json();
+                
+                if(data.error) throw new Error(data.error);
+                if(!data.standings) throw new Error("Les données du classement sont introuvables.");
+
+                const classement = data.standings[0].table;
+                
+                let html = '';
+                classement.forEach(equipe => {
+                    html += `
+                    <tr>
+                        <td class="pos-col">${equipe.position}</td>
+                        <td class="team-cell">
+                            <img src="${equipe.team.crest}" alt="Logo">
+                            ${equipe.team.name}
+                        </td>
+                        <td>${equipe.playedGames}</td>
+                        <td>${equipe.won}</td>
+                        <td>${equipe.draw}</td>
+                        <td>${equipe.lost}</td>
+                        <td class="pts-col">${equipe.points}</td>
+                    </tr>`;
+                });
+
+                tbody.innerHTML = html;
+
+            } catch (erreur) {
+                console.error(erreur);
+                tbody.innerHTML = `<tr><td colspan="7" style="color:#ff4d4d; padding:30px;">
+                    ❌ Impossible de charger le classement en direct.<br>
+                    <small>Raison : ${erreur.message}</small>
+                </td></tr>`;
+            }
         }
 
-        // ============================================
-        // GESTION DU PAYWALL
-        // ============================================
         function afficherPaywall(planRequis) {
             const titreElement = document.getElementById('upgrade-title');
             if (planRequis === 'premium') {
