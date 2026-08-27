@@ -88,7 +88,6 @@
             <p>Analyses tactiques, enquêtes exclusives et éditos.</p>
         </div>
 
-        <!-- PUB 728x90 -->
         <div class="ad-zone">
             <span class="ad-label">Sponsorisé</span>
             <script>
@@ -119,7 +118,6 @@
         
         <div class="reader-body-wrapper" id="reader-body-wrapper">
             
-            <!-- PUB INTRUSIVE DANS L'ARTICLE (Cachée pour Classic et Premium) -->
             <div class="ad-zone ad-intrusive" style="margin: 20px auto; max-width: 320px; padding: 0; background: transparent; border: none;">
                 <span class="ad-label" style="position: static; margin-bottom: 5px;">Publicité</span>
                 <script>
@@ -154,15 +152,12 @@
                 if (profil) profilActuel = profil.plan;
             }
 
-            // LE BOUCLIER ANTI-PUB MULTI-NIVEAUX
             if (profilActuel === 'premium') {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
             } else if (profilActuel === 'classic') {
-                // Classic = Bannières normales OUI, pubs intrusives NON
                 document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex');
                 document.querySelectorAll('.ad-intrusive').forEach(zone => zone.remove());
             } else {
-                // Free = TOUT (Bannières + Intrusive + Pop-under + Social Bar)
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
                 
                 const popScript = document.createElement('script');
