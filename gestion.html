@@ -12,41 +12,32 @@
         body { background-color: var(--bg-dark); color: var(--text-main); padding: 40px 20px; display: flex; justify-content: center; }
         
         .admin-container { background: var(--bg-card); padding: 40px; border-radius: 20px; width: 100%; max-width: 900px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .admin-container h2 { text-align: center; margin-bottom: 25px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .admin-container h2 { text-align: center; margin-bottom: 25px; font-weight: 800; text-transform: uppercase; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .tabs { display: flex; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
-        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s; position: relative; min-width: 100px; font-size: 14px; }
+        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s; position: relative; font-size: 14px; }
         .tab:hover, .tab.active { color: white; }
         .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: var(--gradient); border-radius: 3px; }
         
         .form-section { background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
         .form-section h3 { margin-bottom: 15px; font-size: 18px; color: var(--accent); }
-        label { display: block; margin-top: 15px; margin-bottom: 5px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-        input, select, textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.05); }
+        label { display: block; margin-top: 15px; margin-bottom: 5px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); }
         textarea { resize: vertical; min-height: 120px; }
-        input[type="file"] { padding: 8px; background: rgba(0,0,0,0.2); cursor: pointer; }
         
-        .btn-submit { width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: bold; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; margin-top: 25px; transition: 0.3s; text-transform: uppercase; }
-        .btn-submit:hover { box-shadow: 0 5px 20px rgba(229, 0, 70, 0.4); transform: translateY(-2px); }
-        .btn-cancel { width: 100%; padding: 15px; background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; display: none; transition: 0.3s; }
-        .btn-cancel:hover { background: rgba(255,255,255,0.1); color: white; }
-        
-        .message-retour { text-align: center; font-weight: bold; margin-top: 15px; min-height: 20px; font-size: 14px; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: bold; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; margin-top: 25px; text-transform: uppercase; }
         
         .list-section h3 { margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         .manage-card { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .manage-info { flex: 1; margin-right: 15px; }
-        .manage-title { font-weight: bold; font-size: 15px; margin-bottom: 5px; }
+        .manage-info { flex: 1; }
+        .manage-title { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
         .manage-meta { font-size: 12px; color: var(--text-muted); }
-        .manage-actions { display: flex; gap: 10px; }
-        .btn-edit { background: #0055ff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-edit:hover { background: #0044cc; } .btn-delete:hover { background: #cc0000; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-        th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }
+        th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -55,138 +46,108 @@
         
         <div class="tabs">
             <div class="tab active" id="tab-match" onclick="changerOnglet('match')">⚽ Matchs</div>
+            <div class="tab" id="tab-abonnement" onclick="changerOnglet('abonnement')">💎 Abonnements</div>
             <div class="tab" id="tab-flash" onclick="changerOnglet('flash')">⚡ Flash Info</div>
             <div class="tab" id="tab-media" onclick="changerOnglet('media')">🎙️ Médias</div>
             <div class="tab" id="tab-article" onclick="changerOnglet('article')">📝 Articles</div>
             <div class="tab" id="tab-user" onclick="changerOnglet('user')">👥 Abonnés</div>
         </div>
 
-        <!-- ======================= ONGLET MATCHS ======================= -->
+        <!-- ONGLET MATCHS -->
         <div id="form-match">
             <div class="form-section" id="box-edition-match" style="display: none;">
                 <h3 id="titre-section-match">Ajouter du contenu au match</h3>
                 <input type="hidden" id="id-api-match">
                 <p id="label-nom-match" style="color: white; font-weight: bold; margin-bottom: 15px;"></p>
-                
-                <label>Accès requis pour voir le résumé :</label>
+                <label>Accès requis :</label>
                 <select id="niveau-acces-match">
-                    <option value="free">Free</option>
-                    <option value="classic" selected>Classic</option>
-                    <option value="premium">Premium</option>
+                    <option value="free">Free</option><option value="classic" selected>Classic</option><option value="premium">Premium</option>
                 </select>
-                
-                <label>Lien YouTube (Les images) :</label>
-                <input type="text" id="youtube-match" placeholder="ex: https://youtube.com/watch?v=...">
-                
-                <label>Le Résumé de la rédaction :</label>
-                <textarea id="resume-match" placeholder="Rédige l'analyse du match ici..."></textarea>
-                
-                <button class="btn-submit" id="btn-submit-match" onclick="sauvegarderMatch()">Enregistrer les modifications</button>
-                <button class="btn-cancel" style="display:block;" onclick="annulerEdition('match')">Annuler</button>
-                <p class="message-retour" id="msg-match"></p>
+                <label>Lien YouTube :</label><input type="text" id="youtube-match">
+                <label>Résumé :</label><textarea id="resume-match"></textarea>
+                <button class="btn-submit" onclick="sauvegarderMatch()">Enregistrer</button>
             </div>
-            
             <div class="list-section">
-                <h3>Base de données des matchs (API)</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">Clique sur modifier pour associer une vidéo et un texte à un match officiel.</p>
-                
-                <select id="filtre-journee-admin" onchange="filtrerMatchsAdmin()" style="margin-bottom: 15px; max-width: 200px;">
+                <h3>Base de données API</h3>
+                <select id="filtre-journee-admin" onchange="filtrerMatchsAdmin()" style="margin-bottom: 15px; width: auto; min-width: 200px;">
                     <option value="">Chargement...</option>
                 </select>
-
                 <div id="liste-matchs">Chargement...</div>
             </div>
         </div>
 
-        <!-- ======================= ONGLET FLASH INFO ======================= -->
+        <!-- ONGLET ABONNEMENTS (NOUVEAU) -->
+        <div id="form-abonnement" style="display: none;">
+            <div class="form-section">
+                <h3>Gérer les avantages des offres</h3>
+                <label>Offre concernée :</label>
+                <select id="plan-avantage">
+                    <option value="free">Offre Free (Visiteur)</option>
+                    <option value="classic">Offre Classic (Le Choix n°1)</option>
+                    <option value="premium">Offre Premium (VIP)</option>
+                </select>
+                
+                <label>Texte de l'avantage :</label>
+                <input type="text" id="texte-avantage" placeholder="Ex: Tous les résumés vidéos des matchs">
+                
+                <label>Type d'affichage :</label>
+                <select id="inclus-avantage">
+                    <option value="true">✅ Coche verte (Inclus)</option>
+                    <option value="false">❌ Croix rouge barrée (Non inclus)</option>
+                </select>
+                
+                <button class="btn-submit" onclick="sauvegarderAvantage()">Ajouter cet avantage</button>
+            </div>
+            <div class="list-section">
+                <h3>Liste des avantages actuels</h3>
+                <div id="liste-avantages">Chargement...</div>
+            </div>
+        </div>
+
+        <!-- ONGLET FLASH -->
         <div id="form-flash" style="display: none;">
             <div class="form-section">
-                <h3>Publier une alerte Flash</h3>
-                <label>Texte du flash info :</label>
-                <input type="text" id="texte-flash" placeholder="Ex: Info mercato, blessure...">
-                <button class="btn-submit" onclick="sauvegarderFlash()">Publier sur le Fil</button>
-                <p class="message-retour" id="msg-flash"></p>
+                <h3>Publier une alerte</h3>
+                <label>Texte :</label><input type="text" id="texte-flash">
+                <button class="btn-submit" onclick="sauvegarderFlash()">Publier</button>
             </div>
-            <div class="list-section">
-                <h3>Derniers Flashes publiés</h3>
-                <div id="liste-flashes">Chargement...</div>
-            </div>
+            <div class="list-section"><div id="liste-flashes"></div></div>
         </div>
 
-        <!-- ======================= ONGLET MEDIAS ======================= -->
+        <!-- ONGLET MEDIAS -->
         <div id="form-media" style="display: none;">
             <div class="form-section">
-                <h3 id="titre-section-media">Ajouter une émission</h3>
-                <label>Type d'émission :</label>
-                <select id="type-media" onchange="adapterFormulaireMedia()">
-                    <option value="video">📺 Élite Le Mag (Vidéo YouTube)</option>
-                    <option value="podcast">🎙️ Élite Décrypte (Upload Audio)</option>
-                </select>
+                <h3>Ajouter une émission</h3>
+                <label>Type :</label><select id="type-media"><option value="video">Vidéo</option><option value="podcast">Audio</option></select>
                 <label>Titre :</label><input type="text" id="titre-media">
                 <label>Description :</label><textarea id="desc-media"></textarea>
-                
-                <div id="zone-url"><label>Lien YouTube :</label><input type="text" id="url-media"></div>
-                <div id="zone-upload" style="display: none;">
-                    <label>Fichier Audio (MP3) :</label><input type="file" id="file-media" accept="audio/*">
-                    <small style="color:var(--text-muted); display:block; margin-top:5px;" id="info-audio-existant"></small>
-                </div>
-
-                <label>Accès requis :</label>
-                <select id="niveau-acces-media">
-                    <option value="free">Free</option>
-                    <option value="classic" selected>Classic</option>
-                    <option value="premium">Premium</option>
-                </select>
-                <button class="btn-submit" id="btn-submit-media" onclick="sauvegarderMedia()">Publier l'épisode</button>
-                <button class="btn-cancel" id="btn-cancel-media" onclick="annulerEdition('media')">Annuler la modification</button>
-                <p class="message-retour" id="msg-media"></p>
+                <label>Lien YouTube :</label><input type="text" id="url-media">
+                <label>Accès :</label><select id="niveau-acces-media"><option value="classic" selected>Classic</option><option value="premium">Premium</option></select>
+                <button class="btn-submit" onclick="sauvegarderMedia()">Publier</button>
             </div>
-            <div class="list-section">
-                <h3>Gérer les émissions publiées</h3>
-                <div id="liste-medias">Chargement...</div>
-            </div>
+            <div class="list-section"><div id="liste-medias"></div></div>
         </div>
 
-        <!-- ======================= ONGLET ARTICLES ======================= -->
+        <!-- ONGLET ARTICLES -->
         <div id="form-article" style="display: none;">
             <div class="form-section">
-                <h3 id="titre-section-article">Rédiger un article</h3>
-                <label>Titre de l'article :</label><input type="text" id="titre-article">
-                <label>Lien de l'image (URL) :</label><input type="text" id="image-article">
+                <h3>Rédiger un article</h3>
+                <label>Titre :</label><input type="text" id="titre-article">
+                <label>Image URL :</label><input type="text" id="image-article">
                 <label>Contenu :</label><textarea id="contenu-article"></textarea>
-                <label>Niveau d'accès :</label>
-                <select id="niveau-acces-article">
-                    <option value="free">Free</option>
-                    <option value="classic" selected>Classic</option>
-                    <option value="premium">Premium</option>
-                </select>
-                <button class="btn-submit" id="btn-submit-article" onclick="sauvegarderArticle()">Publier l'article</button>
-                <button class="btn-cancel" id="btn-cancel-article" onclick="annulerEdition('article')">Annuler la modification</button>
-                <p class="message-retour" id="msg-article"></p>
+                <label>Accès :</label><select id="niveau-acces-article"><option value="classic" selected>Classic</option><option value="premium">Premium</option></select>
+                <button class="btn-submit" onclick="sauvegarderArticle()">Publier</button>
             </div>
-            <div class="list-section">
-                <h3>Gérer les articles publiés</h3>
-                <div id="liste-articles">Chargement...</div>
-            </div>
+            <div class="list-section"><div id="liste-articles"></div></div>
         </div>
 
-        <!-- ======================= ONGLET UTILISATEURS ======================= -->
+        <!-- ONGLET USERS -->
         <div id="form-user" style="display: none;">
             <div class="list-section">
-                <h3>Gestion des Abonnements</h3>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Email</th>
-                                <th>Abonnement Actuel</th>
-                            </tr>
-                        </thead>
-                        <tbody id="liste-users">
-                            <tr><td colspan="2">Chargement...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table>
+                    <thead><tr><th>Email</th><th>Abonnement Actuel</th></tr></thead>
+                    <tbody id="liste-users"></tbody>
+                </table>
             </div>
         </div>
 
@@ -198,9 +159,7 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
-
-        let idEnEdition = { media: null, article: null };
-        let donneesEnMemoire = { medias: [], articles: [], matchsAPI: [], matchsBDD: [] };
+        let donneesEnMemoire = { matchsAPI: [], matchsBDD: [] };
 
         async function verifierAdmin() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -221,9 +180,46 @@
             document.getElementById('form-' + onglet).style.display = 'block';
             if (onglet === 'user') chargerUtilisateurs();
             if (onglet === 'match') chargerMatchs();
-            if (onglet === 'flash') chargerFlashes();
+            if (onglet === 'abonnement') chargerAvantages();
         }
 
+        async function chargerToutesLesListes() {
+            chargerMatchs(); chargerMedias(); chargerArticles(); chargerFlashes();
+        }
+
+        // --- AVANTAGES ABONNEMENT ---
+        async function chargerAvantages() {
+            const { data } = await supabaseClient.from('avantages').select('*').order('plan', { ascending: true }).order('created_at', { ascending: true });
+            let html = '';
+            (data || []).forEach(av => {
+                let icone = av.est_inclus ? '✅' : '❌';
+                let couleurPlan = av.plan === 'premium' ? 'var(--accent)' : (av.plan === 'classic' ? '#0055ff' : 'white');
+                html += `
+                <div class="manage-card">
+                    <div class="manage-info">
+                        <div class="manage-title" style="color:${couleurPlan}">[${av.plan.toUpperCase()}] ${icone} ${av.texte}</div>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-delete" onclick="supprimerElement('avantages', '${av.id}')">Supprimer</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('liste-avantages').innerHTML = html || 'Aucun avantage configuré.';
+        }
+
+        async function sauvegarderAvantage() {
+            const donnees = {
+                plan: document.getElementById('plan-avantage').value,
+                texte: document.getElementById('texte-avantage').value,
+                est_inclus: document.getElementById('inclus-avantage').value === 'true'
+            };
+            if(!donnees.texte) return;
+            await supabaseClient.from('avantages').insert([donnees]);
+            document.getElementById('texte-avantage').value = '';
+            chargerAvantages();
+        }
+
+        // --- MATCHS ---
         async function chargerMatchs() {
             try {
                 const reponse = await fetch(API_URL);
@@ -244,10 +240,7 @@
                 document.getElementById('filtre-journee-admin').value = currentMatchday;
 
                 filtrerMatchsAdmin();
-
-            } catch (err) {
-                document.getElementById('liste-matchs').innerHTML = "Erreur de connexion à l'API.";
-            }
+            } catch (err) {}
         }
 
         function filtrerMatchsAdmin() {
@@ -258,22 +251,12 @@
             matchsJournee.forEach(m => {
                 let dom = m.homeTeam.name;
                 let ext = m.awayTeam.name;
-                let status = m.status === 'FINISHED' ? 'Terminé' : (m.status === 'IN_PLAY' ? 'En cours' : 'À venir');
-                
-                let reglage = donneesEnMemoire.matchsBDD.find(r => parseInt(r.id_api) === m.id);
-                let badge = reglage ? `<span style="color:var(--accent); font-weight:bold; font-size:11px;">[Enrichi : ${reglage.niveau_acces}]</span>` : '';
-
+                let status = m.status === 'FINISHED' ? 'Terminé' : 'À venir';
                 let safeName = `${dom} - ${ext}`.replace(/'/g, "\\'");
-
                 html += `
                 <div class="manage-card">
-                    <div class="manage-info">
-                        <div class="manage-title">${dom} VS ${ext} ${badge}</div>
-                        <div class="manage-meta">Statut : ${status}</div>
-                    </div>
-                    <div class="manage-actions">
-                        <button class="btn-edit" onclick="editerMatch('${m.id}', '${safeName}')">Modifier</button>
-                    </div>
+                    <div class="manage-info"><div class="manage-title">${dom} VS ${ext}</div><div class="manage-meta">${status}</div></div>
+                    <div class="manage-actions"><button class="btn-edit" style="background:#0055ff;" onclick="editerMatch('${m.id}', '${safeName}')">Modifier</button></div>
                 </div>`;
             });
             document.getElementById('liste-matchs').innerHTML = html;
@@ -283,199 +266,77 @@
             document.getElementById('box-edition-match').style.display = 'block';
             document.getElementById('id-api-match').value = idApi;
             document.getElementById('label-nom-match').textContent = "Édition : " + nomMatch;
-            
             let reglage = donneesEnMemoire.matchsBDD.find(r => r.id_api == idApi);
-            if (reglage) {
-                document.getElementById('niveau-acces-match').value = reglage.niveau_acces;
-                document.getElementById('youtube-match').value = reglage.youtube_url || "";
-                document.getElementById('resume-match').value = reglage.resume_texte || "";
-            } else {
-                // CLASSIC par défaut partout !
-                document.getElementById('niveau-acces-match').value = "classic";
-                document.getElementById('youtube-match').value = "";
-                document.getElementById('resume-match').value = "";
-            }
+            document.getElementById('niveau-acces-match').value = reglage ? reglage.niveau_acces : "classic";
+            document.getElementById('youtube-match').value = reglage ? (reglage.youtube_url || "") : "";
+            document.getElementById('resume-match').value = reglage ? (reglage.resume_texte || "") : "";
             window.scrollTo(0, 0);
         }
 
         async function sauvegarderMatch() {
-            const idApi = document.getElementById('id-api-match').value;
             const donnees = {
-                id_api: idApi,
+                id_api: document.getElementById('id-api-match').value,
                 niveau_acces: document.getElementById('niveau-acces-match').value,
                 youtube_url: document.getElementById('youtube-match').value,
                 resume_texte: document.getElementById('resume-match').value
             };
-
-            document.getElementById('msg-match').textContent = "Enregistrement...";
-            const { error } = await supabaseClient.from('matchs_enrichis').upsert([donnees]);
-
-            if (error) {
-                document.getElementById('msg-match').textContent = "❌ Erreur : " + error.message;
-            } else {
-                document.getElementById('msg-match').textContent = "✅ Match mis à jour !";
-                chargerMatchs(); 
-                setTimeout(() => { document.getElementById('box-edition-match').style.display = 'none'; document.getElementById('msg-match').textContent = ""; }, 1500);
-            }
+            await supabaseClient.from('matchs_enrichis').upsert([donnees]);
+            document.getElementById('box-edition-match').style.display = 'none';
+            chargerMatchs();
         }
 
+        // --- FLASHES ---
         async function chargerFlashes() {
             const { data } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false });
             let html = '';
             (data || []).forEach(f => {
-                let d = new Date(f.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                html += `
-                <div class="manage-card">
-                    <div class="manage-info">
-                        <div class="manage-title">${d} - ${f.texte}</div>
-                    </div>
-                    <div class="manage-actions">
-                        <button class="btn-delete" onclick="supprimerFlash('${f.id}')">Supprimer</button>
-                    </div>
-                </div>`;
+                html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${f.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('flashes', '${f.id}')">Sup.</button></div></div>`;
             });
             document.getElementById('liste-flashes').innerHTML = html || 'Aucun flash.';
         }
-
         async function sauvegarderFlash() {
             const texte = document.getElementById('texte-flash').value;
             if(!texte) return;
-            const { error } = await supabaseClient.from('flashes').insert([{ texte: texte }]);
-            if (error) alert(error.message);
-            else { document.getElementById('texte-flash').value = ''; chargerFlashes(); }
+            await supabaseClient.from('flashes').insert([{ texte: texte }]);
+            document.getElementById('texte-flash').value = ''; chargerFlashes();
         }
 
-        async function supprimerFlash(id) {
-            await supabaseClient.from('flashes').delete().eq('id', id);
-            chargerFlashes();
+        // --- ARTICLES & MEDIAS ---
+        async function chargerArticles() {
+            const { data } = await supabaseClient.from('articles').select('*');
+            let html = '';
+            (data || []).forEach(a => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${a.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('articles', '${a.id}')">Sup.</button></div></div>`; });
+            document.getElementById('liste-articles').innerHTML = html;
         }
-
-        async function chargerToutesLesListes() {
-            chargerMatchs(); chargerMedias(); chargerArticles(); chargerFlashes();
-        }
-
-        function adapterFormulaireMedia() {
-            const type = document.getElementById('type-media').value;
-            document.getElementById('zone-url').style.display = type === 'video' ? 'block' : 'none';
-            document.getElementById('zone-upload').style.display = type === 'podcast' ? 'block' : 'none';
+        async function sauvegarderArticle() {
+            const data = { titre: document.getElementById('titre-article').value, image_url: document.getElementById('image-article').value, contenu: document.getElementById('contenu-article').value, niveau_acces: document.getElementById('niveau-acces-article').value };
+            await supabaseClient.from('articles').insert([data]); chargerArticles();
         }
 
         async function chargerMedias() {
             const { data } = await supabaseClient.from('medias').select('*');
-            donneesEnMemoire.medias = data || [];
             let html = '';
-            (data || []).forEach(m => {
-                html += `
-                <div class="manage-card">
-                    <div class="manage-info">
-                        <div class="manage-title">${m.type_media === 'video' ? '📺' : '🎙️'} ${m.titre}</div>
-                        <div class="manage-meta">Accès: ${m.niveau_acces.toUpperCase()}</div>
-                    </div>
-                    <div class="manage-actions">
-                        <button class="btn-edit" onclick="preparerEdition('media', '${m.id}')">Modifier</button>
-                        <button class="btn-delete" onclick="supprimerElement('medias', '${m.id}')">Sup.</button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('liste-medias').innerHTML = html || 'Aucun média.';
+            (data || []).forEach(m => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${m.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('medias', '${m.id}')">Sup.</button></div></div>`; });
+            document.getElementById('liste-medias').innerHTML = html;
+        }
+        async function sauvegarderMedia() {
+            const data = { type_media: document.getElementById('type-media').value, titre: document.getElementById('titre-media').value, description: document.getElementById('desc-media').value, url_media: document.getElementById('url-media').value, niveau_acces: document.getElementById('niveau-acces-media').value };
+            await supabaseClient.from('medias').insert([data]); chargerMedias();
         }
 
-        async function chargerArticles() {
-            const { data } = await supabaseClient.from('articles').select('*');
-            donneesEnMemoire.articles = data || [];
-            let html = '';
-            (data || []).forEach(a => {
-                html += `
-                <div class="manage-card">
-                    <div class="manage-info">
-                        <div class="manage-title">${a.titre}</div>
-                    </div>
-                    <div class="manage-actions">
-                        <button class="btn-edit" onclick="preparerEdition('article', '${a.id}')">Modifier</button>
-                        <button class="btn-delete" onclick="supprimerElement('articles', '${a.id}')">Sup.</button>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('liste-articles').innerHTML = html || 'Aucun article.';
-        }
-
+        // --- UTILISATEURS ---
         async function chargerUtilisateurs() {
             const { data } = await supabaseClient.from('profils').select('*');
             let html = '';
             (data || []).forEach(u => {
-                html += `
-                <tr>
-                    <td>${u.email || 'Email caché'}</td>
-                    <td>
-                        <select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333; border-radius: 4px;">
-                            <option value="free" ${u.plan === 'free' ? 'selected' : ''}>🟢 Free</option>
-                            <option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>🔵 Classic</option>
-                            <option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>🟣 Premium</option>
-                        </select>
-                    </td>
-                </tr>`;
+                html += `<tr><td>${u.email || 'Email caché'}</td><td><select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333;"><option value="free" ${u.plan === 'free' ? 'selected' : ''}>Free</option><option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>Classic</option><option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>Premium</option></select></td></tr>`;
             });
             document.getElementById('liste-users').innerHTML = html;
         }
-
-        async function changerPlanUtilisateur(id, plan) {
-            await supabaseClient.from('profils').update({ plan: plan }).eq('id', id);
-        }
-
-        function preparerEdition(type, id) {
-            idEnEdition[type] = id;
-            document.getElementById(`btn-submit-${type}`).textContent = "Mettre à jour";
-            document.getElementById(`btn-cancel-${type}`).style.display = "block";
-            
-            if (type === 'media') {
-                const m = donneesEnMemoire.medias.find(x => x.id === id);
-                document.getElementById('type-media').value = m.type_media; adapterFormulaireMedia();
-                document.getElementById('titre-media').value = m.titre; document.getElementById('desc-media').value = m.description;
-                document.getElementById('niveau-acces-media').value = m.niveau_acces;
-                if (m.type_media === 'video') document.getElementById('url-media').value = m.url_media;
-            } else if (type === 'article') {
-                const a = donneesEnMemoire.articles.find(x => x.id === id);
-                document.getElementById('titre-article').value = a.titre; document.getElementById('image-article').value = a.image_url || '';
-                document.getElementById('contenu-article').value = a.contenu; document.getElementById('niveau-acces-article').value = a.niveau_acces;
-            }
-            window.scrollTo(0, 0);
-        }
-
-        function annulerEdition(type) {
-            idEnEdition[type] = null;
-            if(document.getElementById(`btn-submit-${type}`)) document.getElementById(`btn-submit-${type}`).textContent = "Publier";
-            if(document.getElementById(`btn-cancel-${type}`)) document.getElementById(`btn-cancel-${type}`).style.display = "none";
-            if(type === 'match') document.getElementById('box-edition-match').style.display = 'none';
-        }
-
-        async function sauvegarderArticle() {
-            const data = {
-                titre: document.getElementById('titre-article').value, image_url: document.getElementById('image-article').value,
-                contenu: document.getElementById('contenu-article').value, niveau_acces: document.getElementById('niveau-acces-article').value
-            };
-            if (idEnEdition.article) await supabaseClient.from('articles').update(data).eq('id', idEnEdition.article);
-            else await supabaseClient.from('articles').insert([data]);
-            annulerEdition('article'); chargerArticles();
-        }
-
-        async function sauvegarderMedia() {
-            const type = document.getElementById('type-media').value;
-            let urlFinale = type === 'video' ? document.getElementById('url-media').value : ""; 
-            
-            const data = {
-                type_media: type, titre: document.getElementById('titre-media').value, description: document.getElementById('desc-media').value, 
-                url_media: urlFinale, niveau_acces: document.getElementById('niveau-acces-media').value
-            };
-            if (idEnEdition.media) await supabaseClient.from('medias').update(data).eq('id', idEnEdition.media);
-            else await supabaseClient.from('medias').insert([data]);
-            annulerEdition('media'); chargerMedias();
-        }
+        async function changerPlanUtilisateur(id, plan) { await supabaseClient.from('profils').update({ plan: plan }).eq('id', id); }
 
         async function supprimerElement(table, id) {
-            if (confirm("Supprimer définitivement ?")) {
-                await supabaseClient.from(table).delete().eq('id', id);
-                chargerToutesLesListes();
-            }
+            if (confirm("Supprimer ?")) { await supabaseClient.from(table).delete().eq('id', id); changerOnglet(table.replace('es', 'e').replace('s', '')); chargerToutesLesListes();}
         }
 
         verifierAdmin();
