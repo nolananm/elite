@@ -24,8 +24,8 @@
         .page-header h1 { font-size: 44px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
         .page-header p { color: var(--text-muted); font-size: 18px; }
 
-        .ad-zone { display: none; margin: 0 auto 40px auto; width: 100%; max-width: 900px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; min-height: 90px; }
-        .ad-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; display: block; }
+        .ad-zone { display: none; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin: 0 auto 40px auto; overflow: hidden; justify-content: center; align-items: center; flex-direction: column; min-height: 90px; max-width: 900px; position: relative; }
+        .ad-label { position: absolute; top: 5px; left: 10px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
         .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
         .article-card { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; display: flex; flex-direction: column; position: relative;}
@@ -33,7 +33,7 @@
         .article-img { width: 100%; height: 220px; background-size: cover; background-position: center; position: relative; }
         .article-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-card) 0%, transparent 100%); }
         
-        .badge-acces { position: absolute; top: 15px; left: 15px; z-index: 2; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .badge-acces { position: absolute; top: 15px; left: 15px; z-index: 2; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
         .badge-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.2); }
         .badge-classic { background: #0055ff; color: white; }
         .badge-premium { background: var(--gradient); color: white; }
@@ -157,7 +157,6 @@
                 document.body.appendChild(popScript);
             }
 
-            // CORRECTION DU BUG SUPABASE : On ne force pas le tri côté SQL pour éviter l'erreur si created_at manque
             const { data: articles, error } = await supabaseClient.from('articles').select('*');
             const container = document.getElementById('articles-container');
 
@@ -166,7 +165,6 @@
                 return;
             }
 
-            // Tri côté JavaScript du plus récent au plus ancien (si la date est présente, sinon ordre inverse d'insertion)
             tousLesArticles = articles.sort((a, b) => {
                 if(a.created_at && b.created_at) return new Date(b.created_at) - new Date(a.created_at);
                 return -1;
@@ -182,6 +180,7 @@
                 let extraitTexte = contenuSecurise.replace(/\n/g, " ");
                 let extrait = extraitTexte.substring(0, 110) + '...';
 
+                // L'ID est passé de manière sécurisée pour éviter le bug de conversion string/nombre
                 html += `
                 <div class="article-card" onclick="ouvrirArticle('${art.id}')">
                     <div class="article-img" style="background-image: url('${img}');">
@@ -200,7 +199,8 @@
         }
 
         function ouvrirArticle(idArticle) {
-            const article = tousLesArticles.find(a => a.id === idArticle);
+            // CORRECTION DU BUG : On utilise == au lieu de === pour que "1" soit égal à 1
+            const article = tousLesArticles.find(a => a.id == idArticle);
             if (!article) return;
 
             const accesRequis = article.niveau_acces || 'free';
