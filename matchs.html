@@ -19,10 +19,10 @@
         nav a:hover { color: var(--accent); }
 
         .container { max-width: 1300px; margin: 100px auto 50px auto; padding: 0 20px; }
+        
         .page-header { margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; }
         .page-header h1 { font-size: 32px; font-weight: 800; text-transform: uppercase; }
 
-        /* ZONE PUB (Cachée par défaut) */
         .ad-zone { display: none; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin-bottom: 30px; overflow: hidden; flex-direction: column; justify-content: center; align-items: center; position: relative; }
         .ad-label { position: absolute; top: 5px; left: 10px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
@@ -69,6 +69,7 @@
         td.team-cell img { width: 20px; height: 20px; object-fit: contain; }
         .pts-col { font-weight: 800; color: white; }
 
+        /* MODALES */
         .site-modal { display: none; position: fixed; inset: 0; background: rgba(5, 7, 12, 0.9); z-index: 3000; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; padding: 20px; }
         .site-modal.show { opacity: 1; }
         .modal-box { background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; position: relative; }
@@ -116,17 +117,11 @@
         <div class="layout-grid">
             <div class="col-matchs">
                 
-                <!-- ZONE PUB 1 : Au dessus des matchs (Bannière 728x90) -->
+                <!-- PUB 728x90 -->
                 <div class="ad-zone">
                     <span class="ad-label">Sponsorisé</span>
                     <script>
-                        atOptions = {
-                            'key' : 'a75626ad776c3791da4b7e1f47f54670',
-                            'format' : 'iframe',
-                            'height' : 90,
-                            'width' : 728,
-                            'params' : {}
-                        };
+                        atOptions = { 'key' : 'a75626ad776c3791da4b7e1f47f54670', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
                     </script>
                     <script src="https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js"></script>
                 </div>
@@ -150,7 +145,7 @@
                     </div>
                 </div>
 
-                <!-- ZONE PUB 2 : Carré dans la barre latérale (Native Banner) -->
+                <!-- PUB NATIVE BANNER -->
                 <div class="ad-zone">
                     <span class="ad-label">Publicité</span>
                     <script async="async" data-cfasync="false" src="https://pl31058277.profitableratecpmnetwork.com/ef5aa0c7919108b05eacd11170186658/invoke.js"></script>
@@ -229,14 +224,21 @@
                 if (profil) profilActuel = profil.plan;
             }
 
-            // LE BOUCLIER ANTI-PUB !
+            // LE BOUCLIER ANTI-PUB MULTI-NIVEAUX
             if (profilActuel === 'premium') {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
+            } else if (profilActuel === 'classic') {
+                document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex');
             } else {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
+                
                 const popScript = document.createElement('script');
                 popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js";
                 document.body.appendChild(popScript);
+
+                const socialScript = document.createElement('script');
+                socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js";
+                document.body.appendChild(socialScript);
             }
 
             chargerDonneesAPI();
@@ -400,7 +402,6 @@
             const nomExt = matchApi.awayTeam.shortName || matchApi.awayTeam.name;
             const scoreDom = matchApi.score.fullTime.home;
             const scoreExt = matchApi.score.fullTime.away;
-
             const texteResume = matchAdmin.resume_texte || "Le résumé détaillé de la rédaction sera publié prochainement pour cette rencontre.";
             
             let videoHtml = `<div class="stats-box">Les images du match seront bientôt disponibles.</div>`;
