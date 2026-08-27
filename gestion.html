@@ -62,7 +62,9 @@
                 <p id="label-nom-match" style="color: white; font-weight: bold; margin-bottom: 15px;"></p>
                 <label>Accès requis :</label>
                 <select id="niveau-acces-match">
-                    <option value="free">Free</option><option value="classic" selected>Classic</option><option value="premium">Premium</option>
+                    <option value="free">Free</option>
+                    <option value="classic" selected>Classic</option>
+                    <option value="premium">Premium</option>
                 </select>
                 <label>Lien YouTube :</label><input type="text" id="youtube-match">
                 <label>Résumé :</label><textarea id="resume-match"></textarea>
@@ -83,7 +85,7 @@
                 <h3>Gérer les avantages des offres</h3>
                 <label>Offre concernée :</label>
                 <select id="plan-avantage">
-                    <option value="free">Offre Free (Visiteur)</option>
+                    <option value="free">Offre Free</option>
                     <option value="classic">Offre Classic (Le Choix n°1)</option>
                     <option value="premium">Offre Premium (VIP)</option>
                 </select>
@@ -124,7 +126,12 @@
                 <label>Titre :</label><input type="text" id="titre-media">
                 <label>Description :</label><textarea id="desc-media"></textarea>
                 <label>Lien YouTube :</label><input type="text" id="url-media">
-                <label>Accès :</label><select id="niveau-acces-media"><option value="classic" selected>Classic</option><option value="premium">Premium</option></select>
+                <label>Accès :</label>
+                <select id="niveau-acces-media">
+                    <option value="free">Free</option>
+                    <option value="classic" selected>Classic</option>
+                    <option value="premium">Premium</option>
+                </select>
                 <button class="btn-submit" onclick="sauvegarderMedia()">Publier</button>
             </div>
             <div class="list-section"><div id="liste-medias"></div></div>
@@ -137,7 +144,12 @@
                 <label>Titre :</label><input type="text" id="titre-article">
                 <label>Image URL :</label><input type="text" id="image-article">
                 <label>Contenu :</label><textarea id="contenu-article"></textarea>
-                <label>Accès :</label><select id="niveau-acces-article"><option value="classic" selected>Classic</option><option value="premium">Premium</option></select>
+                <label>Accès :</label>
+                <select id="niveau-acces-article">
+                    <option value="free">Free</option>
+                    <option value="classic" selected>Classic</option>
+                    <option value="premium">Premium</option>
+                </select>
                 <button class="btn-submit" onclick="sauvegarderArticle()">Publier</button>
             </div>
             <div class="list-section"><div id="liste-articles"></div></div>
@@ -147,7 +159,7 @@
         <div id="form-user" style="display: none;">
             <div class="list-section">
                 <h3>Liste des abonnés</h3>
-                <input type="text" id="search-user" onkeyup="filtrerUsers()" placeholder="🔍 Rechercher un email..." style="margin-bottom: 15px; border-radius: 20px;">
+                <input type="text" id="search-user" onkeyup="filtrerUsers()" placeholder="🔍 Rechercher un email..." style="margin-bottom: 15px; border-radius: 20px; padding: 12px; width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none;">
                 <table>
                     <thead><tr><th>Email</th><th>Abonnement Actuel</th></tr></thead>
                     <tbody id="liste-users"></tbody>
@@ -164,7 +176,7 @@
 
         const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
         let donneesEnMemoire = { matchsAPI: [], matchsBDD: [] };
-        let tousLesUsers = []; // Pour la barre de recherche
+        let tousLesUsers = [];
 
         async function verifierAdmin() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -324,7 +336,7 @@
             await supabaseClient.from('medias').insert([data]); chargerMedias();
         }
 
-        // --- UTILISATEURS (AVEC RECHERCHE) ---
+        // --- UTILISATEURS ---
         async function chargerUtilisateurs() {
             const { data } = await supabaseClient.from('profils').select('*');
             tousLesUsers = data || [];
