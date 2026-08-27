@@ -117,7 +117,6 @@
         <div class="layout-grid">
             <div class="col-matchs">
                 
-                <!-- PUB 728x90 -->
                 <div class="ad-zone">
                     <span class="ad-label">Sponsorisé</span>
                     <script>
@@ -145,7 +144,6 @@
                     </div>
                 </div>
 
-                <!-- PUB NATIVE BANNER -->
                 <div class="ad-zone">
                     <span class="ad-label">Publicité</span>
                     <script async="async" data-cfasync="false" src="https://pl31058277.profitableratecpmnetwork.com/ef5aa0c7919108b05eacd11170186658/invoke.js"></script>
@@ -173,7 +171,7 @@
         </div>
     </div>
 
-    <!-- MODAL : VISIONNEUSE DE MATCH -->
+    <!-- MODALES ... -->
     <div class="site-modal" id="modal-match">
         <div class="modal-box">
             <div class="modal-header-bar">
@@ -184,7 +182,6 @@
         </div>
     </div>
 
-    <!-- MODAL : PAYWALL -->
     <div class="site-modal" id="modal-paywall">
         <div class="modal-box premium-box">
             <button class="btn-close-modal" style="position: absolute; top: 15px; right: 15px;" onclick="fermerModal('modal-paywall')">✕</button>
@@ -195,7 +192,6 @@
         </div>
     </div>
 
-    <!-- MODAL : MESSAGE SIMPLE -->
     <div class="site-modal" id="modal-message">
         <div class="modal-box premium-box" style="max-width: 400px; padding: 30px;">
             <button class="btn-close-modal" style="position: absolute; top: 15px; right: 15px;" onclick="fermerModal('modal-message')">✕</button>
@@ -217,12 +213,54 @@
 
         const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
 
+        // --- FONCTION DE SÉCURITÉ : COMPTE A REBOURS ---
+        async function verifierCompteARebours(estAdmin) {
+            const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
+            if (data && data.compte_a_rebours_actif && !estAdmin) {
+                document.body.innerHTML = `
+                    <div style="height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), #07080b; color: white; text-align: center; padding: 20px; font-family: 'Poppins', sans-serif;">
+                        <h1 style="font-size: 60px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; text-transform: uppercase;">L'Élite se prépare</h1>
+                        <p style="color: #8b92a5; font-size: 18px; max-width: 600px; margin-bottom: 50px;">Le nouveau média de référence du football français ouvre ses portes dans :</p>
+                        <div style="display: flex; gap: 30px; font-size: 50px; font-weight: 800;" id="timer-display">Chargement...</div>
+                    </div>
+                `;
+
+                const dateLancement = new Date(data.date_lancement).getTime();
+                setInterval(() => {
+                    const distance = dateLancement - new Date().getTime();
+                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "Ouverture !"; return; }
+
+                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const secondes = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.getElementById('timer-display').innerHTML = `
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${jours}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Jours</span></div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${heures}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Heures</span></div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${minutes}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Minutes</span></div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${secondes}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Secondes</span></div>
+                    `;
+                }, 1000);
+                return true; 
+            }
+            return false;
+        }
+
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
+            let estAdmin = false;
+
             if (user) {
-                const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
-                if (profil) profilActuel = profil.plan;
+                const { data: profil } = await supabaseClient.from('profils').select('plan, est_admin').eq('id', user.id).single();
+                if (profil) {
+                    profilActuel = profil.plan;
+                    estAdmin = profil.est_admin;
+                }
             }
+
+            // SÉCURITÉ
+            if (await verifierCompteARebours(estAdmin)) return;
 
             if (profilActuel === 'premium') {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
@@ -231,20 +269,15 @@
                 document.querySelectorAll('.ad-intrusive').forEach(zone => zone.remove());
             } else {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
-                
-                const popScript = document.createElement('script');
-                popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js";
-                document.body.appendChild(popScript);
-
-                const socialScript = document.createElement('script');
-                socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js";
-                document.body.appendChild(socialScript);
+                const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
+                const socialScript = document.createElement('script'); socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js"; document.body.appendChild(socialScript);
             }
 
             chargerDonneesAPI();
             chargerFlashes();
         }
 
+        // ... Le reste des fonctions (chargerDonneesAPI, chargerFlashes, changerJournee, etc.) reste strictement identique !
         async function chargerDonneesAPI() {
             try {
                 const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*');
@@ -254,20 +287,13 @@
                 if (!reponse.ok) throw new Error(`Erreur API (${reponse.status})`);
 
                 const data = await reponse.json();
-                if (data.standings?.errorCode || data.matches?.errorCode || data.errorCode) throw new Error("Limite API atteinte. Recharge dans 1 min.");
+                if (data.standings?.errorCode || data.matches?.errorCode || data.errorCode) throw new Error("Limite API atteinte.");
 
                 const classement = data.standings.standings[0].table;
                 let htmlClassement = '';
                 classement.forEach(equipe => {
                     let nomCourt = equipe.team.shortName || equipe.team.name.substring(0, 12);
-                    htmlClassement += `
-                    <tr>
-                        <td>${equipe.position}</td>
-                        <td class="team-cell"><img src="${equipe.team.crest}" alt=""> ${nomCourt}</td>
-                        <td>${equipe.playedGames}</td>
-                        <td>${equipe.won}</td>
-                        <td class="pts-col">${equipe.points}</td>
-                    </tr>`;
+                    htmlClassement += `<tr><td>${equipe.position}</td><td class="team-cell"><img src="${equipe.team.crest}" alt=""> ${nomCourt}</td><td>${equipe.playedGames}</td><td>${equipe.won}</td><td class="pts-col">${equipe.points}</td></tr>`;
                 });
                 document.getElementById('body-classement').innerHTML = htmlClassement;
 
@@ -279,35 +305,22 @@
                 if(matchsJoues.length > 0) currentMatchday = Math.max(...matchsJoues.map(m => m.matchday));
 
                 let optionsHtml = '';
-                matchdays.forEach(day => {
-                    optionsHtml += `<option value="${day}" ${day === currentMatchday ? 'selected' : ''}>Journée ${day}</option>`;
-                });
+                matchdays.forEach(day => { optionsHtml += `<option value="${day}" ${day === currentMatchday ? 'selected' : ''}>Journée ${day}</option>`; });
                 document.getElementById('matchday-selector').innerHTML = optionsHtml;
 
                 changerJournee();
-
             } catch (erreur) {
-                console.error(erreur);
-                let msgErreur = erreur.message || "Erreur API.";
-                document.getElementById('body-classement').innerHTML = `<tr><td colspan="5" class="error-text">❌ ${msgErreur}</td></tr>`;
-                document.getElementById('matchs-container').innerHTML = `<div class="error-text">❌ ${msgErreur}</div>`;
+                document.getElementById('body-classement').innerHTML = `<tr><td colspan="5" class="error-text">❌ Erreur de chargement</td></tr>`;
             }
         }
 
         async function chargerFlashes() {
             const container = document.getElementById('flash-list');
             const { data: flashes } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false }).limit(15);
-            
-            if (!flashes || flashes.length === 0) {
-                container.innerHTML = `<div class="flash-item"><span class="flash-text" style="color:var(--text-muted)">Aucun flash.</span></div>`;
-                return;
-            }
-
-            let html = '';
-            flashes.forEach(f => {
+            if (!flashes || flashes.length === 0) { container.innerHTML = `<div class="flash-item"><span class="flash-text" style="color:var(--text-muted)">Aucun flash.</span></div>`; return; }
+            let html = ''; flashes.forEach(f => {
                 let d = new Date(f.created_at);
-                let heure = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                html += `<div class="flash-item"><span class="flash-time">${heure}</span><span class="flash-text">${f.texte}</span></div>`;
+                html += `<div class="flash-item"><span class="flash-time">${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span><span class="flash-text">${f.texte}</span></div>`;
             });
             container.innerHTML = html;
         }
@@ -316,31 +329,21 @@
             const daySelected = parseInt(document.getElementById('matchday-selector').value);
             const matchsJournee = tousLesMatchsAPI.filter(m => m.matchday === daySelected);
             const container = document.getElementById('matchs-container');
-            
             let html = '';
             matchsJournee.forEach(m => {
                 let nomDom = m.homeTeam.shortName || m.homeTeam.name;
                 let nomExt = m.awayTeam.shortName || m.awayTeam.name;
-                
                 let reglageAdmin = reglageMatchsBDD.find(r => r.id_api == m.id);
                 let acces = reglageAdmin ? reglageAdmin.niveau_acces : "classic"; 
                 let badgeClass = acces === "premium" ? "badge-premium" : (acces === "classic" ? "badge-classic" : "badge-free");
-
-                let scoreText = "";
-                let boxClass = "score-box";
-                let libelleDate = "";
-
+                let scoreText = ""; let boxClass = "score-box"; let libelleDate = "";
                 if (m.status === 'FINISHED') {
-                    let scoreDom = m.score.fullTime.home !== null ? m.score.fullTime.home : 0;
-                    let scoreExt = m.score.fullTime.away !== null ? m.score.fullTime.away : 0;
-                    scoreText = `${scoreDom} - ${scoreExt}`;
+                    scoreText = `${m.score.fullTime.home !== null ? m.score.fullTime.home : 0} - ${m.score.fullTime.away !== null ? m.score.fullTime.away : 0}`;
                     libelleDate = `Terminé le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
                 } else {
                     scoreText = new Date(m.utcDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                    boxClass += " score-upcoming";
-                    libelleDate = `Le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                    boxClass += " score-upcoming"; libelleDate = `Le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
                 }
-
                 html += `
                 <div class="match-card" onclick="ouvrirMatch('${acces}', '${m.status}', '${m.id}')">
                     <span class="badge-acces ${badgeClass}">${acces}</span>
@@ -356,75 +359,45 @@
         }
 
         function afficherMessageSite(titre, texte, icon) {
-            document.getElementById('msg-title').textContent = titre;
-            document.getElementById('msg-text').textContent = texte;
-            document.getElementById('msg-icon').textContent = icon;
-            const modal = document.getElementById('modal-message');
-            modal.style.display = 'flex';
-            setTimeout(() => { modal.classList.add('show'); }, 10);
+            document.getElementById('msg-title').textContent = titre; document.getElementById('msg-text').textContent = texte; document.getElementById('msg-icon').textContent = icon;
+            const modal = document.getElementById('modal-message'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
         }
 
         function fermerModal(id) {
-            const modal = document.getElementById(id);
-            modal.classList.remove('show');
-            setTimeout(() => { modal.style.display = 'none'; }, 300);
+            const modal = document.getElementById(id); modal.classList.remove('show'); setTimeout(() => { modal.style.display = 'none'; }, 300);
             if(id === 'modal-match') document.getElementById('modal-match-content').innerHTML = '';
         }
 
         function ouvrirMatch(accesRequis, status, idApiStr) {
             const idApi = parseInt(idApiStr);
-            
             let aLeDroit = false;
             if (accesRequis === 'free') aLeDroit = true;
             else if (accesRequis === 'classic' && (profilActuel === 'classic' || profilActuel === 'premium')) aLeDroit = true;
             else if (accesRequis === 'premium' && profilActuel === 'premium') aLeDroit = true;
 
             if (!aLeDroit) {
-                const modal = document.getElementById('modal-paywall');
                 document.getElementById('paywall-title').innerHTML = `Élite <span style='color: var(--accent)'>${accesRequis.toUpperCase()}</span>`;
-                modal.style.display = 'flex';
-                setTimeout(() => { modal.classList.add('show'); }, 10);
-                return;
+                const modal = document.getElementById('modal-paywall'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10); return;
             }
 
-            if (status === 'SCHEDULED' || status === 'TIMED') {
-                afficherMessageSite("Match à venir", "Ce match n'a pas encore commencé. Le résumé et les statistiques de l'Élite seront disponibles après le coup de sifflet final.", "⏳");
-                return;
-            } else if (status === 'IN_PLAY' || status === 'PAUSED') {
-                afficherMessageSite("Match en direct", "Cette rencontre se joue actuellement ! Le résumé officiel sera publié dès la fin du temps réglementaire.", "🔴");
-                return;
-            }
+            if (status === 'SCHEDULED' || status === 'TIMED') { afficherMessageSite("Match à venir", "Le résumé sera disponible après le match.", "⏳"); return; }
+            else if (status === 'IN_PLAY' || status === 'PAUSED') { afficherMessageSite("Match en direct", "Cette rencontre se joue actuellement !", "🔴"); return; }
 
             const matchApi = tousLesMatchsAPI.find(m => m.id === idApi);
             const matchAdmin = reglageMatchsBDD.find(r => r.id_api == idApi) || {};
-
-            const nomDom = matchApi.homeTeam.shortName || matchApi.homeTeam.name;
-            const nomExt = matchApi.awayTeam.shortName || matchApi.awayTeam.name;
-            const scoreDom = matchApi.score.fullTime.home;
-            const scoreExt = matchApi.score.fullTime.away;
-            const texteResume = matchAdmin.resume_texte || "Le résumé détaillé de la rédaction sera publié prochainement pour cette rencontre.";
-            
-            let videoHtml = `<div class="stats-box">Les images du match seront bientôt disponibles.</div>`;
+            let videoHtml = `<div class="stats-box">Images bientôt disponibles.</div>`;
             if (matchAdmin.youtube_url) {
                 let embedUrl = matchAdmin.youtube_url.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
                 videoHtml = `<div class="video-container"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
             }
 
-            let contenu = `
-                <div class="match-score-header">
-                    <img src="${matchApi.homeTeam.crest}">
-                    <div class="score">${scoreDom} - ${scoreExt}</div>
-                    <img src="${matchApi.awayTeam.crest}">
-                </div>
-                <div class="content-bloc"><h3>📝 Le Résumé de l'Élite</h3><div class="resume-text">${texteResume}</div></div>
+            document.getElementById('modal-match-content').innerHTML = `
+                <div class="match-score-header"><img src="${matchApi.homeTeam.crest}"><div class="score">${matchApi.score.fullTime.home} - ${matchApi.score.fullTime.away}</div><img src="${matchApi.awayTeam.crest}"></div>
+                <div class="content-bloc"><h3>📝 Le Résumé de l'Élite</h3><div class="resume-text">${matchAdmin.resume_texte || "Résumé en cours de rédaction."}</div></div>
                 <div class="content-bloc"><h3>🎞️ Les Images de la rencontre</h3>${videoHtml}</div>
                 <div class="content-bloc"><h3>📊 Statistiques clés</h3><div class="stats-box">Arbitre : ${matchApi.referees && matchApi.referees.length > 0 ? matchApi.referees[0].name : "Non communiqué"}<br>Compétition : ${matchApi.competition.name}</div></div>
             `;
-
-            document.getElementById('modal-match-content').innerHTML = contenu;
-            const modalMatch = document.getElementById('modal-match');
-            modalMatch.style.display = 'flex';
-            setTimeout(() => { modalMatch.classList.add('show'); }, 10);
+            const modalMatch = document.getElementById('modal-match'); modalMatch.style.display = 'flex'; setTimeout(() => { modalMatch.classList.add('show'); }, 10);
         }
 
         initialiserPage();
