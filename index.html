@@ -9,7 +9,6 @@
     <style>
         :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        /* ASTUCE SÉCURITÉ : Le body commence invisible */
         body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; scroll-behavior: smooth; visibility: hidden; opacity: 0; transition: opacity 0.5s ease; }
         a { text-decoration: none; color: inherit; }
 
@@ -62,6 +61,21 @@
         .btn-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.1); }
         .btn-classic { background: #0055ff; color: white; box-shadow: 0 10px 20px rgba(0,85,255,0.3); }
         .btn-premium { background: var(--gradient); color: white; }
+
+        /* RESPONSIVE MOBILE */
+        @media (max-width: 768px) {
+            header { flex-direction: column; padding: 15px; gap: 10px; }
+            nav { flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+            nav a { font-size: 12px; }
+            .hero { padding: 150px 15px 60px 15px; }
+            .hero h1 { font-size: 38px; }
+            .hero p { font-size: 16px; }
+            /* Empêche les grandes pubs de casser la page */
+            .ad-zone { max-width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 10px 0; border-radius: 0; border-left: none; border-right: none;}
+            .pricing-grid { grid-template-columns: 1fr; }
+            .pricing-card.classic { transform: none; margin: 20px 0; }
+            .pricing-card.classic:hover { transform: translateY(-5px); }
+        }
     </style>
 </head>
 <body>
@@ -138,26 +152,32 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // --- FONCTION DE SÉCURITÉ : NOUVEAU COMPTE A REBOURS ---
         async function verifierCompteARebours(estAdmin) {
             const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
             if (data && data.compte_a_rebours_actif && !estAdmin) {
-                // Remplacement total par le nouveau design Premium
                 document.body.innerHTML = `
+                    <style>
+                        .timer-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+                        .timer-box { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px 20px; min-width: 130px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+                        .timer-num { font-size: 48px; font-weight: 800; color: white; line-height: 1; }
+                        .timer-label { font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; font-weight: 600; }
+                        @media (max-width: 768px) {
+                            .timer-box { min-width: 80px; padding: 15px 10px; border-radius: 12px; gap: 10px;}
+                            .timer-num { font-size: 28px; }
+                            .timer-label { font-size: 10px; letter-spacing: 1px; }
+                            h1.launch-title { font-size: 36px !important; }
+                            p.launch-desc { font-size: 14px !important; }
+                        }
+                    </style>
                     <div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b), url('https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop') center/cover; position: relative; font-family: 'Poppins', sans-serif;">
                         <div style="position: relative; z-index: 10; text-align: center; padding: 20px; width: 100%;">
                             <div style="font-size: 20px; font-weight: 800; letter-spacing: 6px; color: white; margin-bottom: 20px; opacity: 0.8;">ÉLITE</div>
-                            <h1 style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; line-height: 1.1;">L'expérience ultime<br>du football arrive.</h1>
-                            <p style="color: #a0a5b0; font-size: 18px; max-width: 600px; margin: 0 auto 50px auto;">Nous préparons la plateforme. Analyses tactiques, résumés vidéos et immersion totale en Ligue 1.</p>
-                            
-                            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;" id="timer-display">
-                                <!-- Le timer va s'injecter ici -->
-                            </div>
+                            <h1 class="launch-title" style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; line-height: 1.1;">L'expérience ultime<br>du football arrive.</h1>
+                            <p class="launch-desc" style="color: #a0a5b0; font-size: 18px; max-width: 600px; margin: 0 auto 50px auto;">Nous préparons la plateforme. Analyses tactiques, résumés vidéos et immersion totale en Ligue 1.</p>
+                            <div class="timer-container" id="timer-display"></div>
                         </div>
                     </div>
                 `;
-                
-                // Rendre visible UNIQUEMENT la page d'attente
                 document.body.style.visibility = 'visible';
                 document.body.style.opacity = '1';
 
@@ -165,24 +185,9 @@
                 setInterval(() => {
                     const distance = dateLancement - new Date().getTime();
                     if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
-
-                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
-                    const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const secondes = Math.floor((distance % (1000 * 60)) / 1000);
-
-                    const boxStyle = "background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px 20px; min-width: 130px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);";
-                    const numStyle = "font-size: 48px; font-weight: 800; color: white; line-height: 1;";
-                    const labelStyle = "font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; font-weight: 600;";
-
-                    document.getElementById('timer-display').innerHTML = `
-                        <div style="${boxStyle}"><div style="${numStyle}">${jours}</div><div style="${labelStyle}">Jours</div></div>
-                        <div style="${boxStyle}"><div style="${numStyle}">${heures}</div><div style="${labelStyle}">Heures</div></div>
-                        <div style="${boxStyle}"><div style="${numStyle}">${minutes}</div><div style="${labelStyle}">Minutes</div></div>
-                        <div style="${boxStyle}"><div style="${numStyle}">${secondes}</div><div style="${labelStyle}">Secondes</div></div>
-                    `;
+                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24)); const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const secondes = Math.floor((distance % (1000 * 60)) / 1000);
+                    document.getElementById('timer-display').innerHTML = `<div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div><div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div><div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div><div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>`;
                 }, 1000);
-
                 return true; 
             }
             return false;
@@ -190,31 +195,21 @@
 
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
-            let profilActuel = 'none';
-            let estAdmin = false;
+            let profilActuel = 'none'; let estAdmin = false;
 
             if (user) {
                 const { data: profil } = await supabaseClient.from('profils').select('plan, est_admin').eq('id', user.id).single();
-                if (profil) {
-                    profilActuel = profil.plan;
-                    estAdmin = profil.est_admin;
-                }
+                if (profil) { profilActuel = profil.plan; estAdmin = profil.est_admin; }
             }
 
-            // SÉCURITÉ : VÉRIFICATION COMPTE A REBOURS
-            const siteBloque = await verifierCompteARebours(estAdmin);
-            if (siteBloque) return; // Arrête tout, ne télécharge aucune donnée, aucune pub !
+            if (await verifierCompteARebours(estAdmin)) return;
 
-            // --- SI ON ARRIVE ICI, LE SITE N'EST PAS BLOQUÉ ---
-            // On affiche enfin le site principal
             document.body.style.visibility = 'visible';
             document.body.style.opacity = '1';
 
-            if (profilActuel === 'premium') {
-                document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
-            } else if (profilActuel === 'classic') {
-                document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex');
-            } else {
+            if (profilActuel === 'premium') { document.querySelectorAll('.ad-zone').forEach(zone => zone.remove()); } 
+            else if (profilActuel === 'classic') { document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex'); } 
+            else {
                 document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
                 const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
                 const socialScript = document.createElement('script'); socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js"; document.body.appendChild(socialScript);
@@ -228,24 +223,16 @@
             if (!avantages || avantages.length === 0) return;
 
             const ordreMap = { 'check': 1, 'dash': 2, 'cross': 3 };
-            avantages.sort((a, b) => {
-                let valA = ordreMap[a.type_icone || 'check'] || 1;
-                let valB = ordreMap[b.type_icone || 'check'] || 1;
-                return valA - valB;
-            });
+            avantages.sort((a, b) => { let valA = ordreMap[a.type_icone || 'check'] || 1; let valB = ordreMap[b.type_icone || 'check'] || 1; return valA - valB; });
 
             let htmlFree = '', htmlClassic = '', htmlPremium = '';
-
             avantages.forEach(av => {
                 let iconeHtml = ''; let classeTexte = 'style="color: #e0e0e0;"'; 
                 if (av.type_icone === 'check') { iconeHtml = '<span class="icon-yes">✓</span>'; }
                 else if (av.type_icone === 'dash') { iconeHtml = '<span style="color:#ff9800; font-weight:bold;">—</span>'; }
                 else { iconeHtml = '<span class="icon-no">✕</span>'; classeTexte = 'class="no"'; }
-
                 let ligne = `<li ${classeTexte}>${iconeHtml} ${av.texte}</li>`;
-                if(av.plan === 'free') htmlFree += ligne;
-                else if(av.plan === 'classic') htmlClassic += ligne;
-                else if(av.plan === 'premium') htmlPremium += ligne;
+                if(av.plan === 'free') htmlFree += ligne; else if(av.plan === 'classic') htmlClassic += ligne; else if(av.plan === 'premium') htmlPremium += ligne;
             });
 
             document.getElementById('features-free').innerHTML = htmlFree || '<li style="color:#555;">Aucun avantage défini.</li>';
