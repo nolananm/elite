@@ -51,13 +51,13 @@
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
-        /* LECTEUR AUDIO SUR MESURE (ELITE PLAYER) */
+        /* LECTEUR AUDIO PRO */
         .audio-wrapper { padding: 50px 30px; text-align: center; }
         .audio-wave { font-size: 60px; margin-bottom: 15px; transition: transform 0.2s; }
         .audio-wave.playing { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
         
-        .custom-audio-player { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .custom-audio-player { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .play-btn { background: var(--gradient); border: none; color: white; width: 60px; height: 60px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 20px rgba(229,0,70,0.4); transition: 0.3s; }
         .play-btn:hover { transform: scale(1.05); }
         
@@ -118,12 +118,11 @@
         </div>
     </div>
 
-    <!-- MODAL AUDIO CUSTOM -->
     <div class="site-modal" id="modal-audio">
         <div class="modal-box audio-wrapper">
             <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
             <div class="audio-wave" id="audio-wave-icon">🎙️</div>
-            <h3 id="audio-title" style="margin-bottom: 20px; font-size: 22px;">Titre du Podcast</h3>
+            <h3 id="audio-title" style="margin-bottom: 5px; font-size: 22px;">Titre du Podcast</h3>
             
             <div class="custom-audio-player">
                 <button class="play-btn" id="play-pause-btn" onclick="toggleAudioPlay()">▶</button>
@@ -156,32 +155,30 @@
         let profilActuel = 'none'; 
         let tousLesMedias = [];
         
-        // --- LOGIQUE LECTEUR AUDIO FUSIONNÉ ---
+        // --- SYSTÈME RADIO : MIXAGE JINGLE + PODCAST ---
         
-        // 🚨 REMPLACE CE LIEN PAR L'URL DE TON PROPRE JINGLE UPLOADÉ SUR SUPABASE ! 🚨
-        const URL_JINGLE = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; 
+        // Intro dynamique courte (libre de droits). 
+        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3'; 
         
         let audioJingle = new Audio(URL_JINGLE);
-        audioJingle.volume = 0.15; // Jingle très bas (15%) pour laisser la place à ta voix
+        audioJingle.preload = 'auto';
+        audioJingle.volume = 0.20; // Volume du jingle à 20%
         
         let audioPodcast = new Audio();
-        audioPodcast.volume = 1.0; // Ta voix à fond (100%)
+        audioPodcast.preload = 'auto';
+        audioPodcast.volume = 1.0; // Volume de ta voix à 100%
         
         let isAudioPlaying = false;
         let isJinglePhase = true;
-        let jingleDuration = 5.0; // Durée fixée strictement à 5 secondes
+        let transitionTriggered = false;
+        let fadeInterval = null;
+        
+        let jingleDuration = 6.0; // Durée approximative du jingle par défaut
         let podcastDuration = 0;
 
-        // SYSTÈME ANTI-BUG : Si le lien du jingle plante, on l'ignore et on passe à ta voix à 0 sec.
-        audioJingle.onerror = () => {
-            console.log("Jingle bloqué, passage direct au podcast.");
-            jingleDuration = 0;
-            isJinglePhase = false;
-        };
-
-        audioJingle.addEventListener('loadedmetadata', () => {
-            if(audioJingle.duration < jingleDuration) jingleDuration = audioJingle.duration;
-            updateTotalTimeUI();
+        // Récupération automatique des vraies durées
+        audioJingle.addEventListener('loadedmetadata', () => { 
+            jingleDuration = audioJingle.duration; 
         });
 
         audioPodcast.addEventListener('loadedmetadata', () => { 
@@ -189,33 +186,53 @@
             updateTotalTimeUI(); 
         });
 
-        function passToPodcast() {
-            if (!isJinglePhase) return; // Sécurité pour ne pas lancer 2 fois
+        // La magie du Mixage (Fondu enchaîné)
+        function triggerCrossfade() {
+            if(transitionTriggered) return;
+            transitionTriggered = true;
             isJinglePhase = false;
-            audioJingle.pause();
-            audioPodcast.currentTime = 0;
-            if (isAudioPlaying) {
-                audioPodcast.play().catch(e => console.log("Attente d'interaction"));
-            }
+            
+            // On lance la voix du podcast !
+            audioPodcast.play().catch(e => console.log("Attente interaction"));
+            
+            // On baisse le volume du jingle progressivement pour le faire disparaître en douceur
+            clearInterval(fadeInterval);
+            fadeInterval = setInterval(() => {
+                if (audioJingle.volume > 0.02) {
+                    audioJingle.volume -= 0.02;
+                } else {
+                    clearInterval(fadeInterval);
+                    audioJingle.pause();
+                    audioJingle.volume = 0.20; // On remet le volume à 20% pour la prochaine lecture
+                }
+            }, 100);
         }
 
-        // Le Jingle est coupé de force à exactement 5 secondes
+        // Suivi du temps du Jingle
         audioJingle.addEventListener('timeupdate', () => { 
             if(isJinglePhase) {
-                if(audioJingle.currentTime >= jingleDuration) {
-                    passToPodcast(); 
-                } else {
-                    updateProgressUI(audioJingle.currentTime); 
+                updateProgressUI(audioJingle.currentTime); 
+                
+                // Déclenchement du mixage 1,5 seconde avant la fin du jingle.
+                // Sécurité : même si on upload un jingle de 2 minutes, on force la transition à 8 sec max.
+                let maxJingleTime = Math.min(jingleDuration, 8.0);
+                if (audioJingle.currentTime >= (maxJingleTime - 1.5)) {
+                    triggerCrossfade();
                 }
             }
         });
 
+        // Suivi du temps du Podcast
         audioPodcast.addEventListener('timeupdate', () => { 
-            if(!isJinglePhase) updateProgressUI(jingleDuration + audioPodcast.currentTime); 
+            if(!isJinglePhase) {
+                let effectiveJingle = Math.min(jingleDuration, 8.0);
+                updateProgressUI(effectiveJingle + audioPodcast.currentTime); 
+            }
         });
         
+        // Sécurités de fin
         audioJingle.addEventListener('ended', () => {
-            if(isJinglePhase) passToPodcast();
+            if(!transitionTriggered) triggerCrossfade();
         });
 
         audioPodcast.addEventListener('ended', () => {
@@ -231,8 +248,8 @@
                 document.getElementById('audio-wave-icon').classList.remove('playing');
                 isAudioPlaying = false;
             } else {
-                if(isJinglePhase && jingleDuration > 0) {
-                    audioJingle.play().catch(() => passToPodcast()); // Si le jingle est refusé par le navigateur, on skip !
+                if(isJinglePhase) {
+                    audioJingle.play().catch(() => triggerCrossfade()); // Si le navigateur bloque, on lance direct le podcast
                 } else {
                     audioPodcast.play();
                 }
@@ -243,7 +260,8 @@
         }
 
         function updateProgressUI(currentTime) {
-            let total = jingleDuration + podcastDuration;
+            let effectiveJingle = Math.min(jingleDuration, 8.0);
+            let total = effectiveJingle + podcastDuration;
             if (total === 0 || isNaN(total)) return;
             let percent = (currentTime / total) * 100;
             document.getElementById('audio-progress').style.width = percent + '%';
@@ -251,8 +269,9 @@
         }
 
         function updateTotalTimeUI() {
-            let total = jingleDuration + podcastDuration;
-            if(!isNaN(total) && total > jingleDuration) {
+            let effectiveJingle = Math.min(jingleDuration, 8.0);
+            let total = effectiveJingle + podcastDuration;
+            if(!isNaN(total) && total > effectiveJingle) {
                 document.getElementById('time-total').innerText = formatTime(total);
             }
         }
@@ -262,20 +281,28 @@
             let rect = track.getBoundingClientRect();
             let clickX = e.clientX - rect.left;
             let percent = clickX / rect.width;
-            let total = jingleDuration + podcastDuration;
+            
+            let effectiveJingle = Math.min(jingleDuration, 8.0);
+            let total = effectiveJingle + podcastDuration;
             let targetTime = percent * total;
 
-            if (targetTime < jingleDuration) {
+            clearInterval(fadeInterval); // Stop le fondu si on clique pendant la transition
+
+            if (targetTime < effectiveJingle) {
+                // L'utilisateur a cliqué dans la zone du Jingle
                 isJinglePhase = true;
+                transitionTriggered = false;
                 audioPodcast.pause();
+                audioPodcast.currentTime = 0;
+                audioJingle.volume = 0.20; // Restaure le volume
                 audioJingle.currentTime = targetTime;
                 if(isAudioPlaying) audioJingle.play();
             } else {
-                if (isJinglePhase) {
-                    isJinglePhase = false;
-                    audioJingle.pause();
-                }
-                audioPodcast.currentTime = targetTime - jingleDuration;
+                // L'utilisateur a cliqué dans la zone du Podcast
+                isJinglePhase = false;
+                transitionTriggered = true;
+                audioJingle.pause();
+                audioPodcast.currentTime = targetTime - effectiveJingle;
                 if(isAudioPlaying) audioPodcast.play();
             }
             updateProgressUI(targetTime);
@@ -323,9 +350,20 @@
                 setInterval(() => {
                     const distance = dateLancement - new Date().getTime();
                     if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
-                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24)); const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const secondes = Math.floor((distance % (1000 * 60)) / 1000);
-                    document.getElementById('timer-display').innerHTML = `<div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div><div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div><div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div><div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>`;
+
+                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const secondes = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.getElementById('timer-display').innerHTML = `
+                        <div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div>
+                        <div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div>
+                        <div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div>
+                        <div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>
+                    `;
                 }, 1000);
+
                 return true; 
             }
             return false;
@@ -408,13 +446,15 @@
             } 
             else if (media.type_media === 'podcast') {
                 document.getElementById('audio-title').innerText = media.titre;
+                
+                // Préparation des fichiers audio
                 audioPodcast.src = media.url_media;
                 isAudioPlaying = false;
+                isJinglePhase = true;
+                transitionTriggered = false;
+                clearInterval(fadeInterval);
                 
-                isJinglePhase = (jingleDuration > 0);
-                if (isJinglePhase) {
-                    try { audioJingle.currentTime = 0; } catch(e) {}
-                }
+                try { audioJingle.currentTime = 0; audioJingle.volume = 0.20; } catch(e) {}
                 
                 document.getElementById('audio-progress').style.width = '0%';
                 document.getElementById('time-current').innerText = "00:00";
@@ -431,6 +471,7 @@
             });
             document.getElementById('video-content').innerHTML = '';
             
+            clearInterval(fadeInterval);
             audioJingle.pause();
             audioPodcast.pause();
             isAudioPlaying = false;
