@@ -123,8 +123,7 @@
         <div class="modal-box audio-wrapper">
             <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
             <div class="audio-wave" id="audio-wave-icon">🎙️</div>
-            <h3 id="audio-title" style="margin-bottom: 10px; font-size: 22px;">Titre du Podcast</h3>
-            <p id="audio-status-text" style="color: var(--text-muted); font-size: 14px; font-weight: 600; text-transform: uppercase;">Prêt à écouter</p>
+            <h3 id="audio-title" style="margin-bottom: 20px; font-size: 22px;">Titre du Podcast</h3>
             
             <div class="custom-audio-player">
                 <button class="play-btn" id="play-pause-btn" onclick="toggleAudioPlay()">▶</button>
@@ -158,18 +157,18 @@
         let tousLesMedias = [];
         
         // --- LOGIQUE LECTEUR AUDIO FUSIONNÉ ---
-        // Lien d'un Jingle d'intro dynamique
-        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3'; 
+        // Nouveau Jingle (plus stylé, type beat/intro dynamique)
+        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3'; 
         
         let audioJingle = new Audio(URL_JINGLE);
-        audioJingle.volume = 0.2; // VOLUME DU JINGLE RÉDUIT À 20%
+        audioJingle.volume = 0.15; // VOLUME DU JINGLE TRÈS BAS (15%) POUR METTRE TA VOIX EN VALEUR
         
         let audioPodcast = new Audio();
         audioPodcast.volume = 1.0; // VOLUME DE TA VOIX À 100%
         
         let isAudioPlaying = false;
         let isJinglePhase = true;
-        let jingleDuration = 4.0; // DURÉE FIXÉE STRICTEMENT À 4 SECONDES
+        let jingleDuration = 7.0; // DURÉE FIXÉE STRICTEMENT À 7 SECONDES
         let podcastDuration = 0;
 
         // Récupérer la durée du podcast 
@@ -181,12 +180,10 @@
         // La fonction pour basculer sur ta voix
         function passToPodcast() {
             isJinglePhase = false;
-            document.getElementById('audio-status-text').innerText = "▶ En lecture";
-            document.getElementById('audio-status-text').style.color = "var(--accent)";
             audioPodcast.play();
         }
 
-        // Mise à jour de la barre et coupure forcée du Jingle à 4 secondes
+        // Mise à jour de la barre et coupure forcée du Jingle à 7 secondes
         audioJingle.addEventListener('timeupdate', () => { 
             if(isJinglePhase) {
                 if(audioJingle.currentTime >= jingleDuration) {
@@ -202,7 +199,7 @@
             if(!isJinglePhase) updateProgressUI(jingleDuration + audioPodcast.currentTime); 
         });
         
-        // Sécurité si le fichier jingle est naturellement plus court que 4s
+        // Sécurité si le fichier jingle est naturellement plus court
         audioJingle.addEventListener('ended', () => {
             if(isJinglePhase) passToPodcast();
         });
@@ -222,8 +219,6 @@
             } else {
                 if(isJinglePhase) {
                     audioJingle.play();
-                    document.getElementById('audio-status-text').innerText = "▶ Introduction..."; // TEXTE MODIFIÉ
-                    document.getElementById('audio-status-text').style.color = "white";
                 } else {
                     audioPodcast.play();
                 }
@@ -262,8 +257,6 @@
                 audioJingle.currentTime = targetTime;
                 if(isAudioPlaying) {
                     audioJingle.play();
-                    document.getElementById('audio-status-text').innerText = "▶ Introduction...";
-                    document.getElementById('audio-status-text').style.color = "white";
                 }
             } else {
                 isJinglePhase = false;
@@ -271,8 +264,6 @@
                 audioPodcast.currentTime = targetTime - jingleDuration;
                 if(isAudioPlaying) {
                     audioPodcast.play();
-                    document.getElementById('audio-status-text').innerText = "▶ En lecture";
-                    document.getElementById('audio-status-text').style.color = "var(--accent)";
                 }
             }
             updateProgressUI(targetTime);
@@ -313,7 +304,6 @@
                         </div>
                     </div>
                 `;
-                
                 document.body.style.visibility = 'visible';
                 document.body.style.opacity = '1';
 
@@ -321,20 +311,9 @@
                 setInterval(() => {
                     const distance = dateLancement - new Date().getTime();
                     if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
-
-                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
-                    const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const secondes = Math.floor((distance % (1000 * 60)) / 1000);
-
-                    document.getElementById('timer-display').innerHTML = `
-                        <div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div>
-                        <div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div>
-                        <div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div>
-                        <div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>
-                    `;
+                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24)); const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const secondes = Math.floor((distance % (1000 * 60)) / 1000);
+                    document.getElementById('timer-display').innerHTML = `<div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div><div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div><div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div><div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>`;
                 }, 1000);
-
                 return true; 
             }
             return false;
@@ -355,7 +334,12 @@
             document.body.style.opacity = '1';
 
             if (profilActuel === 'premium') { document.querySelectorAll('.ad-zone').forEach(zone => zone.remove()); } 
-            else { document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex'); }
+            else if (profilActuel === 'classic') { document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex'); } 
+            else {
+                document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
+                const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
+                const socialScript = document.createElement('script'); socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js"; document.body.appendChild(socialScript);
+            }
 
             const { data: medias, error } = await supabaseClient.from('medias').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('medias-container');
@@ -419,9 +403,7 @@
                 document.getElementById('audio-progress').style.width = '0%';
                 document.getElementById('time-current').innerText = "00:00";
                 document.getElementById('play-pause-btn').innerText = '▶';
-                document.getElementById('audio-status-text').innerText = "Prêt à écouter";
-                document.getElementById('audio-status-text').style.color = "var(--text-muted)";
-
+                
                 const modal = document.getElementById('modal-audio'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
             }
         }
@@ -433,7 +415,6 @@
             });
             document.getElementById('video-content').innerHTML = '';
             
-            // Couper le son si on ferme
             audioJingle.pause();
             audioPodcast.pause();
             isAudioPlaying = false;
