@@ -41,7 +41,7 @@
         .media-title { font-size: 20px; font-weight: 700; line-height: 1.3; margin-bottom: 15px; }
         .media-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
 
-        /* MODALES LECTURE */
+        /* MODALES */
         .site-modal { display: none; position: fixed; inset: 0; background: rgba(5, 7, 12, 0.95); z-index: 3000; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; padding: 20px; }
         .site-modal.show { opacity: 1; }
         .modal-box { background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 800px; position: relative; overflow: hidden; }
@@ -51,17 +51,22 @@
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
-        /* AUDIO PLAYER */
+        /* LECTEUR AUDIO SUR MESURE (ELITE PLAYER) */
         .audio-wrapper { padding: 50px 30px; text-align: center; }
-        .audio-wave { font-size: 60px; margin-bottom: 20px; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        .audio-status { font-size: 16px; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; }
-        audio { width: 100%; outline: none; border-radius: 30px; }
-
-        /* PAYWALL MODAL */
+        .audio-wave { font-size: 60px; margin-bottom: 15px; transition: transform 0.2s; }
+        .audio-wave.playing { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+        
+        .custom-audio-player { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .play-btn { background: var(--gradient); border: none; color: white; width: 60px; height: 60px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 20px rgba(229,0,70,0.4); transition: 0.3s; }
+        .play-btn:hover { transform: scale(1.05); }
+        
+        .progress-container { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--gradient); width: 0%; pointer-events: none; transition: width 0.1s linear; }
+        .time-display { width: 100%; display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+        
         .premium-box { max-width: 480px; text-align: center; padding: 40px; background: linear-gradient(145deg, #161a25, #0f111a); border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 60px rgba(0,0,0,0.8); }
         .btn-upgrade { display: inline-block; width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: 800; border-radius: 8px; margin-top: 20px; text-transform: uppercase; cursor: pointer; border: none; }
-
         .loading-text { text-align: center; color: var(--text-muted); font-size: 18px; width: 100%; grid-column: 1/-1; padding: 50px; }
 
         @media (max-width: 768px) {
@@ -106,7 +111,6 @@
         </div>
     </div>
 
-    <!-- MODAL VIDEO -->
     <div class="site-modal" id="modal-video">
         <div class="modal-box">
             <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
@@ -114,18 +118,27 @@
         </div>
     </div>
 
-    <!-- MODAL AUDIO -->
+    <!-- MODAL AUDIO CUSTOM -->
     <div class="site-modal" id="modal-audio">
         <div class="modal-box audio-wrapper">
             <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
-            <div class="audio-wave">🎙️</div>
-            <div class="audio-status" id="audio-status-text">Préparation...</div>
-            <h3 id="audio-title" style="margin-bottom: 30px;">Titre</h3>
-            <audio id="audio-player" controls controlsList="nodownload"></audio>
+            <div class="audio-wave" id="audio-wave-icon">🎙️</div>
+            <h3 id="audio-title" style="margin-bottom: 10px; font-size: 22px;">Titre du Podcast</h3>
+            <p id="audio-status-text" style="color: var(--text-muted); font-size: 14px; font-weight: 600; text-transform: uppercase;">Prêt à écouter</p>
+            
+            <div class="custom-audio-player">
+                <button class="play-btn" id="play-pause-btn" onclick="toggleAudioPlay()">▶</button>
+                <div class="progress-container" onclick="seekAudio(event)" id="audio-track">
+                    <div class="progress-bar" id="audio-progress"></div>
+                </div>
+                <div class="time-display">
+                    <span id="time-current">00:00</span>
+                    <span id="time-total">00:00</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL PAYWALL -->
     <div class="site-modal" id="modal-paywall">
         <div class="modal-box premium-box">
             <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
@@ -143,12 +156,117 @@
 
         let profilActuel = 'none'; 
         let tousLesMedias = [];
-        const JINGLE_URL = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3'; // Jingle libre de droit (News Intro)
+        
+        // --- LOGIQUE LECTEUR AUDIO FUSIONNÉ ---
+        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3';
+        let audioJingle = new Audio(URL_JINGLE);
+        let audioPodcast = new Audio();
+        
+        let isAudioPlaying = false;
+        let isJinglePhase = true;
+        let jingleDuration = 4.0; // Approximation de base
+        let podcastDuration = 0;
+
+        // Récupérer les durées réelles dès que chargées
+        audioJingle.addEventListener('loadedmetadata', () => { jingleDuration = audioJingle.duration; updateTotalTimeUI(); });
+        audioPodcast.addEventListener('loadedmetadata', () => { podcastDuration = audioPodcast.duration; updateTotalTimeUI(); });
+
+        // Mise à jour de la barre de progression
+        audioJingle.addEventListener('timeupdate', () => { if(isJinglePhase) updateProgressUI(audioJingle.currentTime); });
+        audioPodcast.addEventListener('timeupdate', () => { if(!isJinglePhase) updateProgressUI(jingleDuration + audioPodcast.currentTime); });
+
+        // Transition Jingle -> Podcast
+        audioJingle.addEventListener('ended', () => {
+            isJinglePhase = false;
+            document.getElementById('audio-status-text').innerText = "▶ En lecture";
+            document.getElementById('audio-status-text').style.color = "var(--accent)";
+            audioPodcast.play();
+        });
+        
+        audioPodcast.addEventListener('ended', () => {
+            isAudioPlaying = false;
+            document.getElementById('play-pause-btn').innerText = '▶';
+            document.getElementById('audio-wave-icon').classList.remove('playing');
+        });
+
+        function toggleAudioPlay() {
+            if (isAudioPlaying) {
+                if(isJinglePhase) audioJingle.pause(); else audioPodcast.pause();
+                document.getElementById('play-pause-btn').innerText = '▶';
+                document.getElementById('audio-wave-icon').classList.remove('playing');
+                isAudioPlaying = false;
+            } else {
+                if(isJinglePhase) {
+                    audioJingle.play();
+                    document.getElementById('audio-status-text').innerText = "Jingle Élite...";
+                    document.getElementById('audio-status-text').style.color = "white";
+                } else {
+                    audioPodcast.play();
+                }
+                document.getElementById('play-pause-btn').innerText = '⏸';
+                document.getElementById('audio-wave-icon').classList.add('playing');
+                isAudioPlaying = true;
+            }
+        }
+
+        function updateProgressUI(currentTime) {
+            let total = jingleDuration + podcastDuration;
+            if (total === 0 || isNaN(total)) return;
+            let percent = (currentTime / total) * 100;
+            document.getElementById('audio-progress').style.width = percent + '%';
+            document.getElementById('time-current').innerText = formatTime(currentTime);
+        }
+
+        function updateTotalTimeUI() {
+            let total = jingleDuration + podcastDuration;
+            if(!isNaN(total) && total > jingleDuration) {
+                document.getElementById('time-total').innerText = formatTime(total);
+            }
+        }
+
+        function seekAudio(e) {
+            let track = document.getElementById('audio-track');
+            let rect = track.getBoundingClientRect();
+            let clickX = e.clientX - rect.left;
+            let percent = clickX / rect.width;
+            let total = jingleDuration + podcastDuration;
+            let targetTime = percent * total;
+
+            if (targetTime < jingleDuration) {
+                isJinglePhase = true;
+                audioPodcast.pause();
+                audioJingle.currentTime = targetTime;
+                if(isAudioPlaying) {
+                    audioJingle.play();
+                    document.getElementById('audio-status-text').innerText = "Jingle Élite...";
+                    document.getElementById('audio-status-text').style.color = "white";
+                }
+            } else {
+                isJinglePhase = false;
+                audioJingle.pause();
+                audioPodcast.currentTime = targetTime - jingleDuration;
+                if(isAudioPlaying) {
+                    audioPodcast.play();
+                    document.getElementById('audio-status-text').innerText = "▶ En lecture";
+                    document.getElementById('audio-status-text').style.color = "var(--accent)";
+                }
+            }
+            updateProgressUI(targetTime);
+        }
+
+        function formatTime(seconds) {
+            if(isNaN(seconds)) return "00:00";
+            let m = Math.floor(seconds / 60);
+            let s = Math.floor(seconds % 60);
+            return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+        }
+        // --- FIN LOGIQUE LECTEUR AUDIO ---
+
 
         async function verifierCompteARebours(estAdmin) {
             const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
             if (data && data.compte_a_rebours_actif && !estAdmin) {
-                document.body.innerHTML = `<div style="height:100vh; display:flex; justify-content:center; align-items:center; background:#07080b; color:white;"><h1>L'Élite arrive bientôt...</h1></div>`;
+                document.body.innerHTML = `<div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b); position: relative; font-family: 'Poppins', sans-serif;"><h1 style="color:white; font-size:40px;">L'Élite se prépare</h1></div>`;
                 document.body.style.visibility = 'visible'; document.body.style.opacity = '1';
                 return true; 
             }
@@ -226,26 +344,17 @@
                 const modal = document.getElementById('modal-video'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
             } 
             else if (media.type_media === 'podcast') {
+                // Initialisation du Custom Player
                 document.getElementById('audio-title').innerText = media.titre;
-                const audioPlayer = document.getElementById('audio-player');
-                const statusText = document.getElementById('audio-status-text');
-                
-                // LE JINGLE MAGIQUE EST ICI
-                statusText.innerText = "Jingle Élite en cours...";
-                statusText.style.color = "white";
-                audioPlayer.src = JINGLE_URL;
-                
-                // On essaie de lancer le jingle tout de suite
-                audioPlayer.play().catch(e => console.log("L'utilisateur doit interagir avant de lancer l'audio."));
-                
-                // Quand le jingle finit, on lance le vrai podcast
-                audioPlayer.onended = function() {
-                    statusText.innerText = "▶ Lecture du Podcast";
-                    statusText.style.color = "var(--accent)";
-                    audioPlayer.src = media.url_media;
-                    audioPlayer.play();
-                    audioPlayer.onended = null; // On enlève la boucle
-                };
+                audioPodcast.src = media.url_media;
+                isAudioPlaying = false;
+                isJinglePhase = true;
+                audioJingle.currentTime = 0;
+                document.getElementById('audio-progress').style.width = '0%';
+                document.getElementById('time-current').innerText = "00:00";
+                document.getElementById('play-pause-btn').innerText = '▶';
+                document.getElementById('audio-status-text').innerText = "Prêt à écouter";
+                document.getElementById('audio-status-text').style.color = "var(--text-muted)";
 
                 const modal = document.getElementById('modal-audio'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
             }
@@ -258,10 +367,11 @@
             });
             document.getElementById('video-content').innerHTML = '';
             
-            const audioPlayer = document.getElementById('audio-player');
-            audioPlayer.pause();
-            audioPlayer.src = "";
-            audioPlayer.onended = null;
+            // Couper le son si on ferme
+            audioJingle.pause();
+            audioPodcast.pause();
+            isAudioPlaying = false;
+            document.getElementById('audio-wave-icon').classList.remove('playing');
         }
 
         initialiserPage();
