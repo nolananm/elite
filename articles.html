@@ -68,7 +68,7 @@
 
         .loading-text { text-align: center; color: var(--text-muted); font-size: 18px; width: 100%; grid-column: 1/-1; padding: 50px; }
 
-        /* RESPONSIVE MOBILE */
+        /* VRAI RESPONSIVE MOBILE */
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 15px; gap: 10px; }
             nav { flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
@@ -77,11 +77,10 @@
             .page-header h1 { font-size: 32px; }
             .articles-grid { grid-template-columns: 1fr; }
             .ad-zone { max-width: 100vw; overflow-x: auto; padding: 10px 0; border-radius: 0; border-left: none; border-right: none;}
-            
             .reader-title { font-size: 28px; }
             .reader-header { height: 45vh; }
             .reader-nav { flex-direction: row; padding: 15px; }
-            .reader-body-wrapper { margin-top: 30px; }
+            .reader-body-wrapper { margin-top: 30px; padding: 0 15px; }
             .inline-paywall { padding: 30px 20px; }
             .inline-paywall h2 { font-size: 20px; }
         }
@@ -194,7 +193,7 @@
                 const dateLancement = new Date(data.date_lancement).getTime();
                 setInterval(() => {
                     const distance = dateLancement - new Date().getTime();
-                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente !</div>"; return; }
+                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
                     const jours = Math.floor(distance / (1000 * 60 * 60 * 24)); const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const secondes = Math.floor((distance % (1000 * 60)) / 1000);
                     document.getElementById('timer-display').innerHTML = `<div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div><div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div><div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div><div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>`;
                 }, 1000);
