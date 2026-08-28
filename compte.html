@@ -9,8 +9,7 @@
     <style>
         :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        /* ASTUCE SÉCURITÉ */
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; visibility: hidden; opacity: 0; transition: opacity 0.5s ease; }
+        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
 
         header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -19,65 +18,41 @@
         nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
 
-        .auth-container { max-width: 400px; margin: 150px auto; background: var(--bg-card); padding: 40px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
-        .auth-container h2 { font-size: 24px; font-weight: 800; margin-bottom: 25px; text-transform: uppercase; }
-        .auth-container input { width: 100%; padding: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; font-family: 'Poppins'; }
-        .auth-container input:focus { outline: none; border-color: var(--accent); }
-        .btn-submit { width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: bold; border-radius: 8px; font-size: 16px; border: none; cursor: pointer; text-transform: uppercase; }
-        .toggle-text { margin-top: 15px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
-        .toggle-text:hover { color: white; }
-
-        .dashboard-wrapper { display: none; max-width: 1200px; margin: 120px auto 50px auto; width: 100%; padding: 0 20px; flex: 1; }
-        .dashboard-layout { display: flex; gap: 40px; }
+        .container { max-width: 600px; margin: 150px auto 50px auto; padding: 0 20px; }
         
-        .sidebar { width: 250px; flex-shrink: 0; }
-        .sidebar-menu { display: flex; flex-direction: column; gap: 10px; }
-        .menu-item { padding: 15px 20px; border-radius: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; }
-        .menu-item:hover { background: rgba(255,255,255,0.05); color: white; }
-        .menu-item.active { background: var(--gradient); color: white; }
+        .box { background: var(--bg-card); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 40px; text-align: center; }
+        .box h2 { font-size: 32px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; }
 
-        .content-area { flex: 1; background: var(--bg-card); border-radius: 20px; padding: 40px; border: 1px solid rgba(255,255,255,0.05); min-height: 500px; }
-        .content-section { display: none; }
-        .content-section.active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .form-group { text-align: left; margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+        .form-group input { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: 'Poppins', sans-serif; font-size: 15px; outline: none; transition: 0.3s; }
+        .form-group input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
 
-        .section-header { margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; }
-        .section-header h2 { font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
-        .section-header p { color: var(--text-muted); font-size: 14px; }
-
-        .plan-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 30px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .plan-info h3 { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-        .plan-name { font-size: 32px; font-weight: 800; text-transform: uppercase; }
+        .btn { width: 100%; padding: 15px; color: white; font-weight: 800; border-radius: 8px; text-transform: uppercase; border: none; cursor: pointer; transition: 0.3s; margin-bottom: 15px; font-size: 16px; }
+        .btn.primary { background: var(--gradient); box-shadow: 0 10px 20px rgba(229,0,70,0.3); }
+        .btn.primary:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(229,0,70,0.4); }
+        .btn.secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+        .btn.secondary:hover { background: rgba(255,255,255,0.1); }
         
-        .color-free { color: white; }
-        .color-classic { color: #0055ff; }
-        .color-premium { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .btn.danger { background: rgba(255,50,50,0.1); color: #ff4444; border: 1px solid rgba(255,50,50,0.2); margin-top: 20px; }
+        .btn.danger:hover { background: rgba(255,50,50,0.2); }
 
-        .btn-action { padding: 12px 25px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: none; }
-        .btn-primary { background: white; color: black; }
-        .btn-primary:hover { background: #e0e0e0; }
-        .btn-secondary { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; display: block; width: 100%; text-align: center;}
-        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .btn.stripe-btn { background: #635bff; color: white; box-shadow: 0 10px 20px rgba(99,91,255,0.3); margin-top: 30px; }
+        .btn.stripe-btn:hover { background: #5851df; transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99,91,255,0.4); }
 
-        .billing-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-        .billing-row:last-child { border-bottom: none; }
-        .billing-label { color: var(--text-muted); }
-        .billing-value { font-weight: 600; }
+        .toggle-link { color: var(--accent); font-size: 14px; cursor: pointer; font-weight: 600; text-decoration: underline; }
+        
+        .status-badge { display: inline-block; padding: 8px 20px; font-size: 14px; font-weight: 800; text-transform: uppercase; border-radius: 8px; margin: 20px 0; letter-spacing: 1px; }
+        .status-free { background: #222; border: 1px solid rgba(255,255,255,0.2); }
+        .status-classic { background: #0055ff; color: white; }
+        .status-premium { background: var(--gradient); color: white; box-shadow: 0 10px 20px rgba(229,0,70,0.3); }
 
-        /* RESPONSIVE MOBILE */
+        #dashboard-section, #auth-section { display: none; }
+
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 15px; gap: 10px; }
-            nav { flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
-            nav a { font-size: 12px; }
-            .container { margin-top: 140px; padding: 0 15px; }
-            .dashboard-layout { flex-direction: column; gap: 20px; }
-            .sidebar { width: 100%; }
-            .sidebar-menu { flex-direction: row; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; }
-            .menu-item { flex-shrink: 0; font-size: 12px; padding: 10px 15px; }
-            .content-area { padding: 20px; min-height: auto; }
-            .plan-box { flex-direction: column; text-align: center; gap: 15px; }
-            .billing-row { flex-direction: column; gap: 5px; text-align: center; }
-            .auth-container { margin: 150px 15px; width: auto; padding: 25px; }
+            nav { flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .container { margin-top: 140px; }
         }
     </style>
 </head>
@@ -93,55 +68,48 @@
         </nav>
     </header>
 
-    <div class="auth-container" id="auth-section">
-        <h2 id="form-title">Connexion</h2>
-        <input type="email" id="email" placeholder="Adresse e-mail">
-        <input type="password" id="password" placeholder="Mot de passe">
-        <button class="btn-submit" onclick="gererAuth()" id="btn-action">Se connecter</button>
-        <p class="toggle-text" onclick="toggleMode()" id="toggle-msg">Pas encore de compte ? S'inscrire</p>
-        <p id="error-msg" style="color: #ff4d4d; margin-top: 15px; font-size: 14px;"></p>
-    </div>
-
-    <div class="dashboard-wrapper" id="dashboard-section">
-        <div class="dashboard-layout">
-            <div class="sidebar">
-                <div class="sidebar-menu">
-                    <div class="menu-item active" onclick="switchTab('overview')">📊 Vue d'ensemble</div>
-                    <div class="menu-item" onclick="switchTab('billing')">💳 Facturation & Plan</div>
-                    <div class="menu-item" onclick="switchTab('favorites')">⭐ Mes Favoris</div>
-                    <div class="menu-item" onclick="switchTab('settings')">⚙️ Paramètres</div>
-                    <div class="menu-item" onclick="deconnexion()" style="color: #ff4d4d; margin-top: 20px;">🚪 Se déconnecter</div>
-                </div>
+    <div class="container">
+        
+        <!-- SECTION AUTHENTIFICATION (Si non connecté) -->
+        <div class="box" id="auth-section">
+            <h2 id="auth-title">Connexion</h2>
+            
+            <div class="form-group">
+                <label>Adresse Email</label>
+                <input type="email" id="email" placeholder="jean@exemple.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="password" placeholder="••••••••">
             </div>
 
-            <div class="content-area">
-                <div class="content-section active" id="tab-overview">
-                    <div class="section-header">
-                        <h2>Bienvenue dans l'Élite</h2>
-                        <p id="user-email-display">user@email.com</p>
-                    </div>
-                    <div class="plan-box">
-                        <div class="plan-info"><h3>Abonnement actuel</h3><div class="plan-name" id="dash-plan-name">CHARGEMENT...</div></div>
-                        <button class="btn-action btn-primary" onclick="switchTab('billing')">Gérer mon plan</button>
-                    </div>
-                </div>
-
-                <div class="content-section" id="tab-billing">
-                    <div class="section-header"><h2>Facturation & Plan</h2></div>
-                    <a href="index.html#abonnements" class="btn-action btn-primary" style="display:block; text-align:center;">Changer d'abonnement</a>
-                    <button class="btn-action btn-secondary" onclick="alert('Bientôt disponible !')">Mettre à jour la carte</button>
-                </div>
-
-                <div class="content-section" id="tab-favorites">
-                    <div class="section-header"><h2>Mes Favoris</h2></div>
-                    <p style="color: var(--text-muted); font-size: 14px;">La fonctionnalité d'ajout depuis les articles arrive bientôt !</p>
-                </div>
-
-                <div class="content-section" id="tab-settings">
-                    <div class="section-header"><h2>Paramètres</h2></div>
-                </div>
-            </div>
+            <button class="btn primary" id="auth-btn" onclick="gererAuth()">Se connecter</button>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 15px;">
+                <span id="auth-toggle-text">Pas encore de compte ?</span> 
+                <span class="toggle-link" onclick="toggleAuthMode()">Créer un compte</span>
+            </p>
         </div>
+
+        <!-- SECTION DASHBOARD (Si connecté) -->
+        <div class="box" id="dashboard-section">
+            <h2>Mon Profil</h2>
+            <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 5px;">Connecté en tant que :</p>
+            <h3 id="user-email" style="font-size: 20px; font-weight: 600;">...</h3>
+            
+            <div style="margin: 30px 0; padding: 20px; background: rgba(0,0,0,0.5); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                <p style="color: var(--text-muted); font-size: 14px; text-transform: uppercase; font-weight: 800;">Niveau d'Abonnement</p>
+                <div id="plan-badge" class="status-badge status-free">Chargement...</div>
+                <p id="plan-desc" style="font-size: 14px; color: var(--text-muted);">...</p>
+            </div>
+
+            <!-- BOUTON POUR GERER L'ABONNEMENT SUR STRIPE -->
+            <button class="btn stripe-btn" onclick="gererAbonnementStripe()">Gérer mon abonnement (Factures / Résiliation)</button>
+            
+            <button class="btn secondary" style="margin-top: 15px;" onclick="window.location.href='index.html#abonnements'">Voir les offres</button>
+            <button class="btn danger" onclick="seDeconnecter()">Se déconnecter</button>
+        </div>
+
     </div>
 
     <script>
@@ -149,119 +117,78 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let isLogin = true;
+        let isLoginMode = true;
 
-        function toggleMode() {
-            isLogin = !isLogin;
-            document.getElementById('form-title').innerText = isLogin ? 'Connexion' : 'Créer un compte';
-            document.getElementById('btn-action').innerText = isLogin ? 'Se connecter' : "S'inscrire";
-            document.getElementById('toggle-msg').innerText = isLogin ? "Pas encore de compte ? S'inscrire" : "Déjà un compte ? Se connecter";
-            document.getElementById('error-msg').innerText = '';
-        }
+        // 🚨 REMPLACE CE LIEN PAR LE LIEN DU PORTAIL CLIENT STRIPE (À générer dans Stripe > Portail client) 🚨
+        const LIEN_PORTAIL_STRIPE = "https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00";
 
-        async function gererAuth() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorElement = document.getElementById('error-msg');
-            errorElement.innerText = "Chargement...";
-
-            if (isLogin) {
-                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) errorElement.innerText = "❌ Erreur : " + error.message;
-                else window.location.reload();
-            } else {
-                const { error } = await supabaseClient.auth.signUp({ email, password });
-                if (error) errorElement.innerText = "❌ Erreur : " + error.message;
-                else {
-                    errorElement.style.color = "#00e676";
-                    errorElement.innerText = "✅ Compte créé ! Connectez-vous.";
-                    setTimeout(toggleMode, 2000);
-                }
-            }
-        }
-
-        async function deconnexion() {
-            await supabaseClient.auth.signOut();
-            window.location.reload();
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-        }
-
-        async function verifierCompteARebours(estAdmin) {
-            const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
-            if (data && data.compte_a_rebours_actif && !estAdmin) {
-                document.body.innerHTML = `
-                    <style>
-                        .timer-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-                        .timer-box { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px 20px; min-width: 130px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-                        .timer-num { font-size: 48px; font-weight: 800; color: white; line-height: 1; }
-                        .timer-label { font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; font-weight: 600; }
-                        @media (max-width: 768px) {
-                            .timer-box { min-width: 80px; padding: 15px 10px; border-radius: 12px; gap: 10px;}
-                            .timer-num { font-size: 28px; }
-                            .timer-label { font-size: 10px; letter-spacing: 1px; }
-                            h1.launch-title { font-size: 36px !important; }
-                            p.launch-desc { font-size: 14px !important; }
-                        }
-                    </style>
-                    <div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b), url('https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop') center/cover; position: relative; font-family: 'Poppins', sans-serif;">
-                        <div style="position: relative; z-index: 10; text-align: center; padding: 20px; width: 100%;">
-                            <div style="font-size: 20px; font-weight: 800; letter-spacing: 6px; color: white; margin-bottom: 20px; opacity: 0.8;">ÉLITE</div>
-                            <h1 class="launch-title" style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; line-height: 1.1;">L'expérience ultime<br>du football arrive.</h1>
-                            <p class="launch-desc" style="color: #a0a5b0; font-size: 18px; max-width: 600px; margin: 0 auto 50px auto;">Nous préparons la plateforme. Analyses tactiques, résumés vidéos et immersion totale en Ligue 1.</p>
-                            <div class="timer-container" id="timer-display"></div>
-                        </div>
-                    </div>
-                `;
-                document.body.style.visibility = 'visible';
-                document.body.style.opacity = '1';
-
-                const dateLancement = new Date(data.date_lancement).getTime();
-                setInterval(() => {
-                    const distance = dateLancement - new Date().getTime();
-                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
-                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24)); const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const secondes = Math.floor((distance % (1000 * 60)) / 1000);
-                    document.getElementById('timer-display').innerHTML = `<div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div><div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div><div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div><div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>`;
-                }, 1000);
-                return true; 
-            }
-            return false;
-        }
-
-        async function checkUser() {
+        async function verifierSession() {
             const { data: { user } } = await supabaseClient.auth.getUser();
+            
             if (user) {
                 document.getElementById('auth-section').style.display = 'none';
-                
-                const { data: profil } = await supabaseClient.from('profils').select('plan, est_admin').eq('id', user.id).single();
+                document.getElementById('dashboard-section').style.display = 'block';
+                document.getElementById('user-email').innerText = user.email;
+
+                // Récupération du plan
+                const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
                 let plan = profil ? profil.plan : 'free';
-                let estAdmin = profil ? profil.est_admin : false;
-
-                if (await verifierCompteARebours(estAdmin)) return;
-
-                document.body.style.visibility = 'visible';
-                document.body.style.opacity = '1';
-
-                document.getElementById('dashboard-section').style.display = 'flex';
-                document.getElementById('user-email-display').textContent = user.email;
                 
-                let planDisplay = document.getElementById('dash-plan-name');
-                planDisplay.textContent = plan;
-                planDisplay.className = `plan-name color-${plan}`;
+                let badge = document.getElementById('plan-badge');
+                let desc = document.getElementById('plan-desc');
+                
+                badge.className = `status-badge status-${plan}`;
+                badge.innerText = plan.toUpperCase();
+
+                if(plan === 'premium') desc.innerText = "Accès total débloqué. Merci pour votre soutien !";
+                else if (plan === 'classic') desc.innerText = "Vous avez accès aux articles et podcasts complets.";
+                else desc.innerText = "Vous utilisez la version gratuite restreinte.";
+
             } else {
-                document.body.style.visibility = 'visible';
-                document.body.style.opacity = '1';
                 document.getElementById('auth-section').style.display = 'block';
                 document.getElementById('dashboard-section').style.display = 'none';
             }
         }
 
-        checkUser();
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? "Connexion" : "Inscription";
+            document.getElementById('auth-btn').innerText = isLoginMode ? "Se connecter" : "Créer mon compte";
+            document.getElementById('auth-toggle-text').innerText = isLoginMode ? "Pas encore de compte ?" : "Déjà un compte ?";
+            document.querySelector('.toggle-link').innerText = isLoginMode ? "Créer un compte" : "Se connecter";
+        }
+
+        async function gererAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) { alert("Remplissez tous les champs !"); return; }
+
+            const btn = document.getElementById('auth-btn');
+            btn.innerText = "Patientez...";
+
+            if (isLoginMode) {
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) alert("Erreur : " + error.message);
+                else { window.location.reload(); }
+            } else {
+                const { error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) alert("Erreur : " + error.message);
+                else { alert("Compte créé avec succès ! Tu peux maintenant te connecter."); toggleAuthMode(); }
+            }
+            btn.innerText = isLoginMode ? "Se connecter" : "Créer mon compte";
+        }
+
+        async function seDeconnecter() {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        }
+
+        function gererAbonnementStripe() {
+            window.location.href = LIEN_PORTAIL_STRIPE;
+        }
+
+        verifierSession();
     </script>
 </body>
 </html>
