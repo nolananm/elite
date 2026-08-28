@@ -158,16 +158,16 @@
         let profilActuel = 'none'; 
         let tousLesMedias = [];
         
-        // --- SYSTÈME RADIO & EXTRAIT GRATUIT CORRECTEMENT CALCULÉ ---
+        // --- SYSTÈME RADIO & EXTRAIT GRATUIT CALIBRÉ À 60s EXACTEMENT ---
         let isPreviewMode = false;
         let videoPreviewTimer = null;
         
-        // 🚨 TON JINGLE OFFICIEL SUPABASE 🚨
+        // Ton Jingle GO Supabase !
         const URL_JINGLE = 'https://dmfbjpotgicqpfxlsycv.supabase.co/storage/v1/object/public/medias/JingleGO.mp3'; 
         
         let audioJingle = new Audio(URL_JINGLE);
         audioJingle.preload = 'auto';
-        audioJingle.volume = 0.60; // Volume du jingle à 60% pour qu'on l'entende bien !
+        audioJingle.volume = 0.60; 
         
         let audioPodcast = new Audio();
         audioPodcast.preload = 'auto';
@@ -178,8 +178,8 @@
         let transitionTriggered = false;
         let fadeInterval = null;
         
-        let jingleDuration = 5.0; // Durée par défaut pendant le chargement
-        let podcastDuration = 0;
+        let jingleDuration = 5.0; // Valeur par défaut
+        let podcastDuration = 0; // Durée réelle du fichier
 
         audioJingle.addEventListener('loadedmetadata', () => { 
             if(audioJingle.duration > 0) jingleDuration = audioJingle.duration;
@@ -191,8 +191,13 @@
             updateTotalTimeUI(); 
         });
 
-        // Sécurité anti-bug (Si le lien Jingle meurt, on l'ignore)
         audioJingle.onerror = () => { jingleDuration = 0; isJinglePhase = false; };
+
+        // Calcule le temps total affiché sur la barre (max 60s en preview)
+        function getTotalDuration() {
+            let realTotal = jingleDuration + podcastDuration;
+            return isPreviewMode ? Math.min(realTotal, 60.0) : realTotal;
+        }
 
         // Fondu enchaîné (Crossfade)
         function triggerCrossfade() {
@@ -216,30 +221,46 @@
 
         audioJingle.addEventListener('timeupdate', () => { 
             if(isJinglePhase) {
-                updateProgressUI(audioJingle.currentTime); 
+                let currentTime = audioJingle.currentTime;
+                
+                // Sécurité si l'extrait est plus court que le jingle
+                if (isPreviewMode && currentTime >= 60) {
+                    stopperExtraitGartuit();
+                    return;
+                }
+
+                updateProgressUI(currentTime); 
+                
                 // Déclenchement du fondu 1s avant la fin du jingle
-                if (audioJingle.currentTime >= (jingleDuration - 1.0)) { triggerCrossfade(); }
+                if (currentTime >= (jingleDuration - 1.0)) { triggerCrossfade(); }
             }
         });
 
-        // 🚨 GESTION DE LA MINUTE GRATUITE 100% CORRIGÉE 🚨
+        // 🚨 COUPURE NETTE À 60 SECONDES 🚨
         audioPodcast.addEventListener('timeupdate', () => { 
             if(!isJinglePhase) {
-                // Ici, on bloque à 60s du podcast (le jingle ne compte plus dans la soustraction)
-                if (isPreviewMode && audioPodcast.currentTime >= 60) {
-                    audioPodcast.pause();
-                    isAudioPlaying = false;
-                    document.getElementById('play-pause-btn').innerText = '▶';
-                    document.getElementById('audio-wave-icon').classList.remove('playing');
-                    
-                    fermerMedia();
-                    afficherPaywall("Fin de l'extrait", "Abonnez-vous pour écouter l'intégralité de cette émission !");
+                let currentTotalTime = jingleDuration + audioPodcast.currentTime;
+                
+                // Si on atteint 60 secondes en preview (Jingle + Podcast)
+                if (isPreviewMode && currentTotalTime >= 60) {
+                    stopperExtraitGartuit();
                     return;
                 }
                 
-                updateProgressUI(jingleDuration + audioPodcast.currentTime); 
+                updateProgressUI(currentTotalTime); 
             }
         });
+
+        function stopperExtraitGartuit() {
+            audioPodcast.pause();
+            audioJingle.pause();
+            isAudioPlaying = false;
+            document.getElementById('play-pause-btn').innerText = '▶';
+            document.getElementById('audio-wave-icon').classList.remove('playing');
+            
+            fermerMedia();
+            afficherPaywall("Fin de l'extrait", "Abonnez-vous pour écouter l'intégralité de cette émission !");
+        }
         
         audioJingle.addEventListener('ended', () => { if(!transitionTriggered) triggerCrossfade(); });
 
@@ -267,20 +288,19 @@
             }
         }
 
-        // Met à jour la barre en calculant Jingle + Podcast
         function updateProgressUI(currentTime) {
-            let pDur = isPreviewMode ? Math.min(podcastDuration, 60) : podcastDuration;
-            let total = jingleDuration + pDur;
+            let total = getTotalDuration();
             if (total === 0 || isNaN(total)) return;
+            
             let percent = (currentTime / total) * 100;
+            if (percent > 100) percent = 100;
+
             document.getElementById('audio-progress').style.width = percent + '%';
             document.getElementById('time-current').innerText = formatTime(currentTime);
         }
 
-        // Affiche la bonne durée (Jingle + 60s pour la preview)
         function updateTotalTimeUI() {
-            let pDur = isPreviewMode ? Math.min(podcastDuration, 60) : podcastDuration;
-            let total = jingleDuration + pDur;
+            let total = getTotalDuration();
             if(!isNaN(total) && total > 0) {
                 document.getElementById('time-total').innerText = formatTime(total);
             }
@@ -292,14 +312,12 @@
             let clickX = e.clientX - rect.left;
             let percent = clickX / rect.width;
             
-            let pDur = isPreviewMode ? Math.min(podcastDuration, 60) : podcastDuration;
-            let total = jingleDuration + pDur;
+            let total = getTotalDuration();
             let targetTime = percent * total;
 
-            // Bloquer le clic de l'utilisateur s'il essaie de frauder l'extrait
-            if (isPreviewMode && (targetTime - jingleDuration) >= 60) {
-                fermerMedia();
-                afficherPaywall("Fin de l'extrait", "Vous ne pouvez pas avancer plus loin. Abonnez-vous pour tout écouter !");
+            // Bloquer le clic tout à la fin de l'extrait gratuit pour éviter les bugs
+            if (isPreviewMode && targetTime >= 59.5) {
+                stopperExtraitGartuit();
                 return;
             }
 
@@ -494,7 +512,6 @@
                 transitionTriggered = false;
                 clearInterval(fadeInterval);
                 
-                // LE JINGLE SE LANCE TOUJOURS !
                 isJinglePhase = true;
                 try { audioJingle.currentTime = 0; audioJingle.volume = 0.60; } catch(e) {}
                 
