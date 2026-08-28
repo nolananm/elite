@@ -157,38 +157,53 @@
         let tousLesMedias = [];
         
         // --- LOGIQUE LECTEUR AUDIO FUSIONNÉ ---
-        // Nouveau Jingle (plus stylé, type beat/intro dynamique)
-        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3'; 
+        
+        // 🚨 REMPLACE CE LIEN PAR L'URL DE TON PROPRE JINGLE UPLOADÉ SUR SUPABASE ! 🚨
+        const URL_JINGLE = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; 
         
         let audioJingle = new Audio(URL_JINGLE);
-        audioJingle.volume = 0.15; // VOLUME DU JINGLE TRÈS BAS (15%) POUR METTRE TA VOIX EN VALEUR
+        audioJingle.volume = 0.15; // Jingle très bas (15%) pour laisser la place à ta voix
         
         let audioPodcast = new Audio();
-        audioPodcast.volume = 1.0; // VOLUME DE TA VOIX À 100%
+        audioPodcast.volume = 1.0; // Ta voix à fond (100%)
         
         let isAudioPlaying = false;
         let isJinglePhase = true;
-        let jingleDuration = 7.0; // DURÉE FIXÉE STRICTEMENT À 7 SECONDES
+        let jingleDuration = 5.0; // Durée fixée strictement à 5 secondes
         let podcastDuration = 0;
 
-        // Récupérer la durée du podcast 
+        // SYSTÈME ANTI-BUG : Si le lien du jingle plante, on l'ignore et on passe à ta voix à 0 sec.
+        audioJingle.onerror = () => {
+            console.log("Jingle bloqué, passage direct au podcast.");
+            jingleDuration = 0;
+            isJinglePhase = false;
+        };
+
+        audioJingle.addEventListener('loadedmetadata', () => {
+            if(audioJingle.duration < jingleDuration) jingleDuration = audioJingle.duration;
+            updateTotalTimeUI();
+        });
+
         audioPodcast.addEventListener('loadedmetadata', () => { 
             podcastDuration = audioPodcast.duration; 
             updateTotalTimeUI(); 
         });
 
-        // La fonction pour basculer sur ta voix
         function passToPodcast() {
+            if (!isJinglePhase) return; // Sécurité pour ne pas lancer 2 fois
             isJinglePhase = false;
-            audioPodcast.play();
+            audioJingle.pause();
+            audioPodcast.currentTime = 0;
+            if (isAudioPlaying) {
+                audioPodcast.play().catch(e => console.log("Attente d'interaction"));
+            }
         }
 
-        // Mise à jour de la barre et coupure forcée du Jingle à 7 secondes
+        // Le Jingle est coupé de force à exactement 5 secondes
         audioJingle.addEventListener('timeupdate', () => { 
             if(isJinglePhase) {
                 if(audioJingle.currentTime >= jingleDuration) {
-                    audioJingle.pause(); // Coupe le son d'intro !
-                    passToPodcast(); // Lance ta voix
+                    passToPodcast(); 
                 } else {
                     updateProgressUI(audioJingle.currentTime); 
                 }
@@ -199,7 +214,6 @@
             if(!isJinglePhase) updateProgressUI(jingleDuration + audioPodcast.currentTime); 
         });
         
-        // Sécurité si le fichier jingle est naturellement plus court
         audioJingle.addEventListener('ended', () => {
             if(isJinglePhase) passToPodcast();
         });
@@ -217,8 +231,8 @@
                 document.getElementById('audio-wave-icon').classList.remove('playing');
                 isAudioPlaying = false;
             } else {
-                if(isJinglePhase) {
-                    audioJingle.play();
+                if(isJinglePhase && jingleDuration > 0) {
+                    audioJingle.play().catch(() => passToPodcast()); // Si le jingle est refusé par le navigateur, on skip !
                 } else {
                     audioPodcast.play();
                 }
@@ -255,16 +269,14 @@
                 isJinglePhase = true;
                 audioPodcast.pause();
                 audioJingle.currentTime = targetTime;
-                if(isAudioPlaying) {
-                    audioJingle.play();
-                }
+                if(isAudioPlaying) audioJingle.play();
             } else {
-                isJinglePhase = false;
-                audioJingle.pause();
-                audioPodcast.currentTime = targetTime - jingleDuration;
-                if(isAudioPlaying) {
-                    audioPodcast.play();
+                if (isJinglePhase) {
+                    isJinglePhase = false;
+                    audioJingle.pause();
                 }
+                audioPodcast.currentTime = targetTime - jingleDuration;
+                if(isAudioPlaying) audioPodcast.play();
             }
             updateProgressUI(targetTime);
         }
@@ -398,8 +410,12 @@
                 document.getElementById('audio-title').innerText = media.titre;
                 audioPodcast.src = media.url_media;
                 isAudioPlaying = false;
-                isJinglePhase = true;
-                audioJingle.currentTime = 0;
+                
+                isJinglePhase = (jingleDuration > 0);
+                if (isJinglePhase) {
+                    try { audioJingle.currentTime = 0; } catch(e) {}
+                }
+                
                 document.getElementById('audio-progress').style.width = '0%';
                 document.getElementById('time-current').innerText = "00:00";
                 document.getElementById('play-pause-btn').innerText = '▶';
