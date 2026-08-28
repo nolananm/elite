@@ -158,27 +158,27 @@
         let profilActuel = 'none'; 
         let tousLesMedias = [];
         
-        // --- SYSTÈME LECTEUR MULTI-PHASES (Voix Off -> Jingle -> Podcast) ---
+        // --- SYSTÈME LECTEUR MULTI-PHASES ---
         let isPreviewMode = false;
         let videoPreviewTimer = null;
 
         // 🚨 URL VOIX OFF SUPABASE 🚨
         const URL_VOIX_OFF = 'https://dmfbjpotgicqpfxlsycv.supabase.co/storage/v1/object/public/medias/VoixOffExtrait.mp3'; 
         
-        // 🚨 TON JINGLE GO SUPABASE 🚨
+        // 🚨 URL JINGLE GO SUPABASE 🚨
         const URL_JINGLE = 'https://dmfbjpotgicqpfxlsycv.supabase.co/storage/v1/object/public/medias/JingleGO.mp3'; 
         
         let audioVoixOff = new Audio(URL_VOIX_OFF);
         audioVoixOff.preload = 'auto';
-        audioVoixOff.volume = 1.0; // Voix off au max
+        audioVoixOff.volume = 1.0;
         
         let audioJingle = new Audio(URL_JINGLE);
         audioJingle.preload = 'auto';
-        audioJingle.volume = 0.20; // VOLUME JINGLE BAISSÉ À 20%
+        audioJingle.volume = 0.20; 
         
         let audioPodcast = new Audio();
         audioPodcast.preload = 'auto';
-        audioPodcast.volume = 1.0; // Ton podcast au max
+        audioPodcast.volume = 1.0; 
         
         let isAudioPlaying = false;
         let currentPhase = 0; // 0 = VoixOff, 1 = Jingle, 2 = Podcast
@@ -250,17 +250,17 @@
             
             clearInterval(crossfadeInterval);
             crossfadeInterval = setInterval(() => {
-                if (audioJingle.volume > 0.02) {
-                    audioJingle.volume = Math.max(0, audioJingle.volume - 0.02);
+                if (audioJingle.volume > 0.05) {
+                    audioJingle.volume = Math.max(0, audioJingle.volume - 0.05);
                 } else {
                     clearInterval(crossfadeInterval);
                     audioJingle.pause();
-                    audioJingle.volume = 0.20; // Rétablit le volume à 20% pour le prochain lancement
+                    audioJingle.volume = 0.20; 
                 }
             }, 100);
         }
 
-        // --- ECOUTEURS DE TEMPS POUR CHAQUE PHASE ---
+        // --- ECOUTEURS DE TEMPS ---
 
         audioVoixOff.addEventListener('timeupdate', () => {
             if (currentPhase !== 0) return;
@@ -283,11 +283,10 @@
             updateGlobalTime();
         });
 
-        // Fonction Maîtresse : Gère la barre de progression ET la coupure de la minute gratuite
         function updateGlobalTime() {
             let globalTime = getCurrentGlobalTime();
             
-            // 🚨 GESTION DU FONDU DE SORTIE (1 seconde avant la fin de l'extrait) 🚨
+            // 🚨 GESTION DU FONDU DE SORTIE (1 seconde avant la fin de l'extrait)
             if (isPreviewMode) {
                 if (globalTime >= 59.0 && !isFadingOut) {
                     isFadingOut = true;
@@ -363,7 +362,6 @@
             let total = getTotalDuration();
             let targetTime = percent * total;
 
-            // Bloquer le clic tout à la fin de l'extrait gratuit pour éviter de bugger le fade-out
             if (isPreviewMode && targetTime >= 59.0) {
                 stopperExtraitGartuit();
                 return;
@@ -379,13 +377,18 @@
             let t1 = isPreviewMode ? voixOffDuration : 0;
             let t2 = t1 + jingleDuration;
 
+            // 🚨 CORRECTION DU BUG DE REMBOBINAGE 🚨
+            // On s'assure que les pistes futures sont bien remises à 0 pour éviter qu'elles ne reprennent au milieu.
             if (targetTime < t1 && t1 > 0) {
                 currentPhase = 0;
                 audioVoixOff.currentTime = targetTime;
+                try { audioJingle.currentTime = 0; } catch(err){}
+                try { audioPodcast.currentTime = 0; } catch(err){}
             } else if (targetTime < t2 && jingleDuration > 0) {
                 currentPhase = 1;
                 audioJingle.currentTime = targetTime - t1;
-                audioJingle.volume = 0.20; // S'assure que le Jingle reste à 20%
+                audioJingle.volume = 0.20;
+                try { audioPodcast.currentTime = 0; } catch(err){}
             } else {
                 currentPhase = 2;
                 audioPodcast.currentTime = targetTime - t2;
@@ -567,7 +570,6 @@
                 clearInterval(fadeOutInterval);
                 isFadingOut = false;
                 
-                // Préparation des lecteurs (Volume Jingle = 20%)
                 if (isPreviewMode && voixOffDuration > 0) {
                     currentPhase = 0;
                     try { audioVoixOff.currentTime = 0; audioVoixOff.volume = 1.0; } catch(e){}
@@ -575,6 +577,8 @@
                     currentPhase = 1;
                     try { audioJingle.currentTime = 0; audioJingle.volume = 0.20; } catch(e){}
                 }
+                
+                try { audioPodcast.currentTime = 0; } catch(e){}
                 
                 document.getElementById('audio-progress').style.width = '0%';
                 document.getElementById('time-current').innerText = "00:00";
@@ -599,6 +603,7 @@
             pauseAll();
             clearInterval(crossfadeInterval);
             clearInterval(fadeOutInterval);
+            try { audioPodcast.currentTime = 0; } catch(e){}
             isAudioPlaying = false;
             document.getElementById('audio-wave-icon').classList.remove('playing');
         }
