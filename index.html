@@ -148,7 +148,7 @@
             let urlStripe = planChoisi === 'premium' ? LIEN_STRIPE_PREMIUM : LIEN_STRIPE_CLASSIC;
 
             // ON ATTACHE L'ID UTILISATEUR ET LE PLAN À L'URL STRIPE (Pour le Webhook)
-            const urlFinale = `${urlStripe}?client_reference_id=${user.id}___${planChoisi}`;
+           const urlFinale = ${urlStripe}?client_reference_id=${user.id};
             
             // Redirection vers le paiement Stripe
             window.location.href = urlFinale;
