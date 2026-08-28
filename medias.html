@@ -162,9 +162,8 @@
         let isPreviewMode = false;
         let videoPreviewTimer = null;
         
-        // Jingle ultra fiable hébergé par Google (Son électronique "Swoosh" de 3 secondes)
-        // 💡 CONSEIL : Héberge ton propre jingle sur ton Supabase (bucket medias) et remplace ce lien 💡
-        const URL_JINGLE = 'https://actions.google.com/sounds/v1/science_fiction/sci_fi_sweeper_effect.ogg'; 
+        // 🚨 REMPLACE CE LIEN MP3 PAR LE TIEN DEPUIS TON BUCKET SUPABASE 🚨
+        const URL_JINGLE = 'https://www.myinstants.com/media/sounds/news-intro.mp3'; 
         
         let audioJingle = new Audio(URL_JINGLE);
         audioJingle.preload = 'auto';
@@ -179,7 +178,7 @@
         let transitionTriggered = false;
         let fadeInterval = null;
         
-        let jingleDuration = 3.0; // Durée approximative du Jingle
+        let jingleDuration = 3.0; // Durée par défaut si le jingle n'est pas chargé
         let podcastDuration = 0;
 
         audioJingle.addEventListener('loadedmetadata', () => { 
@@ -192,7 +191,7 @@
             updateTotalTimeUI(); 
         });
 
-        // Sécurité anti-bug
+        // Sécurité anti-bug (Si le lien Jingle meurt, on l'ignore)
         audioJingle.onerror = () => { jingleDuration = 0; isJinglePhase = false; };
 
         // Fondu enchaîné (Crossfade)
@@ -504,7 +503,7 @@
         }
 
         function fermerMedia() {
-            if (videoPreviewTimer) clearTimeout(videoPreviewTimer); // Stop le minuteur vidéo
+            if (videoPreviewTimer) clearTimeout(videoPreviewTimer);
 
             document.querySelectorAll('.site-modal').forEach(m => {
                 if (m.id !== 'modal-paywall') {
