@@ -6,91 +6,73 @@
     <title>Émissions & Podcasts - Élite</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden; min-height: 100vh; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; visibility: hidden; opacity: 0; transition: opacity 0.5s ease; }
         a { text-decoration: none; color: inherit; }
 
-        header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); z-index: 1000; }
+        header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo { font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
         nav { display: flex; gap: 30px; align-items: center; }
-        nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
 
-        /* HERO SECTION (Le dernier Mag) */
-        .hero-banner { position: relative; width: 100%; height: 75vh; background: #000; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 80px 50px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-dark) 0%, transparent 60%, rgba(0,0,0,0.5) 100%); pointer-events: none; z-index: 2; }
-        .hero-content { position: relative; z-index: 3; max-width: 800px; }
-        .badge-acces { display: inline-block; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 4px; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
+        .container { max-width: 1200px; margin: 120px auto 50px auto; padding: 0 20px; }
+        .page-header { text-align: center; margin-bottom: 50px; }
+        .page-header h1 { font-size: 44px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
+        .page-header p { color: var(--text-muted); font-size: 18px; }
+
+        .ad-zone { display: none; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin: 0 auto 40px auto; overflow: hidden; justify-content: center; align-items: center; flex-direction: column; min-height: 90px; max-width: 900px; position: relative;}
+        .ad-label { position: absolute; top: 5px; left: 10px; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .medias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        .media-card { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; position: relative;}
+        .media-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: rgba(229,0,70,0.3); }
+        
+        .media-icon-area { width: 100%; height: 180px; background: linear-gradient(135deg, rgba(229,0,70,0.1), rgba(128,0,255,0.1)); display: flex; justify-content: center; align-items: center; font-size: 50px; position: relative; }
+        .badge-acces { position: absolute; top: 15px; left: 15px; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 2;}
+        .badge-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.2); }
         .badge-classic { background: #0055ff; color: white; }
         .badge-premium { background: var(--gradient); color: white; }
-        .hero-title { font-size: 48px; font-weight: 800; line-height: 1.1; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .hero-desc { font-size: 16px; color: #d0d4e0; line-height: 1.5; margin-bottom: 30px; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
-        
-        .yt-wrapper { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 56.25vw; min-height: 100vh; min-width: 177.77vh; z-index: 1; }
-        .yt-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .yt-shield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 4; cursor: pointer; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); transition: background 0.3s; }
-        .yt-play-btn { background: var(--gradient); width: 90px; height: 90px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; color: white; box-shadow: 0 10px 40px rgba(229,0,70,0.6); transition: transform 0.3s; padding-left: 6px; }
-        .yt-shield:hover .yt-play-btn { transform: scale(1.1); }
 
-        /* LISTE DES REPLAYS ET PODCASTS */
-        .catalog-section { padding: 40px 50px; }
-        .section-title { font-size: 24px; font-weight: 600; margin-bottom: 20px; color: white; display: flex; align-items: center; justify-content: space-between; }
-        
-        /* Scroll horizontal élégant */
-        .scrolling-wrapper { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; scroll-behavior: smooth; }
-        .scrolling-wrapper::-webkit-scrollbar { height: 8px; }
-        .scrolling-wrapper::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
-        .scrolling-wrapper::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-        .scrolling-wrapper::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        .media-content { padding: 25px; flex: 1; display: flex; flex-direction: column; }
+        .media-type { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; font-weight: 800; text-transform: uppercase; }
+        .media-title { font-size: 20px; font-weight: 700; line-height: 1.3; margin-bottom: 15px; }
+        .media-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
 
-        .thumbnail-card { flex: 0 0 320px; background: var(--bg-card); border-radius: 12px; overflow: hidden; position: relative; transition: transform 0.3s, box-shadow 0.3s; border: 1px solid rgba(255,255,255,0.05); }
-        .thumbnail-card:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.2); z-index: 10; }
+        /* MODALES LECTURE */
+        .site-modal { display: none; position: fixed; inset: 0; background: rgba(5, 7, 12, 0.95); z-index: 3000; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; padding: 20px; }
+        .site-modal.show { opacity: 1; }
+        .modal-box { background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 800px; position: relative; overflow: hidden; }
+        .btn-close-modal { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; transition: 0.2s; z-index: 10; }
+        .btn-close-modal:hover { background: var(--accent); }
         
-        .thumb-img { width: 100%; aspect-ratio: 16/9; background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center; }
-        .thumb-img::after { content: '▶'; position: absolute; font-size: 30px; color: white; opacity: 0; transition: 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .thumbnail-card:hover .thumb-img::after { opacity: 1; transform: scale(1.2); }
-        .thumb-img::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.3); transition: 0.3s; }
-        .thumbnail-card:hover .thumb-img::before { background: rgba(0,0,0,0.1); }
-        
-        .thumb-info { padding: 15px; }
-        .thumb-title { font-size: 15px; font-weight: 600; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* LECTEUR PODCAST (Design modernisé) */
-        .podcast-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
-        .podcast-card { display: flex; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; transition: 0.3s; }
-        .podcast-card:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
-        
-        .pod-play-btn { background: var(--gradient); color: white; border: none; min-width: 50px; height: 50px; border-radius: 50%; font-size: 18px; margin-right: 20px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(229, 0, 70, 0.3); }
-        .pod-content { flex: 1; }
-        .pod-title { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
-        
-        .progress-container { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-        .progress-container input[type=range] { flex: 1; -webkit-appearance: none; background: transparent; cursor: pointer; margin: 0; }
-        .progress-container input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; }
-        .progress-container input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: var(--accent); margin-top: -4px; }
-        .time-display { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
-        .loading-text { text-align: center; color: var(--text-muted); padding: 50px; font-size: 18px; width: 100%; }
+        /* AUDIO PLAYER */
+        .audio-wrapper { padding: 50px 30px; text-align: center; }
+        .audio-wave { font-size: 60px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .audio-status { font-size: 16px; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; }
+        audio { width: 100%; outline: none; border-radius: 30px; }
 
-        /* MODAL (Identique) */
-        #upgrade-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 2000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.4s ease; }
-        #upgrade-modal.show { opacity: 1; }
-        .upgrade-box { background: linear-gradient(145deg, #161a25, #0f111a); padding: 50px 40px; border-radius: 24px; width: 100%; max-width: 480px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 60px rgba(0,0,0,0.8); text-align: center; position: relative; transform: scale(0.95) translateY(20px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #upgrade-modal.show .upgrade-box { transform: scale(1) translateY(0); }
-        .upgrade-content { position: relative; z-index: 1; }
-        .upgrade-box h2 { font-size: 26px; margin-bottom: 15px; font-weight: 800; text-transform: uppercase; color: white; }
-        .upgrade-box p { color: #a0a5b0; margin-bottom: 35px; font-size: 15px; line-height: 1.6; }
-        .btn-upgrade { display: block; width: 100%; padding: 18px; background: var(--gradient); color: white; font-weight: 800; border-radius: 12px; font-size: 16px; border: none; cursor: pointer; text-decoration: none; text-transform: uppercase; }
-        .btn-close { margin-top: 25px; display: inline-block; color: #707580; font-size: 13px; font-weight: 600; cursor: pointer; background: none; border: none; transition: 0.3s; text-transform: uppercase; }
-        .btn-close:hover { color: white; }
-        
-        /* Modal pour jouer un replay YouTube */
-        #replay-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1500; justify-content: center; align-items: center; }
-        .replay-container { width: 90%; max-width: 1000px; aspect-ratio: 16/9; position: relative; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-        .close-replay { position: absolute; top: -40px; right: 0; color: white; font-size: 30px; cursor: pointer; }
+        /* PAYWALL MODAL */
+        .premium-box { max-width: 480px; text-align: center; padding: 40px; background: linear-gradient(145deg, #161a25, #0f111a); border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 60px rgba(0,0,0,0.8); }
+        .btn-upgrade { display: inline-block; width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: 800; border-radius: 8px; margin-top: 20px; text-transform: uppercase; cursor: pointer; border: none; }
+
+        .loading-text { text-align: center; color: var(--text-muted); font-size: 18px; width: 100%; grid-column: 1/-1; padding: 50px; }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; padding: 15px; gap: 10px; }
+            nav { flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+            nav a { font-size: 12px; }
+            .container { margin-top: 140px; padding: 0 15px; }
+            .page-header h1 { font-size: 32px; }
+            .medias-grid { grid-template-columns: 1fr; }
+            .ad-zone { max-width: 100vw; overflow-x: auto; padding: 10px 0; border-radius: 0; border-left: none; border-right: none;}
+        }
     </style>
 </head>
 <body>
@@ -105,53 +87,52 @@
         </nav>
     </header>
 
-    <!-- ZONE HERO : Le Mag le plus récent -->
-    <div id="hero-container">
-        <div class="hero-banner" style="height: 50vh; align-items: center; justify-content: center;">
-            <div class="loading-text">Chargement du studio...</div>
+    <div class="container">
+        <div class="page-header">
+            <h1>Médias Élite</h1>
+            <p>Vidéos exclusives et podcasts de la rédaction.</p>
+        </div>
+
+        <div class="ad-zone">
+            <span class="ad-label">Sponsorisé</span>
+            <script>
+                atOptions = { 'key' : 'a75626ad776c3791da4b7e1f47f54670', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
+            </script>
+            <script src="https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js"></script>
+        </div>
+
+        <div class="medias-grid" id="medias-container">
+            <div class="loading-text">Recherche des médias...</div>
         </div>
     </div>
 
-    <!-- REPLAYS VIDÉOS -->
-    <div class="catalog-section">
-        <div class="section-title">Replays Élite Le Mag</div>
-        <div class="scrolling-wrapper" id="replays-container">
-            <!-- Vides par défaut -->
+    <!-- MODAL VIDEO -->
+    <div class="site-modal" id="modal-video">
+        <div class="modal-box">
+            <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
+            <div id="video-content"></div>
         </div>
     </div>
 
-    <!-- PODCASTS -->
-    <div class="catalog-section" style="background: rgba(255,255,255,0.01); border-top: 1px solid rgba(255,255,255,0.05);">
-        <div class="section-title">Élite Décrypte <span style="font-size: 12px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; margin-left: 15px;">Écoute en tâche de fond</span></div>
-        <div class="podcast-grid" id="podcasts-container">
-            <!-- Vides par défaut -->
+    <!-- MODAL AUDIO -->
+    <div class="site-modal" id="modal-audio">
+        <div class="modal-box audio-wrapper">
+            <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
+            <div class="audio-wave">🎙️</div>
+            <div class="audio-status" id="audio-status-text">Préparation...</div>
+            <h3 id="audio-title" style="margin-bottom: 30px;">Titre</h3>
+            <audio id="audio-player" controls controlsList="nodownload"></audio>
         </div>
     </div>
 
-    <!-- MODAL BLOQUAGE (Temps écoulé) -->
-    <div id="upgrade-modal">
-        <div class="upgrade-box">
-            <div class="upgrade-content">
-                <h2 id="upgrade-title">Abonnement Requis</h2>
-                <p id="upgrade-message">Le contenu gratuit est terminé.</p>
-                <a href="index.html#abonnements" class="btn-upgrade">Découvrir les offres</a>
-                <button class="btn-close" onclick="fermerModal()">Fermer</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL LECTEUR REPLAY YOUTUBE -->
-    <div id="replay-modal">
-        <div style="position: relative; width: 90%; max-width: 1000px;">
-            <div class="close-replay" onclick="fermerReplay()">×</div>
-            <div class="replay-container" id="replay-player-box" data-access="">
-                <div class="yt-wrapper" style="width: 100%; height: 100%; min-width: 0; min-height: 0; top: 0; left: 0; transform: none;">
-                    <div id="yt-replay"></div>
-                    <div class="yt-shield" id="yt-shield-replay" onclick="toggleYouTube('replay')">
-                        <div class="yt-play-btn" id="yt-play-btn-replay">▶</div>
-                    </div>
-                </div>
-            </div>
+    <!-- MODAL PAYWALL -->
+    <div class="site-modal" id="modal-paywall">
+        <div class="modal-box premium-box">
+            <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
+            <div class="icon" style="font-size: 40px; margin-bottom: 20px;">🔒</div>
+            <h2 id="paywall-title" style="margin-bottom: 10px; font-weight: 800; font-size: 24px;">Abonnement Requis</h2>
+            <p id="paywall-message" style="color: var(--text-muted); font-size: 14px;">Ce contenu est réservé aux abonnés de niveau supérieur.</p>
+            <a href="index.html#abonnements" class="btn-upgrade">Voir les offres</a>
         </div>
     </div>
 
@@ -161,204 +142,126 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let profilActuel = 'none'; 
-        let ytPlayers = {};
-        let lecteurBloqueActuel = null; 
-        
-        let heroVideoId = null;
-        let replayVideos = [];
+        let tousLesMedias = [];
+        const JINGLE_URL = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3'; // Jingle libre de droit (News Intro)
 
-        function onYouTubeIframeAPIReady() {
-            if (heroVideoId) initHeroPlayer();
-        }
-
-        function extraireIdYoutube(url) {
-            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
-            return match ? match[1] : null;
+        async function verifierCompteARebours(estAdmin) {
+            const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
+            if (data && data.compte_a_rebours_actif && !estAdmin) {
+                document.body.innerHTML = `<div style="height:100vh; display:flex; justify-content:center; align-items:center; background:#07080b; color:white;"><h1>L'Élite arrive bientôt...</h1></div>`;
+                document.body.style.visibility = 'visible'; document.body.style.opacity = '1';
+                return true; 
+            }
+            return false;
         }
 
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
+            let estAdmin = false;
+
             if (user) {
-                const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
-                if (profil) profilActuel = profil.plan;
+                const { data: profil } = await supabaseClient.from('profils').select('plan, est_admin').eq('id', user.id).single();
+                if (profil) { profilActuel = profil.plan; estAdmin = profil.est_admin; }
             }
 
-            const { data: medias } = await supabaseClient.from('medias').select('*').order('created_at', { ascending: false });
-            
-            const videos = medias.filter(m => m.type_media === 'video');
-            const podcasts = medias.filter(m => m.type_media === 'podcast');
+            if (await verifierCompteARebours(estAdmin)) return;
 
-            /* --- INJECTION VIDÉOS --- */
-            if (videos.length > 0) {
-                const hero = videos[0];
-                heroVideoId = extraireIdYoutube(hero.url_media);
-                
-                document.getElementById('hero-container').innerHTML = `
-                    <div class="hero-banner" data-access="${hero.niveau_acces}" id="hero-box">
-                        <div class="yt-wrapper">
-                            <div id="yt-hero"></div>
-                            <div class="yt-shield" id="yt-shield-hero" onclick="toggleYouTube('hero')">
-                                <div class="yt-play-btn" id="yt-play-btn-hero">▶</div>
-                            </div>
-                        </div>
-                        <div class="hero-overlay"></div>
-                        <div class="hero-content">
-                            <span class="badge-acces badge-${hero.niveau_acces === 'premium' ? 'premium' : 'classic'}">Nouveau - ${hero.niveau_acces}</span>
-                            <h1 class="hero-title">${hero.titre}</h1>
-                            <p class="hero-desc">${hero.description}</p>
-                        </div>
-                    </div>`;
+            document.body.style.visibility = 'visible';
+            document.body.style.opacity = '1';
 
-                if (window.YT && window.YT.Player) initHeroPlayer();
+            if (profilActuel === 'premium') { document.querySelectorAll('.ad-zone').forEach(zone => zone.remove()); } 
+            else { document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex'); }
 
-                let replaysHTML = '';
-                replayVideos = videos.slice(1);
-                replayVideos.forEach(v => {
-                    const yId = extraireIdYoutube(v.url_media);
-                    const thumb = yId ? `https://img.youtube.com/vi/${yId}/maxresdefault.jpg` : '';
-                    replaysHTML += `
-                        <div class="thumbnail-card" onclick="ouvrirReplay('${yId}', '${v.niveau_acces}')">
-                            <div class="thumb-img" style="background-image: url('${thumb}')">
-                                <span style="position:absolute; top:10px; left:10px;" class="badge-acces badge-${v.niveau_acces === 'premium' ? 'premium' : 'classic'}">${v.niveau_acces}</span>
-                            </div>
-                            <div class="thumb-info">
-                                <div class="thumb-title">${v.titre}</div>
-                            </div>
-                        </div>`;
-                });
-                document.getElementById('replays-container').innerHTML = replaysHTML || '<p class="loading-text">Aucun replay.</p>';
+            const { data: medias, error } = await supabaseClient.from('medias').select('*').order('created_at', { ascending: false });
+            const container = document.getElementById('medias-container');
+
+            if (error || !medias || medias.length === 0) {
+                container.innerHTML = '<div class="loading-text">Aucun média pour le moment.</div>';
+                return;
             }
 
-            /* --- INJECTION PODCASTS --- */
-            let podcastsHTML = '';
-            podcasts.forEach((p, index) => {
-                podcastsHTML += `
-                <div class="podcast-card" data-access="${p.niveau_acces}">
-                    <button class="pod-play-btn">▶</button>
-                    <div class="pod-content">
-                        <span class="badge-acces badge-${p.niveau_acces === 'premium' ? 'premium' : 'classic'}" style="margin-bottom:5px;">${p.niveau_acces}</span>
-                        <div class="pod-title">${p.titre}</div>
-                        <div class="progress-container">
-                            <input type="range" class="pod-progress" value="0" min="0" max="100" step="0.1">
-                            <div class="time-display">0:00</div>
-                        </div>
+            tousLesMedias = medias;
+            let html = '';
+
+            tousLesMedias.forEach(m => {
+                let badgeClass = m.niveau_acces === 'premium' ? 'badge-premium' : (m.niveau_acces === 'classic' ? 'badge-classic' : 'badge-free');
+                let icone = m.type_media === 'video' ? '📺' : '🎧';
+                let libelleType = m.type_media === 'video' ? 'Vidéo' : 'Podcast Audio';
+
+                html += `
+                <div class="media-card" onclick="ouvrirMedia('${m.id}')">
+                    <div class="media-icon-area">
+                        <span class="badge-acces ${badgeClass}">${m.niveau_acces || 'free'}</span>
+                        ${icone}
                     </div>
-                    <audio class="elite-audio" src="${p.url_media}"></audio>
+                    <div class="media-content">
+                        <div class="media-type">${libelleType}</div>
+                        <div class="media-title">${m.titre}</div>
+                        <div class="media-desc">${m.description || ''}</div>
+                    </div>
                 </div>`;
             });
-            document.getElementById('podcasts-container').innerHTML = podcastsHTML || '<p class="loading-text">Aucun podcast.</p>';
-            configurerLecteursAudio();
+            container.innerHTML = html;
         }
 
-        /* --- LOGIQUE YOUTUBE HERO --- */
-        function initHeroPlayer() {
-            ytPlayers['hero'] = new YT.Player('yt-hero', {
-                videoId: heroVideoId,
-                playerVars: { 'controls': 0, 'disablekb': 1, 'fs': 0, 'modestbranding': 1, 'rel': 0 },
-                events: { 'onStateChange': (e) => onPlayerStateChange(e, 'hero') }
-            });
-        }
+        function ouvrirMedia(idMedia) {
+            const media = tousLesMedias.find(m => m.id == idMedia);
+            if (!media) return;
 
-        /* --- LOGIQUE YOUTUBE REPLAY (MODAL) --- */
-        function ouvrirReplay(videoId, acces) {
-            document.getElementById('replay-modal').style.display = 'flex';
-            document.getElementById('replay-player-box').setAttribute('data-access', acces);
-            
-            if(ytPlayers['replay']) {
-                ytPlayers['replay'].loadVideoById(videoId);
-                ytPlayers['replay'].pauseVideo();
-            } else {
-                ytPlayers['replay'] = new YT.Player('yt-replay', {
-                    videoId: videoId,
-                    playerVars: { 'controls': 0, 'disablekb': 1, 'fs': 0, 'modestbranding': 1, 'rel': 0 },
-                    events: { 'onStateChange': (e) => onPlayerStateChange(e, 'replay') }
-                });
+            const accesRequis = media.niveau_acces || 'free';
+            let aLeDroit = false;
+            if (accesRequis === 'free') aLeDroit = true;
+            else if (accesRequis === 'classic' && (profilActuel === 'classic' || profilActuel === 'premium')) aLeDroit = true;
+            else if (accesRequis === 'premium' && profilActuel === 'premium') aLeDroit = true;
+
+            if (!aLeDroit) {
+                document.getElementById('paywall-title').innerHTML = `Élite <span style='color: var(--accent)'>${accesRequis.toUpperCase()}</span>`;
+                const modal = document.getElementById('modal-paywall'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
+                return;
+            }
+
+            if (media.type_media === 'video') {
+                let embedUrl = media.url_media.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
+                document.getElementById('video-content').innerHTML = `<div class="video-container"><iframe src="${embedUrl}?autoplay=1" allow="autoplay; fullscreen"></iframe></div>`;
+                const modal = document.getElementById('modal-video'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
+            } 
+            else if (media.type_media === 'podcast') {
+                document.getElementById('audio-title').innerText = media.titre;
+                const audioPlayer = document.getElementById('audio-player');
+                const statusText = document.getElementById('audio-status-text');
+                
+                // LE JINGLE MAGIQUE EST ICI
+                statusText.innerText = "Jingle Élite en cours...";
+                statusText.style.color = "white";
+                audioPlayer.src = JINGLE_URL;
+                
+                // On essaie de lancer le jingle tout de suite
+                audioPlayer.play().catch(e => console.log("L'utilisateur doit interagir avant de lancer l'audio."));
+                
+                // Quand le jingle finit, on lance le vrai podcast
+                audioPlayer.onended = function() {
+                    statusText.innerText = "▶ Lecture du Podcast";
+                    statusText.style.color = "var(--accent)";
+                    audioPlayer.src = media.url_media;
+                    audioPlayer.play();
+                    audioPlayer.onended = null; // On enlève la boucle
+                };
+
+                const modal = document.getElementById('modal-audio'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
             }
         }
-        function fermerReplay() {
-            document.getElementById('replay-modal').style.display = 'none';
-            if(ytPlayers['replay']) ytPlayers['replay'].stopVideo();
-        }
 
-        function toggleYouTube(id) {
-            let player = ytPlayers[id];
-            if (!player) return;
-            if (player.getPlayerState() === 1) player.pauseVideo(); else player.playVideo();
-        }
-
-        function onPlayerStateChange(event, id) {
-            const playBtn = document.getElementById('yt-play-btn-' + id);
-            const shield = document.getElementById('yt-shield-' + id);
-            if (!playBtn) return;
-            if (event.data === 1) { playBtn.style.display = 'none'; shield.style.background = 'transparent'; } 
-            else { playBtn.style.display = 'flex'; playBtn.innerHTML = '▶'; shield.style.background = 'rgba(0,0,0,0.3)'; }
-        }
-
-        /* Vérification du temps YouTube (Hero & Replay) */
-        setInterval(() => {
-            ['hero', 'replay'].forEach(id => {
-                let player = ytPlayers[id];
-                if (player && player.getCurrentTime && player.getPlayerState() === 1) {
-                    let time = player.getCurrentTime();
-                    let box = id === 'hero' ? document.getElementById('hero-box') : document.getElementById('replay-player-box');
-                    let accesRequis = box.getAttribute('data-access');
-                    
-                    if ((profilActuel === 'none' || profilActuel === 'free') && time >= 60) bloquerLecteur('yt', id, "Temps gratuit écoulé.", accesRequis);
-                    else if (profilActuel === 'classic' && accesRequis === 'premium' && time >= 60) bloquerLecteur('yt', id, "Exclusivité Premium.", accesRequis);
-                }
+        function fermerMedia() {
+            document.querySelectorAll('.site-modal').forEach(m => {
+                m.classList.remove('show');
+                setTimeout(() => { m.style.display = 'none'; }, 300);
             });
-        }, 1000);
-
-        /* --- LOGIQUE PODCASTS --- */
-        function configurerLecteursAudio() {
-            document.querySelectorAll('.podcast-card').forEach(card => {
-                const audio = card.querySelector('audio');
-                const playBtn = card.querySelector('.pod-play-btn');
-                const progress = card.querySelector('.pod-progress');
-                const timeDisp = card.querySelector('.time-display');
-                const accesRequis = card.getAttribute('data-access');
-
-                playBtn.onclick = () => {
-                    // Stoppe les autres
-                    document.querySelectorAll('audio').forEach(a => { if(a !== audio) { a.pause(); a.parentElement.querySelector('.pod-play-btn').innerHTML = '▶'; } });
-                    if(audio.paused) audio.play(); else audio.pause();
-                };
-
-                audio.onplay = () => playBtn.innerHTML = '⏸';
-                audio.onpause = () => playBtn.innerHTML = '▶';
-
-                audio.ontimeupdate = () => {
-                    if (audio.duration) { progress.value = (audio.currentTime / audio.duration) * 100; timeDisp.textContent = formatTime(audio.currentTime); }
-                    if ((profilActuel === 'none' || profilActuel === 'free') && audio.currentTime >= 60) bloquerLecteur('audio', audio, "Fin de l'extrait gratuit.", accesRequis);
-                    else if (profilActuel === 'classic' && accesRequis === 'premium' && audio.currentTime >= 60) bloquerLecteur('audio', audio, "Exclusivité Premium.", accesRequis);
-                };
-                progress.oninput = () => { if (audio.duration) audio.currentTime = (progress.value / 100) * audio.duration; };
-            });
-        }
-        function formatTime(s) { return Math.floor(s/60) + ':' + (Math.floor(s%60) < 10 ? '0' : '') + Math.floor(s%60); }
-
-        /* --- MODAL BLOCAGE --- */
-        function bloquerLecteur(type, cible, message, planRequis) {
-            lecteurBloqueActuel = { type, cible };
-            if (type === 'yt') { ytPlayers[cible].pauseVideo(); ytPlayers[cible].seekTo(59.5); } 
-            else { cible.pause(); cible.currentTime = 59.5; }
+            document.getElementById('video-content').innerHTML = '';
             
-            document.getElementById('upgrade-title').innerHTML = `Élite <span style='color: ${planRequis === 'premium' ? 'var(--accent)' : '#0055ff'}'>${planRequis}</span>`;
-            document.getElementById('upgrade-message').textContent = message;
-            const modal = document.getElementById('upgrade-modal');
-            modal.style.display = 'flex'; setTimeout(() => modal.classList.add('show'), 10);
-        }
-
-        function fermerModal() {
-            const modal = document.getElementById('upgrade-modal');
-            modal.classList.remove('show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                if (lecteurBloqueActuel) {
-                    if (lecteurBloqueActuel.type === 'yt') ytPlayers[lecteurBloqueActuel.cible].seekTo(0);
-                    else lecteurBloqueActuel.cible.currentTime = 0;
-                }
-            }, 400); 
+            const audioPlayer = document.getElementById('audio-player');
+            audioPlayer.pause();
+            audioPlayer.src = "";
+            audioPlayer.onended = null;
         }
 
         initialiserPage();
