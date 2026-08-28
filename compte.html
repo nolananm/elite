@@ -9,7 +9,8 @@
     <style>
         :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+        /* ASTUCE SÉCURITÉ */
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; visibility: hidden; opacity: 0; transition: opacity 0.5s ease; }
         a { text-decoration: none; color: inherit; }
 
         header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -62,6 +63,22 @@
         .billing-row:last-child { border-bottom: none; }
         .billing-label { color: var(--text-muted); }
         .billing-value { font-weight: 600; }
+
+        /* RESPONSIVE MOBILE */
+        @media (max-width: 768px) {
+            header { flex-direction: column; padding: 15px; gap: 10px; }
+            nav { flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+            nav a { font-size: 12px; }
+            .container { margin-top: 140px; padding: 0 15px; }
+            .dashboard-layout { flex-direction: column; gap: 20px; }
+            .sidebar { width: 100%; }
+            .sidebar-menu { flex-direction: row; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; }
+            .menu-item { flex-shrink: 0; font-size: 12px; padding: 10px 15px; }
+            .content-area { padding: 20px; min-height: auto; }
+            .plan-box { flex-direction: column; text-align: center; gap: 15px; }
+            .billing-row { flex-direction: column; gap: 5px; text-align: center; }
+            .auth-container { margin: 150px 15px; width: auto; padding: 25px; }
+        }
     </style>
 </head>
 <body>
@@ -179,29 +196,37 @@
             const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
             if (data && data.compte_a_rebours_actif && !estAdmin) {
                 document.body.innerHTML = `
-                    <div style="height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), #07080b; color: white; text-align: center; padding: 20px; font-family: 'Poppins', sans-serif;">
-                        <h1 style="font-size: 60px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; text-transform: uppercase;">L'Élite se prépare</h1>
-                        <p style="color: #8b92a5; font-size: 18px; max-width: 600px; margin-bottom: 50px;">Le nouveau média de référence du football français ouvre ses portes dans :</p>
-                        <div style="display: flex; gap: 30px; font-size: 50px; font-weight: 800;" id="timer-display">Chargement...</div>
+                    <style>
+                        .timer-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+                        .timer-box { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px 20px; min-width: 130px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+                        .timer-num { font-size: 48px; font-weight: 800; color: white; line-height: 1; }
+                        .timer-label { font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; font-weight: 600; }
+                        @media (max-width: 768px) {
+                            .timer-box { min-width: 80px; padding: 15px 10px; border-radius: 12px; gap: 10px;}
+                            .timer-num { font-size: 28px; }
+                            .timer-label { font-size: 10px; letter-spacing: 1px; }
+                            h1.launch-title { font-size: 36px !important; }
+                            p.launch-desc { font-size: 14px !important; }
+                        }
+                    </style>
+                    <div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b), url('https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop') center/cover; position: relative; font-family: 'Poppins', sans-serif;">
+                        <div style="position: relative; z-index: 10; text-align: center; padding: 20px; width: 100%;">
+                            <div style="font-size: 20px; font-weight: 800; letter-spacing: 6px; color: white; margin-bottom: 20px; opacity: 0.8;">ÉLITE</div>
+                            <h1 class="launch-title" style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; line-height: 1.1;">L'expérience ultime<br>du football arrive.</h1>
+                            <p class="launch-desc" style="color: #a0a5b0; font-size: 18px; max-width: 600px; margin: 0 auto 50px auto;">Nous préparons la plateforme. Analyses tactiques, résumés vidéos et immersion totale en Ligue 1.</p>
+                            <div class="timer-container" id="timer-display"></div>
+                        </div>
                     </div>
                 `;
+                document.body.style.visibility = 'visible';
+                document.body.style.opacity = '1';
 
                 const dateLancement = new Date(data.date_lancement).getTime();
                 setInterval(() => {
                     const distance = dateLancement - new Date().getTime();
-                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "Ouverture !"; return; }
-
-                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
-                    const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const secondes = Math.floor((distance % (1000 * 60)) / 1000);
-
-                    document.getElementById('timer-display').innerHTML = `
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${jours}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Jours</span></div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${heures}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Heures</span></div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${minutes}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Minutes</span></div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); min-width: 120px;">${secondes}<span style="font-size:16px; display:block; color:#8b92a5; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-top:5px;">Secondes</span></div>
-                    `;
+                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
+                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24)); const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const secondes = Math.floor((distance % (1000 * 60)) / 1000);
+                    document.getElementById('timer-display').innerHTML = `<div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div><div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div><div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div><div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>`;
                 }, 1000);
                 return true; 
             }
@@ -217,8 +242,10 @@
                 let plan = profil ? profil.plan : 'free';
                 let estAdmin = profil ? profil.est_admin : false;
 
-                // SI CONNECTÉ ET NON-ADMIN : VÉRIFIER LE COMPTE A REBOURS !
                 if (await verifierCompteARebours(estAdmin)) return;
+
+                document.body.style.visibility = 'visible';
+                document.body.style.opacity = '1';
 
                 document.getElementById('dashboard-section').style.display = 'flex';
                 document.getElementById('user-email-display').textContent = user.email;
@@ -227,7 +254,8 @@
                 planDisplay.textContent = plan;
                 planDisplay.className = `plan-name color-${plan}`;
             } else {
-                // Pas de blocage du formulaire de connexion !
+                document.body.style.visibility = 'visible';
+                document.body.style.opacity = '1';
                 document.getElementById('auth-section').style.display = 'block';
                 document.getElementById('dashboard-section').style.display = 'none';
             }
