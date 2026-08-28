@@ -158,31 +158,55 @@
         let tousLesMedias = [];
         
         // --- LOGIQUE LECTEUR AUDIO FUSIONNÉ ---
-        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3';
+        // Lien d'un Jingle d'intro dynamique
+        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3'; 
+        
         let audioJingle = new Audio(URL_JINGLE);
+        audioJingle.volume = 0.2; // VOLUME DU JINGLE RÉDUIT À 20%
+        
         let audioPodcast = new Audio();
+        audioPodcast.volume = 1.0; // VOLUME DE TA VOIX À 100%
         
         let isAudioPlaying = false;
         let isJinglePhase = true;
-        let jingleDuration = 4.0; // Approximation de base
+        let jingleDuration = 4.0; // DURÉE FIXÉE STRICTEMENT À 4 SECONDES
         let podcastDuration = 0;
 
-        // Récupérer les durées réelles dès que chargées
-        audioJingle.addEventListener('loadedmetadata', () => { jingleDuration = audioJingle.duration; updateTotalTimeUI(); });
-        audioPodcast.addEventListener('loadedmetadata', () => { podcastDuration = audioPodcast.duration; updateTotalTimeUI(); });
+        // Récupérer la durée du podcast 
+        audioPodcast.addEventListener('loadedmetadata', () => { 
+            podcastDuration = audioPodcast.duration; 
+            updateTotalTimeUI(); 
+        });
 
-        // Mise à jour de la barre de progression
-        audioJingle.addEventListener('timeupdate', () => { if(isJinglePhase) updateProgressUI(audioJingle.currentTime); });
-        audioPodcast.addEventListener('timeupdate', () => { if(!isJinglePhase) updateProgressUI(jingleDuration + audioPodcast.currentTime); });
-
-        // Transition Jingle -> Podcast
-        audioJingle.addEventListener('ended', () => {
+        // La fonction pour basculer sur ta voix
+        function passToPodcast() {
             isJinglePhase = false;
             document.getElementById('audio-status-text').innerText = "▶ En lecture";
             document.getElementById('audio-status-text').style.color = "var(--accent)";
             audioPodcast.play();
+        }
+
+        // Mise à jour de la barre et coupure forcée du Jingle à 4 secondes
+        audioJingle.addEventListener('timeupdate', () => { 
+            if(isJinglePhase) {
+                if(audioJingle.currentTime >= jingleDuration) {
+                    audioJingle.pause(); // Coupe le son d'intro !
+                    passToPodcast(); // Lance ta voix
+                } else {
+                    updateProgressUI(audioJingle.currentTime); 
+                }
+            }
+        });
+
+        audioPodcast.addEventListener('timeupdate', () => { 
+            if(!isJinglePhase) updateProgressUI(jingleDuration + audioPodcast.currentTime); 
         });
         
+        // Sécurité si le fichier jingle est naturellement plus court que 4s
+        audioJingle.addEventListener('ended', () => {
+            if(isJinglePhase) passToPodcast();
+        });
+
         audioPodcast.addEventListener('ended', () => {
             isAudioPlaying = false;
             document.getElementById('play-pause-btn').innerText = '▶';
@@ -198,7 +222,7 @@
             } else {
                 if(isJinglePhase) {
                     audioJingle.play();
-                    document.getElementById('audio-status-text').innerText = "Jingle Élite...";
+                    document.getElementById('audio-status-text').innerText = "▶ Introduction..."; // TEXTE MODIFIÉ
                     document.getElementById('audio-status-text').style.color = "white";
                 } else {
                     audioPodcast.play();
@@ -238,7 +262,7 @@
                 audioJingle.currentTime = targetTime;
                 if(isAudioPlaying) {
                     audioJingle.play();
-                    document.getElementById('audio-status-text').innerText = "Jingle Élite...";
+                    document.getElementById('audio-status-text').innerText = "▶ Introduction...";
                     document.getElementById('audio-status-text').style.color = "white";
                 }
             } else {
@@ -266,8 +290,51 @@
         async function verifierCompteARebours(estAdmin) {
             const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
             if (data && data.compte_a_rebours_actif && !estAdmin) {
-                document.body.innerHTML = `<div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b); position: relative; font-family: 'Poppins', sans-serif;"><h1 style="color:white; font-size:40px;">L'Élite se prépare</h1></div>`;
-                document.body.style.visibility = 'visible'; document.body.style.opacity = '1';
+                document.body.innerHTML = `
+                    <style>
+                        .timer-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+                        .timer-box { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px 20px; min-width: 130px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+                        .timer-num { font-size: 48px; font-weight: 800; color: white; line-height: 1; }
+                        .timer-label { font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; font-weight: 600; }
+                        @media (max-width: 768px) {
+                            .timer-box { min-width: 80px; padding: 15px 10px; border-radius: 12px; gap: 10px;}
+                            .timer-num { font-size: 28px; }
+                            .timer-label { font-size: 10px; letter-spacing: 1px; }
+                            h1.launch-title { font-size: 36px !important; }
+                            p.launch-desc { font-size: 14px !important; }
+                        }
+                    </style>
+                    <div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b), url('https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop') center/cover; position: relative; font-family: 'Poppins', sans-serif;">
+                        <div style="position: relative; z-index: 10; text-align: center; padding: 20px; width: 100%;">
+                            <div style="font-size: 20px; font-weight: 800; letter-spacing: 6px; color: white; margin-bottom: 20px; opacity: 0.8;">ÉLITE</div>
+                            <h1 class="launch-title" style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; line-height: 1.1;">L'expérience ultime<br>du football arrive.</h1>
+                            <p class="launch-desc" style="color: #a0a5b0; font-size: 18px; max-width: 600px; margin: 0 auto 50px auto;">Nous préparons la plateforme. Analyses tactiques, résumés vidéos et immersion totale en Ligue 1.</p>
+                            <div class="timer-container" id="timer-display"></div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.style.visibility = 'visible';
+                document.body.style.opacity = '1';
+
+                const dateLancement = new Date(data.date_lancement).getTime();
+                setInterval(() => {
+                    const distance = dateLancement - new Date().getTime();
+                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
+
+                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const secondes = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    document.getElementById('timer-display').innerHTML = `
+                        <div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div>
+                        <div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div>
+                        <div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div>
+                        <div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>
+                    `;
+                }, 1000);
+
                 return true; 
             }
             return false;
@@ -303,7 +370,7 @@
 
             tousLesMedias.forEach(m => {
                 let badgeClass = m.niveau_acces === 'premium' ? 'badge-premium' : (m.niveau_acces === 'classic' ? 'badge-classic' : 'badge-free');
-                let icone = m.type_media === 'video' ? '📺' : '🎧';
+                let icone = m.type_media === 'video' ? '📺' : '🎙️';
                 let libelleType = m.type_media === 'video' ? 'Vidéo' : 'Podcast Audio';
 
                 html += `
@@ -344,7 +411,6 @@
                 const modal = document.getElementById('modal-video'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
             } 
             else if (media.type_media === 'podcast') {
-                // Initialisation du Custom Player
                 document.getElementById('audio-title').innerText = media.titre;
                 audioPodcast.src = media.url_media;
                 isAudioPlaying = false;
