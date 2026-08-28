@@ -158,12 +158,19 @@
         let profilActuel = 'none'; 
         let tousLesMedias = [];
         
-        // --- SYSTÈME RADIO & EXTRAIT GRATUIT CALIBRÉ À 60s EXACTEMENT ---
+        // --- SYSTÈME LECTEUR MULTI-PHASES (Voix Off -> Jingle -> Podcast) ---
         let isPreviewMode = false;
         let videoPreviewTimer = null;
+
+        // 🚨 METS L'URL DE TA VOIX OFF SUPABASE ICI 👇 🚨
+        const URL_VOIX_OFF = 'https://dmfbjpotgicqpfxlsycv.supabase.co/storage/v1/object/public/medias/VoixOffExtrait.mp3'; 
         
-        // Ton Jingle GO Supabase !
+        // 🚨 TON JINGLE GO SUPABASE 👇 🚨
         const URL_JINGLE = 'https://dmfbjpotgicqpfxlsycv.supabase.co/storage/v1/object/public/medias/JingleGO.mp3'; 
+        
+        let audioVoixOff = new Audio(URL_VOIX_OFF);
+        audioVoixOff.preload = 'auto';
+        audioVoixOff.volume = 1.0;
         
         let audioJingle = new Audio(URL_JINGLE);
         audioJingle.preload = 'auto';
@@ -174,86 +181,144 @@
         audioPodcast.volume = 1.0; 
         
         let isAudioPlaying = false;
-        let isJinglePhase = true;
+        let currentPhase = 0; // 0 = VoixOff, 1 = Jingle, 2 = Podcast
         let transitionTriggered = false;
-        let fadeInterval = null;
+        let crossfadeInterval = null;
+        let fadeOutInterval = null;
+        let isFadingOut = false;
         
+        let voixOffDuration = 0;
         let jingleDuration = 5.0; // Valeur par défaut
-        let podcastDuration = 0; // Durée réelle du fichier
+        let podcastDuration = 0;
 
-        audioJingle.addEventListener('loadedmetadata', () => { 
-            if(audioJingle.duration > 0) jingleDuration = audioJingle.duration;
-            updateTotalTimeUI();
-        });
+        audioVoixOff.addEventListener('loadedmetadata', () => { voixOffDuration = audioVoixOff.duration; updateTotalTimeUI(); });
+        audioVoixOff.onerror = () => { voixOffDuration = 0; }; // Si la voix off est introuvable, on skip à 0s.
+
+        audioJingle.addEventListener('loadedmetadata', () => { if(audioJingle.duration > 0) jingleDuration = audioJingle.duration; updateTotalTimeUI(); });
+        audioJingle.onerror = () => { jingleDuration = 0; };
 
         audioPodcast.addEventListener('loadedmetadata', () => { 
             podcastDuration = audioPodcast.duration; 
             updateTotalTimeUI(); 
         });
 
-        audioJingle.onerror = () => { jingleDuration = 0; isJinglePhase = false; };
-
-        // Calcule le temps total affiché sur la barre (max 60s en preview)
         function getTotalDuration() {
-            let realTotal = jingleDuration + podcastDuration;
-            return isPreviewMode ? Math.min(realTotal, 60.0) : realTotal;
+            if (isPreviewMode) return 60.0; // 1 minute exacte pour la preview
+            let t1 = isPreviewMode ? voixOffDuration : 0;
+            return t1 + jingleDuration + podcastDuration;
         }
 
-        // Fondu enchaîné (Crossfade)
+        function getCurrentGlobalTime() {
+            let t1 = isPreviewMode ? voixOffDuration : 0;
+            let t2 = t1 + jingleDuration;
+            if (currentPhase === 0) return audioVoixOff.currentTime;
+            if (currentPhase === 1) return t1 + audioJingle.currentTime;
+            if (currentPhase === 2) return t2 + audioPodcast.currentTime;
+            return 0;
+        }
+
+        function pauseAll() {
+            audioVoixOff.pause();
+            audioJingle.pause();
+            audioPodcast.pause();
+        }
+
+        function playCurrentPhase() {
+            if (currentPhase === 0 && isPreviewMode && voixOffDuration > 0) {
+                audioVoixOff.play().catch(e => nextPhase(1));
+            } else if (currentPhase <= 1 && jingleDuration > 0) {
+                currentPhase = 1;
+                audioJingle.play().catch(e => nextPhase(2));
+            } else {
+                currentPhase = 2;
+                audioPodcast.play();
+            }
+        }
+
+        function nextPhase(phaseId) {
+            pauseAll();
+            currentPhase = phaseId;
+            if (isAudioPlaying) playCurrentPhase();
+        }
+
         function triggerCrossfade() {
-            if(transitionTriggered) return;
+            if (transitionTriggered) return;
             transitionTriggered = true;
-            isJinglePhase = false;
+            currentPhase = 2; // Le podcast prend le relais
             
             audioPodcast.play().catch(e => console.log("Attente interaction"));
             
-            clearInterval(fadeInterval);
-            fadeInterval = setInterval(() => {
+            clearInterval(crossfadeInterval);
+            crossfadeInterval = setInterval(() => {
                 if (audioJingle.volume > 0.05) {
                     audioJingle.volume -= 0.05;
                 } else {
-                    clearInterval(fadeInterval);
+                    clearInterval(crossfadeInterval);
                     audioJingle.pause();
                     audioJingle.volume = 0.60; 
                 }
             }, 100);
         }
 
+        // --- ECOUTEURS DE TEMPS POUR CHAQUE PHASE ---
+
+        audioVoixOff.addEventListener('timeupdate', () => {
+            if (currentPhase !== 0) return;
+            updateGlobalTime();
+            if (audioVoixOff.currentTime >= voixOffDuration - 0.2) {
+                nextPhase(1); // On passe au Jingle
+            }
+        });
+
         audioJingle.addEventListener('timeupdate', () => { 
-            if(isJinglePhase) {
-                let currentTime = audioJingle.currentTime;
-                
-                // Sécurité si l'extrait est plus court que le jingle
-                if (isPreviewMode && currentTime >= 60) {
-                    stopperExtraitGartuit();
-                    return;
-                }
-
-                updateProgressUI(currentTime); 
-                
-                // Déclenchement du fondu 1s avant la fin du jingle
-                if (currentTime >= (jingleDuration - 1.0)) { triggerCrossfade(); }
+            if (currentPhase !== 1) return;
+            updateGlobalTime();
+            if (audioJingle.currentTime >= (jingleDuration - 1.0)) { 
+                triggerCrossfade(); // Fondu vers le Podcast
             }
         });
 
-        // 🚨 COUPURE NETTE À 60 SECONDES 🚨
         audioPodcast.addEventListener('timeupdate', () => { 
-            if(!isJinglePhase) {
-                let currentTotalTime = jingleDuration + audioPodcast.currentTime;
+            if (currentPhase !== 2) return;
+            updateGlobalTime();
+        });
+
+        // Fonction Maîtresse : Gère la barre de progression ET la coupure de la minute gratuite
+        function updateGlobalTime() {
+            let globalTime = getCurrentGlobalTime();
+            
+            // 🚨 GESTION DU FONDU DE SORTIE (1 seconde avant la fin de l'extrait) 🚨
+            if (isPreviewMode) {
+                if (globalTime >= 59.0 && !isFadingOut) {
+                    isFadingOut = true;
+                    // Baisse progressive du son du podcast pour éviter la coupure nette
+                    fadeOutInterval = setInterval(() => {
+                        if (audioPodcast.volume > 0.05) {
+                            audioPodcast.volume -= 0.05;
+                        }
+                    }, 100);
+                }
                 
-                // Si on atteint 60 secondes en preview (Jingle + Podcast)
-                if (isPreviewMode && currentTotalTime >= 60) {
+                // Coupure finale à 60s
+                if (globalTime >= 60.0) {
                     stopperExtraitGartuit();
                     return;
                 }
-                
-                updateProgressUI(currentTotalTime); 
             }
-        });
+
+            // Met à jour la barre visuelle
+            let total = getTotalDuration();
+            if (total === 0 || isNaN(total)) return;
+            let percent = (globalTime / total) * 100;
+            if (percent > 100) percent = 100;
+
+            document.getElementById('audio-progress').style.width = percent + '%';
+            document.getElementById('time-current').innerText = formatTime(globalTime);
+        }
 
         function stopperExtraitGartuit() {
-            audioPodcast.pause();
-            audioJingle.pause();
+            pauseAll();
+            clearInterval(fadeOutInterval);
             isAudioPlaying = false;
             document.getElementById('play-pause-btn').innerText = '▶';
             document.getElementById('audio-wave-icon').classList.remove('playing');
@@ -261,42 +326,27 @@
             fermerMedia();
             afficherPaywall("Fin de l'extrait", "Abonnez-vous pour écouter l'intégralité de cette émission !");
         }
-        
-        audioJingle.addEventListener('ended', () => { if(!transitionTriggered) triggerCrossfade(); });
 
         audioPodcast.addEventListener('ended', () => {
-            isAudioPlaying = false;
-            document.getElementById('play-pause-btn').innerText = '▶';
-            document.getElementById('audio-wave-icon').classList.remove('playing');
+            if (!isPreviewMode) {
+                isAudioPlaying = false;
+                document.getElementById('play-pause-btn').innerText = '▶';
+                document.getElementById('audio-wave-icon').classList.remove('playing');
+            }
         });
 
         function toggleAudioPlay() {
             if (isAudioPlaying) {
-                if(isJinglePhase) audioJingle.pause(); else audioPodcast.pause();
+                pauseAll();
                 document.getElementById('play-pause-btn').innerText = '▶';
                 document.getElementById('audio-wave-icon').classList.remove('playing');
                 isAudioPlaying = false;
             } else {
-                if(isJinglePhase && jingleDuration > 0) {
-                    audioJingle.play().catch(() => triggerCrossfade());
-                } else {
-                    audioPodcast.play();
-                }
+                playCurrentPhase();
                 document.getElementById('play-pause-btn').innerText = '⏸';
                 document.getElementById('audio-wave-icon').classList.add('playing');
                 isAudioPlaying = true;
             }
-        }
-
-        function updateProgressUI(currentTime) {
-            let total = getTotalDuration();
-            if (total === 0 || isNaN(total)) return;
-            
-            let percent = (currentTime / total) * 100;
-            if (percent > 100) percent = 100;
-
-            document.getElementById('audio-progress').style.width = percent + '%';
-            document.getElementById('time-current').innerText = formatTime(currentTime);
         }
 
         function updateTotalTimeUI() {
@@ -315,30 +365,37 @@
             let total = getTotalDuration();
             let targetTime = percent * total;
 
-            // Bloquer le clic tout à la fin de l'extrait gratuit pour éviter les bugs
-            if (isPreviewMode && targetTime >= 59.5) {
+            // Bloquer le clic tout à la fin de l'extrait gratuit pour éviter de bugger le fade-out
+            if (isPreviewMode && targetTime >= 59.0) {
                 stopperExtraitGartuit();
                 return;
             }
 
-            clearInterval(fadeInterval); 
+            pauseAll();
+            clearInterval(crossfadeInterval); 
+            clearInterval(fadeOutInterval);
+            isFadingOut = false;
+            audioPodcast.volume = 1.0;
+            transitionTriggered = false;
 
-            if (targetTime < jingleDuration && jingleDuration > 0) {
-                isJinglePhase = true;
-                transitionTriggered = false;
-                audioPodcast.pause();
-                audioPodcast.currentTime = 0;
-                audioJingle.volume = 0.60; 
-                audioJingle.currentTime = targetTime;
-                if(isAudioPlaying) audioJingle.play();
+            let t1 = isPreviewMode ? voixOffDuration : 0;
+            let t2 = t1 + jingleDuration;
+
+            if (targetTime < t1 && t1 > 0) {
+                currentPhase = 0;
+                audioVoixOff.currentTime = targetTime;
+            } else if (targetTime < t2 && jingleDuration > 0) {
+                currentPhase = 1;
+                audioJingle.currentTime = targetTime - t1;
+                audioJingle.volume = 0.60;
             } else {
-                isJinglePhase = false;
-                transitionTriggered = true;
-                audioJingle.pause();
-                audioPodcast.currentTime = targetTime - jingleDuration;
-                if(isAudioPlaying) audioPodcast.play();
+                currentPhase = 2;
+                audioPodcast.currentTime = targetTime - t2;
+                transitionTriggered = true; // On saute le fondu entrant puisqu'on avance directement au milieu
             }
-            updateProgressUI(targetTime);
+
+            if (isAudioPlaying) playCurrentPhase();
+            updateGlobalTime();
         }
 
         function formatTime(seconds) {
@@ -510,13 +567,22 @@
                 audioPodcast.src = media.url_media;
                 isAudioPlaying = false;
                 transitionTriggered = false;
-                clearInterval(fadeInterval);
+                clearInterval(crossfadeInterval);
+                clearInterval(fadeOutInterval);
+                isFadingOut = false;
                 
-                isJinglePhase = true;
-                try { audioJingle.currentTime = 0; audioJingle.volume = 0.60; } catch(e) {}
+                // On prépare le Terrain
+                if (isPreviewMode && voixOffDuration > 0) {
+                    currentPhase = 0;
+                    try { audioVoixOff.currentTime = 0; } catch(e){}
+                } else {
+                    currentPhase = 1;
+                    try { audioJingle.currentTime = 0; audioJingle.volume = 0.60; } catch(e){}
+                }
                 
                 document.getElementById('audio-progress').style.width = '0%';
                 document.getElementById('time-current').innerText = "00:00";
+                document.getElementById('time-total').innerText = isPreviewMode ? "01:00" : "00:00";
                 document.getElementById('play-pause-btn').innerText = '▶';
                 
                 const modal = document.getElementById('modal-audio'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
@@ -534,9 +600,9 @@
             });
             document.getElementById('video-content').innerHTML = '';
             
-            clearInterval(fadeInterval);
-            audioJingle.pause();
-            audioPodcast.pause();
+            pauseAll();
+            clearInterval(crossfadeInterval);
+            clearInterval(fadeOutInterval);
             isAudioPlaying = false;
             document.getElementById('audio-wave-icon').classList.remove('playing');
         }
