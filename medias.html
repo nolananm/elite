@@ -155,29 +155,30 @@
         let profilActuel = 'none'; 
         let tousLesMedias = [];
         
-        // --- SYSTÈME RADIO : NOUVEAU JINGLE HYPER SPORT / DYNAMIQUE ---
-        // Fichier "Sports Hype Hymn Stadium Thunder" 
-        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2026/01/01/audio_0b100bb420.mp3'; 
+        // --- SYSTÈME RADIO : JINGLE NEWS/SPORT ÉLECTRONIQUE ---
+        // Fichier "News Intro" (dynamique, percutant, pas de guitare)
+        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2021/11/24/audio_829e2fcf24.mp3'; 
         
         let audioJingle = new Audio(URL_JINGLE);
         audioJingle.preload = 'auto';
-        audioJingle.volume = 0.20; // Volume du jingle à 20%
+        audioJingle.volume = 0.25; // Volume légèrement relevé (25%) car le son est court et sec
         
         let audioPodcast = new Audio();
         audioPodcast.preload = 'auto';
-        audioPodcast.volume = 1.0; // Volume de ta voix à 100%
+        audioPodcast.volume = 1.0; 
         
         let isAudioPlaying = false;
         let isJinglePhase = true;
         let transitionTriggered = false;
         let fadeInterval = null;
         
-        let jingleDuration = 6.0; // Durée par défaut de l'intro avant le fondu
+        let jingleDuration = 4.0; // Vrai Jingle : Coupé à 4 secondes net.
         let podcastDuration = 0;
 
         // Récupération automatique des vraies durées
         audioJingle.addEventListener('loadedmetadata', () => { 
-            jingleDuration = audioJingle.duration; 
+            // Si le son fait moins de 4s, on s'adapte
+            if(audioJingle.duration < 4.0) jingleDuration = audioJingle.duration;
         });
 
         audioPodcast.addEventListener('loadedmetadata', () => { 
@@ -185,23 +186,22 @@
             updateTotalTimeUI(); 
         });
 
-        // Sécurité anti-bug du jingle
         audioJingle.onerror = () => {
             console.log("Jingle injoignable, passage direct au podcast.");
             jingleDuration = 0;
             isJinglePhase = false;
         };
 
-        // La magie du Mixage (Fondu enchaîné)
+        // Fondu enchaîné (Crossfade)
         function triggerCrossfade() {
             if(transitionTriggered) return;
             transitionTriggered = true;
             isJinglePhase = false;
             
-            // On lance la voix du podcast !
+            // On lance la voix du podcast
             audioPodcast.play().catch(e => console.log("Attente interaction"));
             
-            // On baisse le volume du jingle progressivement
+            // Baisse progressive du volume du jingle
             clearInterval(fadeInterval);
             fadeInterval = setInterval(() => {
                 if (audioJingle.volume > 0.02) {
@@ -209,34 +209,28 @@
                 } else {
                     clearInterval(fadeInterval);
                     audioJingle.pause();
-                    audioJingle.volume = 0.20; // On remet le volume par défaut pour la prochaine écoute
+                    audioJingle.volume = 0.25; // Reset
                 }
             }, 100);
         }
 
-        // Suivi du temps du Jingle
         audioJingle.addEventListener('timeupdate', () => { 
             if(isJinglePhase) {
                 updateProgressUI(audioJingle.currentTime); 
                 
-                // Déclenchement du mixage 1,5 seconde avant la fin du jingle.
-                // Sécurité max à 8 secondes
-                let maxJingleTime = Math.min(jingleDuration, 8.0);
-                if (audioJingle.currentTime >= (maxJingleTime - 1.5)) {
+                // Déclenchement du mixage 1 seconde avant la fin du jingle (à 3 secondes)
+                if (audioJingle.currentTime >= (jingleDuration - 1.0)) {
                     triggerCrossfade();
                 }
             }
         });
 
-        // Suivi du temps du Podcast
         audioPodcast.addEventListener('timeupdate', () => { 
             if(!isJinglePhase) {
-                let effectiveJingle = Math.min(jingleDuration, 8.0);
-                updateProgressUI(effectiveJingle + audioPodcast.currentTime); 
+                updateProgressUI(jingleDuration + audioPodcast.currentTime); 
             }
         });
         
-        // Sécurités de fin
         audioJingle.addEventListener('ended', () => {
             if(!transitionTriggered) triggerCrossfade();
         });
@@ -266,8 +260,7 @@
         }
 
         function updateProgressUI(currentTime) {
-            let effectiveJingle = Math.min(jingleDuration, 8.0);
-            let total = effectiveJingle + podcastDuration;
+            let total = jingleDuration + podcastDuration;
             if (total === 0 || isNaN(total)) return;
             let percent = (currentTime / total) * 100;
             document.getElementById('audio-progress').style.width = percent + '%';
@@ -275,9 +268,8 @@
         }
 
         function updateTotalTimeUI() {
-            let effectiveJingle = Math.min(jingleDuration, 8.0);
-            let total = effectiveJingle + podcastDuration;
-            if(!isNaN(total) && total > effectiveJingle) {
+            let total = jingleDuration + podcastDuration;
+            if(!isNaN(total) && total > jingleDuration) {
                 document.getElementById('time-total').innerText = formatTime(total);
             }
         }
@@ -288,25 +280,24 @@
             let clickX = e.clientX - rect.left;
             let percent = clickX / rect.width;
             
-            let effectiveJingle = Math.min(jingleDuration, 8.0);
-            let total = effectiveJingle + podcastDuration;
+            let total = jingleDuration + podcastDuration;
             let targetTime = percent * total;
 
             clearInterval(fadeInterval); 
 
-            if (targetTime < effectiveJingle && jingleDuration > 0) {
+            if (targetTime < jingleDuration && jingleDuration > 0) {
                 isJinglePhase = true;
                 transitionTriggered = false;
                 audioPodcast.pause();
                 audioPodcast.currentTime = 0;
-                audioJingle.volume = 0.20; 
+                audioJingle.volume = 0.25; 
                 audioJingle.currentTime = targetTime;
                 if(isAudioPlaying) audioJingle.play();
             } else {
                 isJinglePhase = false;
                 transitionTriggered = true;
                 audioJingle.pause();
-                audioPodcast.currentTime = targetTime - effectiveJingle;
+                audioPodcast.currentTime = targetTime - jingleDuration;
                 if(isAudioPlaying) audioPodcast.play();
             }
             updateProgressUI(targetTime);
@@ -459,7 +450,7 @@
                 
                 isJinglePhase = (jingleDuration > 0);
                 if (isJinglePhase) {
-                    try { audioJingle.currentTime = 0; audioJingle.volume = 0.20; } catch(e) {}
+                    try { audioJingle.currentTime = 0; audioJingle.volume = 0.25; } catch(e) {}
                 }
                 
                 document.getElementById('audio-progress').style.width = '0%';
