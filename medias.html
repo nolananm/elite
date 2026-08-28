@@ -111,6 +111,7 @@
         </div>
     </div>
 
+    <!-- MODAL VIDEO -->
     <div class="site-modal" id="modal-video">
         <div class="modal-box">
             <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
@@ -118,6 +119,7 @@
         </div>
     </div>
 
+    <!-- MODAL AUDIO CUSTOM -->
     <div class="site-modal" id="modal-audio">
         <div class="modal-box audio-wrapper">
             <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
@@ -137,9 +139,10 @@
         </div>
     </div>
 
+    <!-- MODAL PAYWALL (POUR FIN D'EXTRAIT GRATUIT) -->
     <div class="site-modal" id="modal-paywall">
         <div class="modal-box premium-box">
-            <button class="btn-close-modal" onclick="fermerMedia()">✕</button>
+            <button class="btn-close-modal" onclick="fermerModalPaywall()">✕</button>
             <div class="icon" style="font-size: 40px; margin-bottom: 20px;">🔒</div>
             <h2 id="paywall-title" style="margin-bottom: 10px; font-weight: 800; font-size: 24px;">Abonnement Requis</h2>
             <p id="paywall-message" style="color: var(--text-muted); font-size: 14px;">Ce contenu est réservé aux abonnés de niveau supérieur.</p>
@@ -155,13 +158,17 @@
         let profilActuel = 'none'; 
         let tousLesMedias = [];
         
-        // --- SYSTÈME RADIO : JINGLE NEWS/SPORT ÉLECTRONIQUE ---
-        // Fichier "News Intro" (dynamique, percutant, pas de guitare)
-        const URL_JINGLE = 'https://cdn.pixabay.com/download/audio/2021/11/24/audio_829e2fcf24.mp3'; 
+        // --- SYSTÈME RADIO & EXTRAIT GRATUIT (1 MINUTE) ---
+        let isPreviewMode = false;
+        let videoPreviewTimer = null;
+        
+        // Jingle ultra fiable hébergé par Google (Son électronique "Swoosh" de 3 secondes)
+        // 💡 CONSEIL : Héberge ton propre jingle sur ton Supabase (bucket medias) et remplace ce lien 💡
+        const URL_JINGLE = 'https://actions.google.com/sounds/v1/science_fiction/sci_fi_sweeper_effect.ogg'; 
         
         let audioJingle = new Audio(URL_JINGLE);
         audioJingle.preload = 'auto';
-        audioJingle.volume = 0.25; // Volume légèrement relevé (25%) car le son est court et sec
+        audioJingle.volume = 0.25; 
         
         let audioPodcast = new Audio();
         audioPodcast.preload = 'auto';
@@ -172,25 +179,21 @@
         let transitionTriggered = false;
         let fadeInterval = null;
         
-        let jingleDuration = 4.0; // Vrai Jingle : Coupé à 4 secondes net.
+        let jingleDuration = 3.0; // Durée approximative du Jingle
         let podcastDuration = 0;
 
-        // Récupération automatique des vraies durées
         audioJingle.addEventListener('loadedmetadata', () => { 
-            // Si le son fait moins de 4s, on s'adapte
-            if(audioJingle.duration < 4.0) jingleDuration = audioJingle.duration;
+            if(audioJingle.duration > 0) jingleDuration = audioJingle.duration;
         });
 
         audioPodcast.addEventListener('loadedmetadata', () => { 
-            podcastDuration = audioPodcast.duration; 
+            // Si c'est un extrait gratuit, on fait croire au lecteur que le fichier ne fait que 60 secondes !
+            podcastDuration = isPreviewMode ? Math.min(audioPodcast.duration, 60) : audioPodcast.duration; 
             updateTotalTimeUI(); 
         });
 
-        audioJingle.onerror = () => {
-            console.log("Jingle injoignable, passage direct au podcast.");
-            jingleDuration = 0;
-            isJinglePhase = false;
-        };
+        // Sécurité anti-bug
+        audioJingle.onerror = () => { jingleDuration = 0; isJinglePhase = false; };
 
         // Fondu enchaîné (Crossfade)
         function triggerCrossfade() {
@@ -198,10 +201,8 @@
             transitionTriggered = true;
             isJinglePhase = false;
             
-            // On lance la voix du podcast
             audioPodcast.play().catch(e => console.log("Attente interaction"));
             
-            // Baisse progressive du volume du jingle
             clearInterval(fadeInterval);
             fadeInterval = setInterval(() => {
                 if (audioJingle.volume > 0.02) {
@@ -209,7 +210,7 @@
                 } else {
                     clearInterval(fadeInterval);
                     audioJingle.pause();
-                    audioJingle.volume = 0.25; // Reset
+                    audioJingle.volume = 0.25; 
                 }
             }, 100);
         }
@@ -217,23 +218,31 @@
         audioJingle.addEventListener('timeupdate', () => { 
             if(isJinglePhase) {
                 updateProgressUI(audioJingle.currentTime); 
-                
-                // Déclenchement du mixage 1 seconde avant la fin du jingle (à 3 secondes)
-                if (audioJingle.currentTime >= (jingleDuration - 1.0)) {
-                    triggerCrossfade();
-                }
+                // Déclenchement du fondu 1s avant la fin du jingle
+                if (audioJingle.currentTime >= (jingleDuration - 1.0)) { triggerCrossfade(); }
             }
         });
 
+        // 🚨 GESTION DE LA MINUTE GRATUITE (Podcast) 🚨
         audioPodcast.addEventListener('timeupdate', () => { 
             if(!isJinglePhase) {
+                if (isPreviewMode && audioPodcast.currentTime >= 60) {
+                    // Les 60 secondes sont écoulées ! On coupe TOUT.
+                    audioPodcast.pause();
+                    isAudioPlaying = false;
+                    document.getElementById('play-pause-btn').innerText = '▶';
+                    document.getElementById('audio-wave-icon').classList.remove('playing');
+                    
+                    fermerMedia();
+                    afficherPaywall("Fin de l'extrait", "Abonnez-vous pour écouter l'intégralité de cette émission !");
+                    return;
+                }
+                
                 updateProgressUI(jingleDuration + audioPodcast.currentTime); 
             }
         });
         
-        audioJingle.addEventListener('ended', () => {
-            if(!transitionTriggered) triggerCrossfade();
-        });
+        audioJingle.addEventListener('ended', () => { if(!transitionTriggered) triggerCrossfade(); });
 
         audioPodcast.addEventListener('ended', () => {
             isAudioPlaying = false;
@@ -283,6 +292,13 @@
             let total = jingleDuration + podcastDuration;
             let targetTime = percent * total;
 
+            // 🚨 EMPÊCHER LE VISITEUR GRATUIT D'AVANCER APRÈS 60 SECONDES 🚨
+            if (isPreviewMode && (targetTime - jingleDuration) >= 60) {
+                fermerMedia();
+                afficherPaywall("Fin de l'extrait", "Vous ne pouvez pas avancer plus loin. Abonnez-vous pour tout écouter !");
+                return;
+            }
+
             clearInterval(fadeInterval); 
 
             if (targetTime < jingleDuration && jingleDuration > 0) {
@@ -309,7 +325,21 @@
             let s = Math.floor(seconds % 60);
             return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
         }
-        // --- FIN LOGIQUE LECTEUR AUDIO ---
+
+        function afficherPaywall(titre, message) {
+            document.getElementById('paywall-title').innerHTML = titre;
+            document.getElementById('paywall-message').innerText = message;
+            const modal = document.getElementById('modal-paywall'); 
+            modal.style.display = 'flex'; 
+            setTimeout(() => { modal.classList.add('show'); }, 10);
+        }
+
+        function fermerModalPaywall() {
+            const modal = document.getElementById('modal-paywall');
+            modal.classList.remove('show');
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+        // --- FIN LOGIQUE AUDIO ---
 
 
         async function verifierCompteARebours(estAdmin) {
@@ -428,21 +458,33 @@
             else if (accesRequis === 'classic' && (profilActuel === 'classic' || profilActuel === 'premium')) aLeDroit = true;
             else if (accesRequis === 'premium' && profilActuel === 'premium') aLeDroit = true;
 
-            if (!aLeDroit) {
-                document.getElementById('paywall-title').innerHTML = `Élite <span style='color: var(--accent)'>${accesRequis.toUpperCase()}</span>`;
-                const modal = document.getElementById('modal-paywall'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
-                return;
-            }
+            // DÉCLENCHEMENT DU MODE EXTRAIT GRATUIT 
+            isPreviewMode = !aLeDroit;
 
             if (media.type_media === 'video') {
                 let embedUrl = media.url_media.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
-                document.getElementById('video-content').innerHTML = `<div class="video-container"><iframe src="${embedUrl}?autoplay=1" allow="autoplay; fullscreen"></iframe></div>`;
+                
+                let badgePreview = isPreviewMode ? `<div style="background:var(--accent); color:white; text-align:center; padding:8px; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">⏳ Extrait gratuit de 1 minute</div>` : '';
+                
+                document.getElementById('video-content').innerHTML = `
+                    ${badgePreview}
+                    <div class="video-container"><iframe src="${embedUrl}?autoplay=1" allow="autoplay; fullscreen"></iframe></div>
+                `;
+                
                 const modal = document.getElementById('modal-video'); modal.style.display = 'flex'; setTimeout(() => { modal.classList.add('show'); }, 10);
+                
+                // COUPE LA VIDÉO AU BOUT DE 60 SECONDES
+                if (isPreviewMode) {
+                    videoPreviewTimer = setTimeout(() => {
+                        fermerMedia();
+                        afficherPaywall("Fin de l'extrait", "Abonnez-vous pour voir l'intégralité de cette vidéo !");
+                    }, 60000);
+                }
+
             } 
             else if (media.type_media === 'podcast') {
-                document.getElementById('audio-title').innerText = media.titre;
+                document.getElementById('audio-title').innerText = isPreviewMode ? "⏳ Extrait (1 min) - " + media.titre : media.titre;
                 
-                // Préparation des fichiers audio
                 audioPodcast.src = media.url_media;
                 isAudioPlaying = false;
                 transitionTriggered = false;
@@ -462,9 +504,13 @@
         }
 
         function fermerMedia() {
+            if (videoPreviewTimer) clearTimeout(videoPreviewTimer); // Stop le minuteur vidéo
+
             document.querySelectorAll('.site-modal').forEach(m => {
-                m.classList.remove('show');
-                setTimeout(() => { m.style.display = 'none'; }, 300);
+                if (m.id !== 'modal-paywall') {
+                    m.classList.remove('show');
+                    setTimeout(() => { m.style.display = 'none'; }, 300);
+                }
             });
             document.getElementById('video-content').innerHTML = '';
             
