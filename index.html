@@ -9,7 +9,7 @@
     <style>
         :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; scroll-behavior: smooth; visibility: hidden; opacity: 0; transition: opacity 0.5s ease; }
+        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
 
         header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -18,63 +18,42 @@
         nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
 
-        .hero { text-align: center; padding: 180px 20px 80px 20px; }
-        .hero h1 { font-size: 64px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; line-height: 1.1; }
-        .hero p { color: var(--text-muted); font-size: 20px; max-width: 600px; margin: 0 auto 40px auto; }
+        .container { max-width: 1200px; margin: 120px auto 50px auto; padding: 0 20px; }
         
-        .btn-hero { display: inline-block; padding: 15px 40px; background: var(--gradient); color: white; border-radius: 30px; font-weight: 800; text-transform: uppercase; font-size: 16px; box-shadow: 0 10px 20px rgba(229,0,70,0.3); transition: 0.3s; }
-        .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(229,0,70,0.5); }
+        .hero { text-align: center; margin-bottom: 80px; padding: 60px 0; }
+        .hero h1 { font-size: 56px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { color: var(--text-muted); font-size: 20px; max-width: 700px; margin: 0 auto; line-height: 1.6; }
 
-        .ad-zone { display: none; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; text-align: center; margin: 0 auto 80px auto; overflow: hidden; justify-content: center; align-items: center; flex-direction: column; min-height: 90px; max-width: 900px; position: relative; }
-        .ad-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-
-        .pricing-section { max-width: 1200px; margin: 0 auto 100px auto; padding: 0 20px; }
-        .pricing-header { text-align: center; margin-bottom: 60px; }
-        .pricing-header h2 { font-size: 36px; font-weight: 800; text-transform: uppercase; }
-        .pricing-header p { color: var(--text-muted); font-size: 16px; margin-top: 10px; }
-
-        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; align-items: center; }
-        .pricing-card { background: rgba(18, 21, 28, 0.6); backdrop-filter: blur(10px); border-radius: 20px; padding: 40px 30px; border: 1px solid rgba(255,255,255,0.05); text-align: left; transition: 0.3s; display: flex; flex-direction: column; position: relative; min-height: 500px;}
-        .pricing-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); }
+        .pricing-section { text-align: center; margin-top: 50px; }
+        .pricing-section h2 { font-size: 36px; font-weight: 800; text-transform: uppercase; margin-bottom: 50px; }
         
-        .pricing-card.classic { background: rgba(0, 85, 255, 0.05); border: 2px solid #0055ff; transform: scale(1.05); box-shadow: 0 20px 40px rgba(0, 85, 255, 0.2); z-index: 2; padding: 50px 30px; }
-        .pricing-card.classic:hover { transform: scale(1.05) translateY(-5px); }
-        .pricing-card.premium { border-color: rgba(229,0,70,0.3); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .pricing-card { background: var(--bg-card); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 40px 30px; transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; align-items: center; position: relative; overflow: hidden; }
+        .pricing-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: rgba(229,0,70,0.3); }
+        .pricing-card.premium { border-color: var(--accent); box-shadow: 0 10px 30px rgba(229,0,70,0.2); }
+        
+        .badge-pop { position: absolute; top: 15px; right: -30px; background: var(--gradient); color: white; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 5px 30px; transform: rotate(45deg); }
+        
+        .plan-name { font-size: 24px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; }
+        .plan-price { font-size: 48px; font-weight: 800; margin-bottom: 20px; }
+        .plan-price span { font-size: 18px; color: var(--text-muted); font-weight: 600; }
+        
+        .plan-features { list-style: none; margin-bottom: 40px; width: 100%; text-align: left; }
+        .plan-features li { margin-bottom: 15px; font-size: 15px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
+        .plan-features li::before { content: '✓'; color: #00e676; font-weight: bold; }
+        .plan-features li.cross::before { content: '✕'; color: #ff3333; }
+        .plan-features li.cross { opacity: 0.5; }
 
-        .badge-popular { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #0055ff; color: white; font-size: 11px; font-weight: 800; padding: 6px 15px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(0,85,255,0.4); }
+        .btn-subscribe { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); color: white; font-weight: 800; border-radius: 8px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; margin-top: auto; }
+        .btn-subscribe:hover { background: rgba(255,255,255,0.1); }
+        .btn-subscribe.accent { background: var(--gradient); border: none; box-shadow: 0 10px 20px rgba(229,0,70,0.3); }
+        .btn-subscribe.accent:hover { transform: scale(1.05); }
 
-        .plan-title { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; color: var(--text-muted); }
-        .classic .plan-title { color: #0055ff; }
-        .premium .plan-title { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        .plan-price { font-size: 48px; font-weight: 800; margin-bottom: 10px; color: white; display: flex; align-items: baseline; }
-        .plan-price span { font-size: 16px; color: var(--text-muted); font-weight: 600; margin-left: 5px; text-transform: none; }
-        .plan-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.5; padding-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
-        .features { list-style: none; margin-bottom: 40px; flex: 1; }
-        .features li { font-size: 14px; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 10px; }
-        .features li.no { color: #555; text-decoration: line-through; }
-        .icon-yes { color: #00e676; font-weight: bold; }
-        .icon-no { color: #ff4d4d; font-weight: bold; }
-
-        .btn-plan { display: block; width: 100%; padding: 15px; text-align: center; border-radius: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; transition: 0.3s; text-decoration: none; margin-top: auto;}
-        .btn-free { background: #222; color: white; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-classic { background: #0055ff; color: white; box-shadow: 0 10px 20px rgba(0,85,255,0.3); }
-        .btn-premium { background: var(--gradient); color: white; }
-
-        /* RESPONSIVE MOBILE */
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 15px; gap: 10px; }
-            nav { flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
-            nav a { font-size: 12px; }
-            .hero { padding: 150px 15px 60px 15px; }
+            nav { flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .container { margin-top: 140px; }
             .hero h1 { font-size: 38px; }
-            .hero p { font-size: 16px; }
-            /* Empêche les grandes pubs de casser la page */
-            .ad-zone { max-width: 100vw; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 10px 0; border-radius: 0; border-left: none; border-right: none;}
-            .pricing-grid { grid-template-columns: 1fr; }
-            .pricing-card.classic { transform: none; margin: 20px 0; }
-            .pricing-card.classic:hover { transform: translateY(-5px); }
         }
     </style>
 </head>
@@ -90,157 +69,90 @@
         </nav>
     </header>
 
-    <section class="hero">
-        <h1>L'Élite du Football<br>Français.</h1>
-        <p>Vivez la Ligue 1 autrement. Articles tactiques, résumés vidéos de tous les matchs, podcasts et fil info en direct.</p>
-        <a href="#abonnements" class="btn-hero">Voir les abonnements</a>
-    </section>
-
-    <!-- PUB 728x90 -->
-    <div class="ad-zone">
-        <span class="ad-label">Publicité Sponsorisée</span>
-        <script>
-            atOptions = { 'key' : 'a75626ad776c3791da4b7e1f47f54670', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
-        </script>
-        <script src="https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js"></script>
-    </div>
-
-    <section id="abonnements" class="pricing-section">
-        <div class="pricing-header">
-            <h2>Passez à la vitesse supérieure</h2>
-            <p>Choisissez l'accès qui correspond à votre passion.</p>
+    <div class="container">
+        <div class="hero">
+            <h1>L'expérience ultime du football</h1>
+            <p>Rejoignez la plus grande communauté de passionnés. Analyses tactiques, podcasts exclusifs et immersion totale en Ligue 1.</p>
         </div>
 
-        <div class="pricing-grid">
+        <div class="pricing-section" id="abonnements">
+            <h2>Choisissez votre niveau</h2>
             
-            <div class="pricing-card">
-                <div class="plan-title">Free</div>
-                <div class="plan-price">0€<span>/mois</span></div>
-                <div class="plan-desc">Pour suivre l'essentiel de l'actualité de la Ligue 1.</div>
-                <ul class="features" id="features-free">
-                    <li style="color:var(--text-muted)">Chargement des avantages...</li>
-                </ul>
-                <a href="compte.html" class="btn-plan btn-free">Créer un compte</a>
-            </div>
+            <div class="pricing-grid">
+                <!-- Plan Gratuit -->
+                <div class="pricing-card">
+                    <div class="plan-name">Free</div>
+                    <div class="plan-price">0€<span>/mois</span></div>
+                    <ul class="plan-features">
+                        <li>Accès aux articles publics</li>
+                        <li>Résumés de matchs basiques</li>
+                        <li>Extraits médias (1 minute)</li>
+                        <li class="cross">Podcasts intégraux</li>
+                        <li class="cross">Vidéos exclusives</li>
+                        <li class="cross">Sans publicité</li>
+                    </ul>
+                    <button class="btn-subscribe" onclick="window.location.href='compte.html'">Créer un compte</button>
+                </div>
 
-            <div class="pricing-card classic">
-                <div class="badge-popular">Le choix n°1</div>
-                <div class="plan-title">Classic</div>
-                <div class="plan-price">4.99€<span>/mois</span></div>
-                <div class="plan-desc">Le pass incontournable pour les vrais supporters qui ne veulent rien manquer.</div>
-                <ul class="features" id="features-classic">
-                    <li style="color:var(--text-muted)">Chargement des avantages...</li>
-                </ul>
-                <a href="compte.html" class="btn-plan btn-classic">S'abonner Classic</a>
-            </div>
+                <!-- Plan Classic -->
+                <div class="pricing-card">
+                    <div class="plan-name" style="color: #0055ff;">Classic</div>
+                    <div class="plan-price">4,99€<span>/mois</span></div>
+                    <ul class="plan-features">
+                        <li>Tous les articles</li>
+                        <li>Podcasts complets</li>
+                        <li>Accès à la Fan Zone</li>
+                        <li class="cross">Vidéos exclusives</li>
+                        <li class="cross">Sans publicité</li>
+                    </ul>
+                    <button class="btn-subscribe accent" style="background: #0055ff; box-shadow: 0 10px 20px rgba(0,85,255,0.3);" onclick="redirigerVersStripe('classic')">S'abonner Classic</button>
+                </div>
 
-            <div class="pricing-card premium">
-                <div class="plan-title">Premium</div>
-                <div class="plan-price">9.99€<span>/mois</span></div>
-                <div class="plan-desc">L'expérience ultime. Accès VIP à l'intégralité des contenus du site.</div>
-                <ul class="features" id="features-premium">
-                    <li style="color:var(--text-muted)">Chargement des avantages...</li>
-                </ul>
-                <a href="compte.html" class="btn-plan btn-premium">Devenir Premium</a>
+                <!-- Plan Premium -->
+                <div class="pricing-card premium">
+                    <div class="badge-pop">POPULAIRE</div>
+                    <div class="plan-name" style="color: var(--accent);">Premium</div>
+                    <div class="plan-price">9,99€<span>/mois</span></div>
+                    <ul class="plan-features">
+                        <li>Accès total et illimité</li>
+                        <li>Podcasts et Vidéos exclusives</li>
+                        <li>Zéro publicité</li>
+                        <li>Analyses tactiques poussées</li>
+                        <li>Badge Premium sur le profil</li>
+                    </ul>
+                    <button class="btn-subscribe accent" onclick="redirigerVersStripe('premium')">S'abonner Premium</button>
+                </div>
             </div>
-
         </div>
-    </section>
+    </div>
 
     <script>
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function verifierCompteARebours(estAdmin) {
-            const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single();
-            if (data && data.compte_a_rebours_actif && !estAdmin) {
-                document.body.innerHTML = `
-                    <style>
-                        .timer-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-                        .timer-box { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px 20px; min-width: 130px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-                        .timer-num { font-size: 48px; font-weight: 800; color: white; line-height: 1; }
-                        .timer-label { font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; font-weight: 600; }
-                        @media (max-width: 768px) {
-                            .timer-box { min-width: 80px; padding: 15px 10px; border-radius: 12px; gap: 10px;}
-                            .timer-num { font-size: 28px; }
-                            .timer-label { font-size: 10px; letter-spacing: 1px; }
-                            h1.launch-title { font-size: 36px !important; }
-                            p.launch-desc { font-size: 14px !important; }
-                        }
-                    </style>
-                    <div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b), url('https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop') center/cover; position: relative; font-family: 'Poppins', sans-serif;">
-                        <div style="position: relative; z-index: 10; text-align: center; padding: 20px; width: 100%;">
-                            <div style="font-size: 20px; font-weight: 800; letter-spacing: 6px; color: white; margin-bottom: 20px; opacity: 0.8;">ÉLITE</div>
-                            <h1 class="launch-title" style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; line-height: 1.1;">L'expérience ultime<br>du football arrive.</h1>
-                            <p class="launch-desc" style="color: #a0a5b0; font-size: 18px; max-width: 600px; margin: 0 auto 50px auto;">Nous préparons la plateforme. Analyses tactiques, résumés vidéos et immersion totale en Ligue 1.</p>
-                            <div class="timer-container" id="timer-display"></div>
-                        </div>
-                    </div>
-                `;
-                document.body.style.visibility = 'visible';
-                document.body.style.opacity = '1';
+        // 🚨 TES LIENS STRIPE DÉFINITIFS 🚨
+        const LIEN_STRIPE_CLASSIC = "https://buy.stripe.com/fZubJ0bsRfOa64O6QugQE03";
+        const LIEN_STRIPE_PREMIUM = "https://buy.stripe.com/5kQ00icwV6dA9h02AegQE04";
 
-                const dateLancement = new Date(data.date_lancement).getTime();
-                setInterval(() => {
-                    const distance = dateLancement - new Date().getTime();
-                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
-                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24)); const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const secondes = Math.floor((distance % (1000 * 60)) / 1000);
-                    document.getElementById('timer-display').innerHTML = `<div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div><div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div><div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div><div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>`;
-                }, 1000);
-                return true; 
-            }
-            return false;
-        }
-
-        async function initialiserPage() {
+        async function redirigerVersStripe(planChoisi) {
             const { data: { user } } = await supabaseClient.auth.getUser();
-            let profilActuel = 'none'; let estAdmin = false;
-
-            if (user) {
-                const { data: profil } = await supabaseClient.from('profils').select('plan, est_admin').eq('id', user.id).single();
-                if (profil) { profilActuel = profil.plan; estAdmin = profil.est_admin; }
+            
+            if (!user) {
+                alert("Tu dois te connecter ou créer un compte (page Compte) avant de t'abonner !");
+                window.location.href = 'compte.html';
+                return;
             }
 
-            if (await verifierCompteARebours(estAdmin)) return;
+            // On choisit le bon lien en fonction du bouton cliqué
+            let urlStripe = planChoisi === 'premium' ? LIEN_STRIPE_PREMIUM : LIEN_STRIPE_CLASSIC;
 
-            document.body.style.visibility = 'visible';
-            document.body.style.opacity = '1';
-
-            if (profilActuel === 'premium') { document.querySelectorAll('.ad-zone').forEach(zone => zone.remove()); } 
-            else if (profilActuel === 'classic') { document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex'); } 
-            else {
-                document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
-                const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
-                const socialScript = document.createElement('script'); socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js"; document.body.appendChild(socialScript);
-            }
-
-            chargerAvantages();
+            // ON ATTACHE L'ID UTILISATEUR ET LE PLAN À L'URL STRIPE (Pour le Webhook)
+            const urlFinale = `${urlStripe}?client_reference_id=${user.id}___${planChoisi}`;
+            
+            // Redirection vers le paiement Stripe
+            window.location.href = urlFinale;
         }
-
-        async function chargerAvantages() {
-            const { data: avantages } = await supabaseClient.from('avantages').select('*');
-            if (!avantages || avantages.length === 0) return;
-
-            const ordreMap = { 'check': 1, 'dash': 2, 'cross': 3 };
-            avantages.sort((a, b) => { let valA = ordreMap[a.type_icone || 'check'] || 1; let valB = ordreMap[b.type_icone || 'check'] || 1; return valA - valB; });
-
-            let htmlFree = '', htmlClassic = '', htmlPremium = '';
-            avantages.forEach(av => {
-                let iconeHtml = ''; let classeTexte = 'style="color: #e0e0e0;"'; 
-                if (av.type_icone === 'check') { iconeHtml = '<span class="icon-yes">✓</span>'; }
-                else if (av.type_icone === 'dash') { iconeHtml = '<span style="color:#ff9800; font-weight:bold;">—</span>'; }
-                else { iconeHtml = '<span class="icon-no">✕</span>'; classeTexte = 'class="no"'; }
-                let ligne = `<li ${classeTexte}>${iconeHtml} ${av.texte}</li>`;
-                if(av.plan === 'free') htmlFree += ligne; else if(av.plan === 'classic') htmlClassic += ligne; else if(av.plan === 'premium') htmlPremium += ligne;
-            });
-
-            document.getElementById('features-free').innerHTML = htmlFree || '<li style="color:#555;">Aucun avantage défini.</li>';
-            document.getElementById('features-classic').innerHTML = htmlClassic || '<li style="color:#555;">Aucun avantage défini.</li>';
-            document.getElementById('features-premium').innerHTML = htmlPremium || '<li style="color:#555;">Aucun avantage défini.</li>';
-        }
-
-        initialiserPage();
     </script>
 </body>
 </html>
