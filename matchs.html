@@ -294,10 +294,19 @@
 
             chargerDonneesAPI();
             chargerFlashes();
+
+            // 🚨 NOUVEAUTÉ : Actualisation invisible toutes les 60 secondes pour le temps réel
+            setInterval(() => {
+                chargerDonneesAPI();
+            }, 60000);
         }
 
         async function chargerDonneesAPI() {
             try {
+                // On garde en mémoire la journée actuellement sélectionnée pour ne pas frustrer l'utilisateur lors du rechargement
+                const currentSelector = document.getElementById('matchday-selector');
+                const daySelectedBeforeRefresh = currentSelector ? currentSelector.value : "";
+
                 const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*');
                 if (matchsBdd) reglageMatchsBDD = matchsBdd;
                 const reponse = await fetch(API_URL);
@@ -315,12 +324,16 @@
 
                 tousLesMatchsAPI = data.matches.matches;
                 const matchdays = [...new Set(tousLesMatchsAPI.map(m => m.matchday))].filter(d => d).sort((a, b) => a - b);
+                
                 let currentMatchday = 1;
                 const matchsJoues = tousLesMatchsAPI.filter(m => ['FINISHED', 'IN_PLAY', 'PAUSED'].includes(m.status));
                 if(matchsJoues.length > 0) currentMatchday = Math.max(...matchsJoues.map(m => m.matchday));
 
+                // On remet la journée que l'utilisateur regardait avant le rafraîchissement
+                let selectedDay = daySelectedBeforeRefresh ? parseInt(daySelectedBeforeRefresh) : currentMatchday;
+
                 let optionsHtml = '';
-                matchdays.forEach(day => { optionsHtml += `<option value="${day}" ${day === currentMatchday ? 'selected' : ''}>Journée ${day}</option>`; });
+                matchdays.forEach(day => { optionsHtml += `<option value="${day}" ${day === selectedDay ? 'selected' : ''}>Journée ${day}</option>`; });
                 document.getElementById('matchday-selector').innerHTML = optionsHtml;
 
                 changerJournee();
@@ -356,6 +369,11 @@
                 if (m.status === 'FINISHED') {
                     scoreText = `${m.score.fullTime.home !== null ? m.score.fullTime.home : 0} - ${m.score.fullTime.away !== null ? m.score.fullTime.away : 0}`;
                     libelleDate = `Terminé le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                } else if (m.status === 'IN_PLAY' || m.status === 'PAUSED') {
+                    // C'est ici que la magie du direct opère !
+                    scoreText = `${m.score.fullTime.home !== null ? m.score.fullTime.home : 0} - ${m.score.fullTime.away !== null ? m.score.fullTime.away : 0}`;
+                    libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
+                    boxClass += " score-upcoming"; 
                 } else {
                     scoreText = new Date(m.utcDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                     boxClass += " score-upcoming"; libelleDate = `Le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
