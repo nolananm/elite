@@ -13,38 +13,45 @@
 <body>
 
     <h1>Paiement validé ! 🎉</h1>
-    <p>Ne quitte pas cette page, activation de ton abonnement Classic en cours...</p>
+    <p>Ne quitte pas cette page, activation de ton abonnement en cours...</p>
 
     <script>
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
-        // Remets bien ta clé publique ANONYMOUS ici (celle que tu as dans ton index.html)
+        // Ta clé publique ANONYMOUS
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         async function activerAbonnement() {
-            // On vérifie qui est connecté
+            // 1. On attrape le paramètre dans l'URL (ex: ?plan=premium)
+            const urlParams = new URLSearchParams(window.location.search);
+            let planPaye = urlParams.get('plan');
+
+            // 2. Sécurité : si l'URL ne contient ni classic ni premium, on bloque.
+            if (planPaye !== 'classic' && planPaye !== 'premium') {
+                alert("Erreur : Plan non reconnu.");
+                window.location.href = 'index.html';
+                return;
+            }
+
             const { data: { user } } = await supabaseClient.auth.getUser();
 
             if (user) {
-                // On met à jour son plan dans Supabase
+                // 3. On met à jour avec la variable planPaye (classic ou premium)
                 const { error } = await supabaseClient
                     .from('profils')
-                    .update({ plan: 'classic' })
+                    .update({ plan: planPaye }) 
                     .eq('id', user.id);
 
                 if (!error) {
-                    // Redirection automatique vers le compte une fois activé
                     window.location.href = 'compte.html';
                 } else {
                     alert("Erreur lors de l'activation : " + error.message);
                 }
             } else {
-                alert("Tu n'es pas connecté.");
                 window.location.href = 'index.html';
             }
         }
 
-        // On lance la fonction dès que la page s'ouvre
         activerAbonnement();
     </script>
 </body>
