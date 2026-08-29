@@ -54,50 +54,52 @@
         emailjs.init("XYbWie62B-zxJnek8");
 
         // --- 3. CRÉATION DU COMPTE + ENVOI DU MAIL AUTOMATIQUE ---
-        async function creerCompte() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const msgBox = document.getElementById('message');
-            const btn = document.getElementById('btn-inscrire');
+       async function creerCompte() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const msgBox = document.getElementById('message');
+    const btn = document.getElementById('btn-inscrire');
 
-            if(!email || !password) return alert("Remplis tous les champs.");
+    if(!email || !password) return alert("Remplis tous les champs.");
 
-            btn.innerText = "Création en cours...";
-            btn.disabled = true;
+    btn.innerText = "Création en cours...";
+    btn.disabled = true;
 
-            // A. Création du compte dans ta base Supabase
-            const { data, error } = await supabaseClient.auth.signUp({
-                email: email,
-                password: password
-            });
+    // 1. Création du compte Supabase
+    const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+    });
 
-            if (error) {
-                alert("Erreur d'inscription : " + error.message);
-                btn.innerText = "Créer mon compte";
-                btn.disabled = false;
-                return;
-            }
+    if (error) {
+        alert("Erreur d'inscription : " + error.message);
+        btn.innerText = "Créer mon compte";
+        btn.disabled = false;
+        return;
+    }
 
-            // B. Le compte est créé -> ON DÉCLENCHE LE MAIL DE BIENVENUE !
-            msgBox.style.display = 'block';
-            msgBox.innerText = "Compte créé ! Envoi du mail de bienvenue...";
+    msgBox.style.display = 'block';
+    msgBox.innerText = "Compte créé ! Envoi du mail...";
 
-            // ⚠️ ATTENTION : Remplacer "TON_SERVICE_ID" et "TON_TEMPLATE_ID"
-            emailjs.send("service_28zdkqj", "template_wdlb79g", {
-                user_email: email // Envoie l'email tapé par le client à ton modèle EmailJS
-            }).then(
-                function(response) {
-                    // L'email est parti, on l'envoie sur son espace perso
-                    msgBox.innerText = "Parfait ! Redirection...";
-                    setTimeout(() => window.location.href = 'compte.html', 1500);
-                }, 
-                function(erreur) {
-                    console.error("Erreur EmailJS:", erreur);
-                    msgBox.innerText = "Compte créé (mais le mail a échoué). Redirection...";
-                    setTimeout(() => window.location.href = 'compte.html', 1500);
-                }
-            );
+    // 2. Envoi du mail de bienvenue avec tes VRAIES CLÉS
+    emailjs.send("service_28zdkqj", "template_wdlb79g", {
+        user_email: email 
+    }).then(
+        function(response) {
+            // SI ÇA MARCHE
+            console.log("SUCCÈS EMAILJS", response.status, response.text);
+            msgBox.innerText = "Mail envoyé ! Redirection...";
+            setTimeout(() => window.location.href = 'compte.html', 1500);
+        }, 
+        function(erreur) {
+            // SI ÇA BLOQUE : CETTE ALERTE TE DIRA POURQUOI
+            alert("Erreur EmailJS : " + JSON.stringify(erreur));
+            console.error("ÉCHEC EMAILJS", erreur);
+            msgBox.innerText = "Le compte est créé mais le mail a échoué. Redirection...";
+            setTimeout(() => window.location.href = 'compte.html', 2000);
         }
+    );
+} }
 
         // --- 4. CONNEXION CLASSIQUE ---
         async function seConnecter() {
