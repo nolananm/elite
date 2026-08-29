@@ -260,14 +260,16 @@
 
         async function chargerClassement() {
             try {
-                // Le v=2 force Cloudflare à récupérer la nouvelle donnée
-                const req = await fetch(API_URL + '?action=standings&v=2');
+                const req = await fetch(API_URL + '?action=standings&v=3');
                 const data = await req.json();
                 
                 if (data.errors && Object.keys(data.errors).length > 0) {
                     throw new Error("API-Sports: " + Object.values(data.errors)[0]);
                 }
-                if (!data.response || data.response.length === 0) {
+                if (!data.response) {
+                    throw new Error("L'API renvoie l'ancien format. As-tu bien publié ton Worker sur Cloudflare ?");
+                }
+                if (data.response.length === 0) {
                     throw new Error("Classement introuvable.");
                 }
 
@@ -292,14 +294,18 @@
                 const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*');
                 if (matchsBdd) reglageMatchsBDD = matchsBdd;
                 
-                // Le v=2 force Cloudflare à récupérer la nouvelle donnée
-                const req = await fetch(API_URL + '?action=fixtures&v=2');
+                const req = await fetch(API_URL + '?action=fixtures&v=3');
                 const data = await req.json();
                 
                 if (data.errors && Object.keys(data.errors).length > 0) {
                     throw new Error("API-Sports : " + Object.values(data.errors)[0]);
                 }
-                if (!data.response || data.response.length === 0) {
+                // 🚨 NOUVEAU DIAGNOSTIC CRITIQUE
+                if (!data.response) {
+                    console.error("FORMAT BRUT REÇU :", data);
+                    throw new Error("Le Worker renvoie l'ancienne API ! Ton fichier classement.js n'a pas été publié correctement sur Cloudflare.");
+                }
+                if (data.response.length === 0) {
                     throw new Error("Aucun match trouvé pour cette saison.");
                 }
 
@@ -409,8 +415,7 @@
             document.getElementById('modal-match-content').innerHTML = `<div class="loading-text">📡 Récupération des données professionnelles...</div>`;
 
             try {
-                // Le v=2 force le rafraîchissement au clic pour avoir la stat ultra fraîche
-                const reqMatch = await fetch(API_URL + '?action=match&id=' + idApiStr + '&v=2');
+                const reqMatch = await fetch(API_URL + '?action=match&id=' + idApiStr + '&v=3');
                 const dataMatch = await reqMatch.json();
                 const infos = dataMatch.response[0];
                 
