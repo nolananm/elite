@@ -13,12 +13,15 @@ export async function onRequest(context) {
         const apiKey = '4736f4d750eb0ade21db88f57eca9978';
         let apiUrl = '';
 
+        // On cible une saison riche en données (2023 ou 2024) pour tester toutes tes statistiques Premium
+        const saison = '2023'; 
+
         if (action === 'standings') {
-            apiUrl = 'https://v3.football.api-sports.io/standings?league=61&season=2026';
+            apiUrl = `https://v3.football.api-sports.io/standings?league=61&season=${saison}`;
         } else if (action === 'match' && matchId) {
             apiUrl = `https://v3.football.api-sports.io/fixtures?id=${matchId}`;
         } else {
-            apiUrl = 'https://v3.football.api-sports.io/fixtures?league=61&season=2026';
+            apiUrl = `https://v3.football.api-sports.io/fixtures?league=61&season=${saison}`;
         }
 
         try {
@@ -30,9 +33,9 @@ export async function onRequest(context) {
             
             const data = await apiResponse.json();
 
-            // 🚨 NOUVEAU : Si l'API renvoie une erreur, on NE MET PAS EN CACHE !
-            // Ça permet de retester instantanément sans attendre 5 minutes
-            if (data.errors && Object.keys(data.errors).length > 0) {
+            // SÉCURITÉ : Si l'API renvoie une erreur ou une liste vide, on ne met PAS en cache.
+            // Cela permet de rafraîchir et tester instantanément sans attendre 5 minutes.
+            if ((data.errors && Object.keys(data.errors).length > 0) || (data.response && data.response.length === 0)) {
                 return new Response(JSON.stringify(data), {
                     headers: {
                         'Content-Type': 'application/json',
@@ -41,7 +44,7 @@ export async function onRequest(context) {
                 });
             }
 
-            // Si tout va bien, on met en cache pendant 5 minutes (300 secondes)
+            // Si tout va bien, on met en cache pendant 5 minutes
             response = new Response(JSON.stringify(data), {
                 headers: {
                     'Content-Type': 'application/json',
