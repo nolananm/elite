@@ -157,56 +157,72 @@
         }
 
         function gererInterfaceResiliation(profil) {
-            const btnDemander = document.getElementById('btn-demander-resiliation');
-            const btnStripe = document.getElementById('btn-portail-stripe');
-            const zoneDossier = document.getElementById('zone-dossier');
-            const titreDossier = document.getElementById('titre-dossier');
-            const texteDossier = document.getElementById('texte-dossier');
-            const dateDossier = document.getElementById('date-dossier');
+    const btnDemander = document.getElementById('btn-demander-resiliation');
+    const btnStripe = document.getElementById('btn-portail-stripe');
+    const zoneDossier = document.getElementById('zone-dossier');
+    const titreDossier = document.getElementById('titre-dossier');
+    const texteDossier = document.getElementById('texte-dossier');
+    const dateDossier = document.getElementById('date-dossier');
 
-            if (profil.plan !== 'free' && (!profil.statut_resiliation || profil.statut_resiliation === 'aucun')) {
-                btnDemander.style.display = 'block';
-                return; 
-            }
+    if (profil.plan !== 'free' && (!profil.statut_resiliation || profil.statut_resiliation === 'aucun')) {
+        btnDemander.style.display = 'block';
+        return; 
+    }
 
-            zoneDossier.style.display = 'block';
+    zoneDossier.style.display = 'block';
 
-            let dateFormatee = "";
-            if (profil.date_demande_resiliation) {
-                const dateJS = new Date(profil.date_demande_resiliation);
-                dateFormatee = dateJS.toLocaleString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                dateDossier.innerHTML = `📅 Demande du : ${dateFormatee}`;
-                dateDossier.style.display = 'inline-block';
-            }
+    if (profil.date_demande_resiliation) {
+        const dateJS = new Date(profil.date_demande_resiliation);
+        const dateFormatee = dateJS.toLocaleString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        dateDossier.innerHTML = `📅 Demande du : ${dateFormatee}`;
+        dateDossier.style.display = 'inline-block';
+    }
 
-            if (profil.statut_resiliation === 'en_attente') {
-                zoneDossier.className = 'dossier-box etat-attente';
-                titreDossier.innerHTML = '⏳ Dossier en cours d\'analyse';
-                
-                const dateDemande = new Date(profil.date_demande_resiliation);
-                const heuresEcoulees = Math.abs(new Date() - dateDemande) / 36e5;
+    if (profil.statut_resiliation === 'en_attente') {
+        zoneDossier.className = 'dossier-box etat-attente';
+        titreDossier.innerHTML = '⏳ Dossier en cours d\'analyse';
+        
+        const dateDemande = new Date(profil.date_demande_resiliation);
+        const heuresEcoulees = Math.abs(new Date() - dateDemande) / 36e5;
 
-                if (heuresEcoulees >= 48) {
-                    texteDossier.innerHTML = `Notre service de traitement manuel rencontre un délai supérieur à 48h. Afin de ne pas vous pénaliser et vous garantir une annulation immédiate, <strong>notre système a automatiquement débloqué l'accès au portail de notre partenaire Stripe.</strong><br><br>Veuillez finaliser votre annulation en cliquant sur le bouton ci-dessous.`;
-                    btnStripe.style.display = 'flex';
-                } else {
-                    texteDossier.innerHTML = `Votre demande a bien été enregistrée par notre système. Elle est actuellement en attente de traitement par un conseiller (délai estimé : 48h ouvrées).<br><br><span style="color: #9ba1a6; font-size: 13px;"><em>📌 Information : Si aucune action n'est effectuée par notre équipe passé ce délai, un accès direct au portail sécurisé Stripe s'affichera ici automatiquement pour vous permettre d'annuler vous-même.</em></span>`;
-                }
-            }
+        // On affiche le bouton Stripe dans tous les cas, mais on change son état
+        btnStripe.style.display = 'flex';
 
-            if (profil.statut_resiliation === 'redirection_stripe') {
-                zoneDossier.className = 'dossier-box etat-action';
-                titreDossier.innerHTML = '🔔 Action requise : Sécurité Bancaire';
-                texteDossier.innerHTML = "Suite à votre demande, notre équipe n'a pas pu intervenir manuellement sur votre méthode de paiement (restrictions de sécurité Stripe). Afin de garantir la clôture immédiate de votre contrat, veuillez utiliser le portail crypté ci-dessous.";
-                btnStripe.style.display = 'flex';
-            }
-
-            if (profil.statut_resiliation === 'traitee') {
-                zoneDossier.className = 'dossier-box etat-clos';
-                titreDossier.innerHTML = '✅ Contrat clôturé';
-                texteDossier.innerHTML = "Votre demande a été validée et traitée avec succès par nos services. Votre abonnement ne sera plus renouvelé. Vous conservez toutefois l'accès à vos avantages jusqu'à la fin de la période de facturation en cours.";
-            }
+        if (heuresEcoulees >= 48) {
+            texteDossier.innerHTML = `Notre service rencontre un délai de traitement supérieur à 48h. Pour vous garantir une annulation immédiate, <strong>notre système a débloqué l'accès au portail de notre partenaire Stripe.</strong><br><br>Veuillez finaliser votre annulation ci-dessous.`;
+            
+            btnStripe.className = 'btn-action btn-stripe'; // Bouton Actif
+            btnStripe.innerHTML = '🔓 Accéder au portail Stripe';
+            btnStripe.onclick = () => window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank');
+        } else {
+            texteDossier.innerHTML = `Votre demande a bien été enregistrée. Elle est en attente de traitement par un conseiller (délai estimé : 48h ouvrées).<br><br><span style="color: #9ba1a6; font-size: 13px;"><em>📌 Le portail de résiliation direct sera automatiquement débloqué si notre équipe ne traite pas votre demande dans les temps.</em></span>`;
+            
+            btnStripe.className = 'btn-action btn-stripe disabled'; // Bouton Grisé
+            btnStripe.innerHTML = '🔒 Portail Stripe (En attente d\'autorisation)';
+            btnStripe.onclick = (e) => { 
+                e.preventDefault(); 
+                afficherInfo("Action bloquée", "Veuillez patienter. Votre dossier est en cours d'analyse par notre équipe. Le portail se débloquera automatiquement si le délai de 48h est dépassé."); 
+            };
         }
+    }
+
+    if (profil.statut_resiliation === 'redirection_stripe') {
+        zoneDossier.className = 'dossier-box etat-action';
+        titreDossier.innerHTML = '🔔 Action requise : Sécurité Bancaire';
+        texteDossier.innerHTML = "Suite à votre demande, notre équipe n'a pas pu intervenir manuellement sur votre méthode de paiement (restrictions de sécurité Stripe). Afin de garantir la clôture de votre contrat, veuillez utiliser le portail crypté ci-dessous.";
+        
+        btnStripe.style.display = 'flex';
+        btnStripe.className = 'btn-action btn-stripe';
+        btnStripe.innerHTML = '🔓 Accéder au portail Stripe';
+        btnStripe.onclick = () => window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank');
+    }
+
+    if (profil.statut_resiliation === 'traitee') {
+        zoneDossier.className = 'dossier-box etat-clos';
+        titreDossier.innerHTML = '✅ Contrat clôturé';
+        texteDossier.innerHTML = "Votre demande a été traitée avec succès. Votre abonnement ne sera plus renouvelé. Vous conservez toutefois l'accès à vos avantages jusqu'à la fin de la période en cours.";
+    }
+}
 
         // GESTION DES MODALES
         function ouvrirModalConfirmation() {
