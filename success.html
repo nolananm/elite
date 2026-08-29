@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement Réussi - Élite</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #07080b; color: white; font-family: 'Poppins', sans-serif; text-align: center; padding-top: 150px; }
+        h1 { color: #00e676; }
+    </style>
+</head>
+<body>
+
+    <h1>Paiement validé ! 🎉</h1>
+    <p>Ne quitte pas cette page, activation de ton abonnement Classic en cours...</p>
+
+    <script>
+        const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
+        // Remets bien ta clé publique ANONYMOUS ici (celle que tu as dans ton index.html)
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function activerAbonnement() {
+            // On vérifie qui est connecté
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (user) {
+                // On met à jour son plan dans Supabase
+                const { error } = await supabaseClient
+                    .from('profils')
+                    .update({ plan: 'classic' })
+                    .eq('id', user.id);
+
+                if (!error) {
+                    // Redirection automatique vers le compte une fois activé
+                    window.location.href = 'compte.html';
+                } else {
+                    alert("Erreur lors de l'activation : " + error.message);
+                }
+            } else {
+                alert("Tu n'es pas connecté.");
+                window.location.href = 'index.html';
+            }
+        }
+
+        // On lance la fonction dès que la page s'ouvre
+        activerAbonnement();
+    </script>
+</body>
+</html>
