@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion / Inscription - Élite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- 1. LES DEUX SCRIPTS OBLIGATOIRES (Supabase + EmailJS) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <style>
+        /* Design Élite */
+        :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        .auth-box { background: var(--bg-card); padding: 40px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); width: 100%; max-width: 400px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; }
+        .auth-box h2 { font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        input { width: 100%; padding: 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: var(--accent); }
+        
+        .btn { width: 100%; padding: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; text-transform: uppercase; border: none; margin-bottom: 10px; transition: 0.3s; }
+        .btn-login { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-login:hover { background: rgba(255,255,255,0.1); }
+        .btn-register { background: var(--gradient); color: white; box-shadow: 0 5px 15px rgba(229,0,70,0.3); }
+        .btn-register:hover { transform: scale(1.02); }
+        
+        #message { margin-top: 15px; font-size: 13px; font-weight: bold; color: #00e676; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-box">
+        <h2>Rejoindre Élite</h2>
+        <input type="email" id="email" placeholder="Adresse Email" required>
+        <input type="password" id="password" placeholder="Mot de passe" required>
+        
+        <button class="btn btn-register" onclick="creerCompte()" id="btn-inscrire">Créer mon compte</button>
+        <button class="btn btn-login" onclick="seConnecter()" id="btn-connecter">Déjà un compte ? Se connecter</button>
+        
+        <p id="message"></p>
+    </div>
+
+    <script>
+        // --- 2. INITIALISATION SUPABASE ET EMAILJS ---
+        const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // TA CLÉ PUBLIQUE EMAILJS EST LÀ :
+        emailjs.init("XYbWie62B-zxJnek8");
+
+        // --- 3. CRÉATION DU COMPTE + ENVOI DU MAIL AUTOMATIQUE ---
+        async function creerCompte() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const msgBox = document.getElementById('message');
+            const btn = document.getElementById('btn-inscrire');
+
+            if(!email || !password) return alert("Remplis tous les champs.");
+
+            btn.innerText = "Création en cours...";
+            btn.disabled = true;
+
+            // A. Création du compte dans ta base Supabase
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                alert("Erreur d'inscription : " + error.message);
+                btn.innerText = "Créer mon compte";
+                btn.disabled = false;
+                return;
+            }
+
+            // B. Le compte est créé -> ON DÉCLENCHE LE MAIL DE BIENVENUE !
+            msgBox.style.display = 'block';
+            msgBox.innerText = "Compte créé ! Envoi du mail de bienvenue...";
+
+            // ⚠️ ATTENTION : Remplacer "TON_SERVICE_ID" et "TON_TEMPLATE_ID"
+            emailjs.send("TON_SERVICE_ID", "TON_TEMPLATE_ID", {
+                user_email: email // Envoie l'email tapé par le client à ton modèle EmailJS
+            }).then(
+                function(response) {
+                    // L'email est parti, on l'envoie sur son espace perso
+                    msgBox.innerText = "Parfait ! Redirection...";
+                    setTimeout(() => window.location.href = 'compte.html', 1500);
+                }, 
+                function(erreur) {
+                    console.error("Erreur EmailJS:", erreur);
+                    msgBox.innerText = "Compte créé (mais le mail a échoué). Redirection...";
+                    setTimeout(() => window.location.href = 'compte.html', 1500);
+                }
+            );
+        }
+
+        // --- 4. CONNEXION CLASSIQUE ---
+        async function seConnecter() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn-connecter');
+
+            if(!email || !password) return alert("Remplis tous les champs.");
+            
+            btn.innerText = "Connexion...";
+            
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                alert("Mauvais email ou mot de passe.");
+                btn.innerText = "Déjà un compte ? Se connecter";
+            } else {
+                window.location.href = 'compte.html';
+            }
+        }
+    </script>
+</body>
+</html>
