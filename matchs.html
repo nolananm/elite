@@ -229,7 +229,8 @@
         let tousLesMatchsAPI = []; 
         let reglageMatchsBDD = []; 
 
-        const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
+        // 🚨 MODIFICATION IMPORTANTE : Le chemin local vers Cloudflare Pages
+        const API_URL = '/api/classement';
 
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -260,16 +261,13 @@
 
         async function chargerClassement() {
             try {
-                const req = await fetch(API_URL + '?action=standings&v=3');
+                const req = await fetch(API_URL + '?action=standings');
                 const data = await req.json();
                 
                 if (data.errors && Object.keys(data.errors).length > 0) {
                     throw new Error("API-Sports: " + Object.values(data.errors)[0]);
                 }
-                if (!data.response) {
-                    throw new Error("L'API renvoie l'ancien format. As-tu bien publié ton Worker sur Cloudflare ?");
-                }
-                if (data.response.length === 0) {
+                if (!data.response || data.response.length === 0) {
                     throw new Error("Classement introuvable.");
                 }
 
@@ -294,18 +292,13 @@
                 const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*');
                 if (matchsBdd) reglageMatchsBDD = matchsBdd;
                 
-                const req = await fetch(API_URL + '?action=fixtures&v=3');
+                const req = await fetch(API_URL + '?action=fixtures');
                 const data = await req.json();
                 
                 if (data.errors && Object.keys(data.errors).length > 0) {
                     throw new Error("API-Sports : " + Object.values(data.errors)[0]);
                 }
-                // 🚨 NOUVEAU DIAGNOSTIC CRITIQUE
-                if (!data.response) {
-                    console.error("FORMAT BRUT REÇU :", data);
-                    throw new Error("Le Worker renvoie l'ancienne API ! Ton fichier classement.js n'a pas été publié correctement sur Cloudflare.");
-                }
-                if (data.response.length === 0) {
+                if (!data.response || data.response.length === 0) {
                     throw new Error("Aucun match trouvé pour cette saison.");
                 }
 
@@ -415,7 +408,7 @@
             document.getElementById('modal-match-content').innerHTML = `<div class="loading-text">📡 Récupération des données professionnelles...</div>`;
 
             try {
-                const reqMatch = await fetch(API_URL + '?action=match&id=' + idApiStr + '&v=3');
+                const reqMatch = await fetch(API_URL + '?action=match&id=' + idApiStr);
                 const dataMatch = await reqMatch.json();
                 const infos = dataMatch.response[0];
                 
