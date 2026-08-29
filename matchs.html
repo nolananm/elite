@@ -81,7 +81,6 @@
         .match-score-header img { width: 60px; }
         .match-score-header .score { font-size: 40px; font-weight: 800; }
         
-        /* Styles des statistiques professionnelles */
         .content-bloc { margin-bottom: 40px; }
         .content-bloc h3 { font-size: 16px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px;}
         .resume-text { font-size: 14px; line-height: 1.7; color: #d0d0d0; white-space: pre-wrap; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; }
@@ -105,7 +104,6 @@
         .premium-box .icon { font-size: 40px; margin-bottom: 20px; }
         .btn-upgrade { display: inline-block; width: 100%; padding: 15px; background: var(--gradient); color: white; font-weight: 800; border-radius: 8px; margin-top: 20px; text-transform: uppercase; cursor: pointer; border: none; }
 
-        /* RESPONSIVE MOBILE */
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 15px; gap: 10px; }
             nav { flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
@@ -142,7 +140,6 @@
 
         <div class="layout-grid">
             <div class="col-matchs">
-                
                 <div class="ad-zone">
                     <span class="ad-label">Sponsorisé</span>
                     <script>
@@ -212,6 +209,16 @@
         </div>
     </div>
 
+    <div class="site-modal" id="modal-message">
+        <div class="modal-box premium-box" style="max-width: 400px; padding: 30px;">
+            <button class="btn-close-modal" style="position: absolute; top: 15px; right: 15px;" onclick="fermerModal('modal-message')">✕</button>
+            <div class="icon" id="msg-icon">⏳</div>
+            <h2 id="msg-title" style="margin-bottom: 15px; font-size: 18px;">Information</h2>
+            <p id="msg-text" style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;"></p>
+            <button class="btn-upgrade" onclick="fermerModal('modal-message')" style="padding: 10px;">Compris</button>
+        </div>
+    </div>
+
     <script>
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
@@ -247,7 +254,6 @@
             chargerClassement();
             chargerCalendrier();
 
-            // Actualisation automatique toutes les minutes
             setInterval(() => { chargerCalendrier(); }, 60000);
         }
 
@@ -255,6 +261,15 @@
             try {
                 const req = await fetch(API_URL + '?action=standings');
                 const data = await req.json();
+                
+                // 🚨 DIAGNOSTIC ERREUR API : Si l'API renvoie un message d'erreur
+                if (data.errors && Object.keys(data.errors).length > 0) {
+                    throw new Error("API-Sports: " + Object.values(data.errors)[0]);
+                }
+                if (!data.response || data.response.length === 0) {
+                    throw new Error("Classement introuvable.");
+                }
+
                 const classement = data.response[0].league.standings[0];
                 let htmlClassement = '';
                 classement.forEach(equipe => {
@@ -263,7 +278,8 @@
                 });
                 document.getElementById('body-classement').innerHTML = htmlClassement;
             } catch (erreur) {
-                document.getElementById('body-classement').innerHTML = `<tr><td colspan="5" class="loading-text">Données indisponibles</td></tr>`;
+                console.error("Erreur Classement:", erreur);
+                document.getElementById('body-classement').innerHTML = `<tr><td colspan="5" class="loading-text" style="color:#ff3333; font-size:11px;">❌ ${erreur.message}</td></tr>`;
             }
         }
 
@@ -278,6 +294,14 @@
                 const req = await fetch(API_URL + '?action=fixtures');
                 const data = await req.json();
                 
+                // 🚨 DIAGNOSTIC ERREUR API : On affiche exactement ce que l'API reproche
+                if (data.errors && Object.keys(data.errors).length > 0) {
+                    throw new Error("API-Sports : " + Object.values(data.errors)[0]);
+                }
+                if (!data.response || data.response.length === 0) {
+                    throw new Error("Aucun match de Ligue 1 trouvé pour la saison 2026.");
+                }
+
                 tousLesMatchsAPI = data.response;
                 
                 const matchdays = [...new Set(tousLesMatchsAPI.map(m => {
@@ -300,7 +324,8 @@
 
                 changerJournee();
             } catch (erreur) {
-                document.getElementById('matchs-container').innerHTML = `<div class="loading-text">Erreur de synchronisation du calendrier.</div>`;
+                console.error("Erreur Calendrier:", erreur);
+                document.getElementById('matchs-container').innerHTML = `<div class="loading-text" style="color: #ff3333; padding: 20px; background: rgba(255,0,0,0.1); border-radius: 8px;">❌ ${erreur.message}</div>`;
             }
         }
 
@@ -383,7 +408,6 @@
             document.getElementById('modal-match-content').innerHTML = `<div class="loading-text">📡 Récupération des données professionnelles...</div>`;
 
             try {
-                // Requête puissante vers ton Worker pour un match précis
                 const reqMatch = await fetch(API_URL + '?action=match&id=' + idApiStr);
                 const dataMatch = await reqMatch.json();
                 const infos = dataMatch.response[0];
@@ -393,19 +417,19 @@
                 let sDom = scoreDom !== 'null' ? scoreDom : '0';
                 let sExt = scoreExt !== 'null' ? scoreExt : '0';
 
-                // Génération des statistiques (Possession & Tirs)
                 let statsHtml = `<div class="loading-text">Statistiques non disponibles.</div>`;
                 if (infos.statistics && infos.statistics.length === 2) {
                     let stDom = infos.statistics[0].statistics;
                     let stExt = infos.statistics[1].statistics;
                     
-                    let getStat = (arr, type) => { let s = arr.find(x => x.type === type); return s ? s.value : 0; };
+                    let getStat = (arr, type) => { let s = arr.find(x => x.type === type); return s && s.value !== null ? parseInt(s.value) : 0; };
                     
-                    let posDom = parseInt(getStat(stDom, 'Ball Possession')) || 50;
+                    let posDomText = infos.statistics[0].statistics.find(x => x.type === 'Ball Possession')?.value || "50%";
+                    let posDom = parseInt(posDomText);
                     let posExt = 100 - posDom;
                     
-                    let tirsDom = parseInt(getStat(stDom, 'Total Shots')) || 0;
-                    let tirsExt = parseInt(getStat(stExt, 'Total Shots')) || 0;
+                    let tirsDom = getStat(stDom, 'Total Shots');
+                    let tirsExt = getStat(stExt, 'Total Shots');
                     let pctTirsDom = (tirsDom + tirsExt) > 0 ? (tirsDom / (tirsDom + tirsExt)) * 100 : 50;
                     let pctTirsExt = 100 - pctTirsDom;
 
@@ -418,7 +442,6 @@
                     `;
                 }
 
-                // Génération des compositions
                 let lineupsHtml = `<div class="loading-text" style="grid-column: 1/-1;">Compositions non disponibles.</div>`;
                 if (infos.lineups && infos.lineups.length === 2) {
                     let luDom = infos.lineups[0];
