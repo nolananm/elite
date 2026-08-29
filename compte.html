@@ -189,6 +189,25 @@
         }
 
         verifierSession();
+        <!-- ZONE DE GESTION D'ABONNEMENT -->
+<div class="gestion-abonnement" style="background: #12151c; padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
+    <h3>Gestion de mon abonnement</h3>
+    
+    <!-- Zone de notification (cachée par défaut) -->
+    <div id="notif-resiliation" style="display: none; padding: 15px; margin: 15px 0; border-radius: 8px; font-weight: bold;">
+        <!-- Le texte changera via Javascript -->
+    </div>
+
+    <!-- Le bouton de demande initiale -->
+    <button id="btn-demander-resiliation" onclick="lancerResiliation()" style="display: none; background: #e50046; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+        Résilier mon abonnement
+    </button>
+
+    <!-- Le bouton de secours Stripe (caché par défaut) -->
+    <button id="btn-portail-stripe" onclick="window.open('TON_LIEN_PORTAIL_STRIPE_ICI', '_blank')" style="display: none; background: #8b92a5; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+        Accéder au portail d'annulation d'urgence
+    </button>
+</div>
     </script>
 </body>
 </html>
