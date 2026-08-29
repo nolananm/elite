@@ -229,8 +229,8 @@
         let tousLesMatchsAPI = []; 
         let reglageMatchsBDD = []; 
 
-        // Rétablissement de l'adresse du serveur API
-        const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
+        // L'API pointe localement vers ton dossier Cloudflare Pages functions/api
+        const API_URL = '/api/classement';
 
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
