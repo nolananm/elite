@@ -6,7 +6,7 @@ export async function onRequest(context) {
     const matchId = url.searchParams.get('id');
     
     const apiKey = '4736f4d750eb0ade21db88f57eca9978';
-    const saison = '2023'; // Saison riche en données
+    const saison = '2023'; // Saison riche en données pour les tests
     let apiUrl = '';
 
     if (action === 'standings') {
@@ -29,7 +29,6 @@ export async function onRequest(context) {
         return new Response(JSON.stringify(data), {
             headers: {
                 'Content-Type': 'application/json',
-                // Le cache est remis à zéro pour forcer la mise à jour lors de tes tests
                 'Cache-Control': 'no-store, no-cache, must-revalidate'
             }
         });
