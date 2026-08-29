@@ -18,31 +18,28 @@
         nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
 
-        .container { max-width: 600px; width: 100%; margin: 80px auto; padding: 40px; background: var(--bg-card); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; }
+        .container { max-width: 650px; width: 100%; margin: 80px auto; padding: 40px; background: var(--bg-card); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
         
-        h1 { font-size: 32px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; }
+        h1 { font-size: 32px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; text-align: center; }
         
-        .info-group { margin-bottom: 25px; text-align: left; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; }
+        .info-group { margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; }
         .info-group label { display: block; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
         .info-group p { font-size: 18px; font-weight: 600; }
         .plan-badge { display: inline-block; padding: 5px 15px; background: var(--gradient); border-radius: 20px; font-size: 14px; font-weight: 800; text-transform: uppercase; margin-top: 5px; }
 
         /* DESIGN PRO GESTION ABONNEMENT */
-        .gestion-abonnement { background: rgba(255,255,255,0.02); padding: 30px; border-radius: 12px; margin-top: 30px; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
+        .gestion-abonnement { background: rgba(255,255,255,0.02); padding: 30px; border-radius: 12px; margin-top: 30px; border: 1px solid rgba(255,255,255,0.05); }
         .gestion-abonnement h3 { font-size: 18px; margin-bottom: 20px; color: white; display: flex; align-items: center; gap: 10px; }
         
-        /* Box de suivi de dossier */
-        .dossier-box { display: none; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid; font-size: 14px; line-height: 1.6; }
-        .dossier-box h4 { margin-bottom: 10px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .dossier-box { display: none; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid; font-size: 14px; line-height: 1.6; background: rgba(255,255,255,0.03); }
+        .dossier-box h4 { margin-bottom: 12px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .date-dossier { display: inline-block; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; font-weight: 600; }
         
-        /* Les différents états */
-        .etat-attente { background: rgba(255, 165, 0, 0.1); border-color: #ffa500; }
+        .etat-attente { border-color: #ffa500; }
         .etat-attente h4 { color: #ffa500; }
-        
-        .etat-action { background: rgba(0, 85, 255, 0.1); border-color: #0055ff; }
+        .etat-action { border-color: #6699ff; }
         .etat-action h4 { color: #6699ff; }
-        
-        .etat-clos { background: rgba(0, 230, 118, 0.1); border-color: #00e676; }
+        .etat-clos { border-color: #00e676; }
         .etat-clos h4 { color: #00e676; }
 
         .btn-action { width: 100%; padding: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: none; font-size: 14px; display: none; }
@@ -53,6 +50,18 @@
 
         .btn-logout { width: 100%; padding: 15px; background: transparent; color: var(--text-muted); font-weight: 600; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; margin-top: 30px; }
         .btn-logout:hover { background: rgba(255,255,255,0.05); color: white; }
+
+        /* FENÊTRES MODALES CUSTOM */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); max-width: 450px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .modal-box h3 { margin-bottom: 15px; font-size: 20px; color: white; }
+        .modal-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
+        .modal-btn-group { display: flex; gap: 15px; justify-content: center; }
+        .modal-btn { padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; flex: 1; transition: 0.3s; }
+        .btn-cancel { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-cancel:hover { background: rgba(255,255,255,0.05); }
+        .btn-confirm { background: var(--accent); color: white; }
+        .btn-confirm:hover { background: #ff004f; }
     </style>
 </head>
 <body>
@@ -78,26 +87,46 @@
             <div id="user-plan" class="plan-badge" style="background: #333;">...</div>
         </div>
 
-        <!-- ZONE DE GESTION PRO -->
         <div class="gestion-abonnement">
             <h3>⚙️ Contrat & Facturation</h3>
             
             <div id="zone-dossier" class="dossier-box">
                 <h4 id="titre-dossier">Statut</h4>
+                <div id="date-dossier" class="date-dossier" style="display:none;"></div>
                 <p id="texte-dossier">Détails...</p>
             </div>
 
-            <button id="btn-demander-resiliation" class="btn-action btn-resilier" onclick="lancerResiliation()">
+            <button id="btn-demander-resiliation" class="btn-action btn-resilier" onclick="ouvrirModalConfirmation()">
                 Mettre fin à mon contrat
             </button>
 
-            <!-- BOUTON STRIPE -->
             <button id="btn-portail-stripe" class="btn-action btn-stripe" onclick="window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank')">
-                🔒 Gérer la facturation sur Stripe
+                🔒 Accéder au portail Stripe
             </button>
         </div>
 
         <button class="btn-logout" onclick="seDeconnecter()">Déconnexion</button>
+    </div>
+
+    <!-- MODALE DE CONFIRMATION DE RÉSILIATION -->
+    <div id="modal-confirmation" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Demande de résiliation</h3>
+            <p>Êtes-vous sûr de vouloir mettre fin à votre contrat ?<br>Une demande sera officiellement transmise à notre service de facturation pour traitement.</p>
+            <div class="modal-btn-group">
+                <button class="modal-btn btn-cancel" onclick="fermerModal()">Annuler</button>
+                <button id="btn-valider-resil" class="modal-btn btn-confirm" onclick="validerResiliation()">Oui, résilier</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE D'INFORMATION (Succès/Erreur) -->
+    <div id="modal-info" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="info-titre">Information</h3>
+            <p id="info-texte">Message...</p>
+            <button class="modal-btn btn-cancel" style="width: 100%; margin-top: 10px;" onclick="rechargerPage()">Fermer</button>
+        </div>
     </div>
 
     <script>
@@ -132,17 +161,23 @@
             const zoneDossier = document.getElementById('zone-dossier');
             const titreDossier = document.getElementById('titre-dossier');
             const texteDossier = document.getElementById('texte-dossier');
+            const dateDossier = document.getElementById('date-dossier');
 
-            // 1. Abonnement actif (sans demande)
             if (profil.plan !== 'free' && (!profil.statut_resiliation || profil.statut_resiliation === 'aucun')) {
                 btnDemander.style.display = 'block';
-                return; // On arrête là
+                return; 
             }
 
-            // A partir d'ici, il y a un dossier en cours ou terminé. On affiche la box.
             zoneDossier.style.display = 'block';
 
-            // 2. Demande en cours d'analyse
+            let dateFormatee = "";
+            if (profil.date_demande_resiliation) {
+                const dateJS = new Date(profil.date_demande_resiliation);
+                dateFormatee = dateJS.toLocaleString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                dateDossier.innerHTML = `📅 Demande du : ${dateFormatee}`;
+                dateDossier.style.display = 'inline-block';
+            }
+
             if (profil.statut_resiliation === 'en_attente') {
                 zoneDossier.className = 'dossier-box etat-attente';
                 titreDossier.innerHTML = '⏳ Dossier en cours d\'analyse';
@@ -151,32 +186,50 @@
                 const heuresEcoulees = Math.abs(new Date() - dateDemande) / 36e5;
 
                 if (heuresEcoulees >= 48) {
-                    texteDossier.innerHTML = "Notre service de traitement manuel rencontre un délai supérieur à 48h. Pour ne pas vous pénaliser, vous pouvez finaliser votre demande instantanément et de manière sécurisée via le portail de notre partenaire bancaire Stripe.";
+                    texteDossier.innerHTML = `Notre service de traitement manuel rencontre un délai supérieur à 48h. Afin de ne pas vous pénaliser et vous garantir une annulation immédiate, <strong>notre système a automatiquement débloqué l'accès au portail de notre partenaire Stripe.</strong><br><br>Veuillez finaliser votre annulation en cliquant sur le bouton ci-dessous.`;
                     btnStripe.style.display = 'flex';
                 } else {
-                    texteDossier.innerHTML = "Votre demande de clôture a bien été transmise à notre service de facturation. Elle sera traitée sous 48h ouvrées. Aucun prélèvement supplémentaire ne sera effectué durant ce délai.";
+                    texteDossier.innerHTML = `Votre demande a bien été enregistrée par notre système. Elle est actuellement en attente de traitement par un conseiller (délai estimé : 48h ouvrées).<br><br><span style="color: #9ba1a6; font-size: 13px;"><em>📌 Information : Si aucune action n'est effectuée par notre équipe passé ce délai, un accès direct au portail sécurisé Stripe s'affichera ici automatiquement pour vous permettre d'annuler vous-même.</em></span>`;
                 }
             }
 
-            // 3. L'admin a demandé de passer par Stripe
             if (profil.statut_resiliation === 'redirection_stripe') {
                 zoneDossier.className = 'dossier-box etat-action';
                 titreDossier.innerHTML = '🔔 Action requise : Sécurité Bancaire';
-                texteDossier.innerHTML = "Suite à votre demande, notre équipe n'a pas pu intervenir manuellement sur votre méthode de paiement (restrictions de sécurité). Afin de garantir la clôture immédiate de votre contrat, veuillez utiliser le portail crypté de notre partenaire Stripe ci-dessous.";
+                texteDossier.innerHTML = "Suite à votre demande, notre équipe n'a pas pu intervenir manuellement sur votre méthode de paiement (restrictions de sécurité Stripe). Afin de garantir la clôture immédiate de votre contrat, veuillez utiliser le portail crypté ci-dessous.";
                 btnStripe.style.display = 'flex';
             }
 
-            // 4. Dossier clôturé
             if (profil.statut_resiliation === 'traitee') {
                 zoneDossier.className = 'dossier-box etat-clos';
                 titreDossier.innerHTML = '✅ Contrat clôturé';
-                texteDossier.innerHTML = "Votre demande a été traitée avec succès par nos services. Votre abonnement ne sera plus renouvelé. Vous conservez toutefois l'accès à vos avantages jusqu'à la fin de la période en cours.";
+                texteDossier.innerHTML = "Votre demande a été validée et traitée avec succès par nos services. Votre abonnement ne sera plus renouvelé. Vous conservez toutefois l'accès à vos avantages jusqu'à la fin de la période de facturation en cours.";
             }
         }
 
-        async function lancerResiliation() {
-            const confirmation = confirm("Souhaitez-vous transmettre une demande de résiliation au service de facturation ?");
-            if (!confirmation) return;
+        // GESTION DES MODALES
+        function ouvrirModalConfirmation() {
+            document.getElementById('modal-confirmation').style.display = 'flex';
+        }
+
+        function fermerModal() {
+            document.getElementById('modal-confirmation').style.display = 'none';
+        }
+
+        function afficherInfo(titre, texte) {
+            document.getElementById('modal-confirmation').style.display = 'none';
+            document.getElementById('info-titre').innerText = titre;
+            document.getElementById('info-texte').innerHTML = texte;
+            document.getElementById('modal-info').style.display = 'flex';
+        }
+
+        function rechargerPage() {
+            location.reload();
+        }
+
+        async function validerResiliation() {
+            document.getElementById('btn-valider-resil').innerText = "Traitement...";
+            document.getElementById('btn-valider-resil').disabled = true;
 
             const { data: { user } } = await supabaseClient.auth.getUser();
 
@@ -189,9 +242,11 @@
                 .eq('id', user.id);
 
             if (!error) {
-                location.reload(); 
+                afficherInfo("Demande transmise", "Votre demande a été envoyée avec succès au service de facturation.");
             } else {
-                alert("Erreur système. Veuillez réessayer.");
+                afficherInfo("Erreur système", "Impossible d'envoyer la demande. Veuillez réessayer.");
+                document.getElementById('btn-valider-resil').innerText = "Oui, résilier";
+                document.getElementById('btn-valider-resil').disabled = false;
             }
         }
 
