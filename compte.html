@@ -27,15 +27,29 @@
         .info-group p { font-size: 18px; font-weight: 600; }
         .plan-badge { display: inline-block; padding: 5px 15px; background: var(--gradient); border-radius: 20px; font-size: 14px; font-weight: 800; text-transform: uppercase; margin-top: 5px; }
 
-        /* Styles spécifiques à la gestion d'abonnement */
-        .gestion-abonnement { background: rgba(255,255,255,0.03); padding: 25px; border-radius: 10px; margin-top: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: left; }
-        .gestion-abonnement h3 { font-size: 18px; margin-bottom: 15px; }
-        .notif-zone { display: none; padding: 15px; margin-bottom: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; line-height: 1.5; }
-        .btn-action { width: 100%; padding: 12px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin-top: 10px; display: none; border: none; }
-        .btn-resilier { background: #e50046; color: white; }
-        .btn-resilier:hover { background: #ff004f; }
-        .btn-secours { background: #2c313f; color: white; }
-        .btn-secours:hover { background: #3a4152; }
+        /* DESIGN PRO GESTION ABONNEMENT */
+        .gestion-abonnement { background: rgba(255,255,255,0.02); padding: 30px; border-radius: 12px; margin-top: 30px; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
+        .gestion-abonnement h3 { font-size: 18px; margin-bottom: 20px; color: white; display: flex; align-items: center; gap: 10px; }
+        
+        /* Box de suivi de dossier */
+        .dossier-box { display: none; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid; font-size: 14px; line-height: 1.6; }
+        .dossier-box h4 { margin-bottom: 10px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        
+        /* Les différents états */
+        .etat-attente { background: rgba(255, 165, 0, 0.1); border-color: #ffa500; }
+        .etat-attente h4 { color: #ffa500; }
+        
+        .etat-action { background: rgba(0, 85, 255, 0.1); border-color: #0055ff; }
+        .etat-action h4 { color: #6699ff; }
+        
+        .etat-clos { background: rgba(0, 230, 118, 0.1); border-color: #00e676; }
+        .etat-clos h4 { color: #00e676; }
+
+        .btn-action { width: 100%; padding: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: none; font-size: 14px; display: none; }
+        .btn-resilier { background: #1a1d26; color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; }
+        .btn-resilier:hover { background: #e50046; color: white; border-color: #e50046; }
+        .btn-stripe { background: #635bff; color: white; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-stripe:hover { background: #5851df; box-shadow: 0 5px 15px rgba(99,91,255,0.4); }
 
         .btn-logout { width: 100%; padding: 15px; background: transparent; color: var(--text-muted); font-weight: 600; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; margin-top: 30px; }
         .btn-logout:hover { background: rgba(255,255,255,0.05); color: white; }
@@ -55,32 +69,35 @@
         <h1>Mon Espace</h1>
         
         <div class="info-group">
-            <label>Adresse Email</label>
+            <label>Identifiant Compte</label>
             <p id="user-email">Chargement...</p>
         </div>
 
         <div class="info-group">
-            <label>Statut de l'abonnement</label>
+            <label>Offre Souscrite</label>
             <div id="user-plan" class="plan-badge" style="background: #333;">...</div>
         </div>
 
-        <!-- ZONE DE GESTION D'ABONNEMENT HYBRIDE -->
+        <!-- ZONE DE GESTION PRO -->
         <div class="gestion-abonnement">
-            <h3>Gestion de mon abonnement</h3>
+            <h3>⚙️ Contrat & Facturation</h3>
             
-            <div id="notif-resiliation" class="notif-zone"></div>
+            <div id="zone-dossier" class="dossier-box">
+                <h4 id="titre-dossier">Statut</h4>
+                <p id="texte-dossier">Détails...</p>
+            </div>
 
             <button id="btn-demander-resiliation" class="btn-action btn-resilier" onclick="lancerResiliation()">
-                Résilier mon abonnement
+                Mettre fin à mon contrat
             </button>
 
-            <!-- REMPLACE LE LIEN CI-DESSOUS PAR TON LIEN DE PORTAIL STRIPE -->
-            <button id="btn-portail-stripe" class="btn-action btn-secours" onclick="window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank')">
-                Accéder au portail d'annulation d'urgence
+            <!-- BOUTON STRIPE -->
+            <button id="btn-portail-stripe" class="btn-action btn-stripe" onclick="window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank')">
+                🔒 Gérer la facturation sur Stripe
             </button>
         </div>
 
-        <button class="btn-logout" onclick="seDeconnecter()">Se déconnecter</button>
+        <button class="btn-logout" onclick="seDeconnecter()">Déconnexion</button>
     </div>
 
     <script>
@@ -90,25 +107,13 @@
 
         async function initialiserCompte() {
             const { data: { user } } = await supabaseClient.auth.getUser();
-            
-            if (!user) {
-                // Redirige vers l'accueil si la personne n'est pas connectée
-                window.location.href = 'index.html';
-                return;
-            }
+            if (!user) { window.location.href = 'index.html'; return; }
 
-            // Affiche l'email
             document.getElementById('user-email').innerText = user.email;
 
-            // Récupère les infos complètes de l'utilisateur dans la table profils
-            const { data: profil, error } = await supabaseClient
-                .from('profils')
-                .select('*')
-                .eq('id', user.id)
-                .single();
+            const { data: profil } = await supabaseClient.from('profils').select('*').eq('id', user.id).single();
 
             if (profil) {
-                // Affiche le niveau d'abonnement
                 const planActuel = profil.plan ? profil.plan.toUpperCase() : 'FREE';
                 const badgePlan = document.getElementById('user-plan');
                 badgePlan.innerText = planActuel;
@@ -117,56 +122,64 @@
                 else if(planActuel === 'CLASSIC') badgePlan.style.background = '#0055ff';
                 else badgePlan.style.background = '#333';
 
-                // Lance le moteur de vérification pour la résiliation
                 gererInterfaceResiliation(profil);
             }
         }
 
         function gererInterfaceResiliation(profil) {
             const btnDemander = document.getElementById('btn-demander-resiliation');
-            const btnPortail = document.getElementById('btn-portail-stripe');
-            const notifZone = document.getElementById('notif-resiliation');
+            const btnStripe = document.getElementById('btn-portail-stripe');
+            const zoneDossier = document.getElementById('zone-dossier');
+            const titreDossier = document.getElementById('titre-dossier');
+            const texteDossier = document.getElementById('texte-dossier');
 
-            // 1. Abonné normal sans demande en cours -> On affiche juste le bouton rouge
+            // 1. Abonnement actif (sans demande)
             if (profil.plan !== 'free' && (!profil.statut_resiliation || profil.statut_resiliation === 'aucun')) {
                 btnDemander.style.display = 'block';
+                return; // On arrête là
             }
 
-            // 2. Demande envoyée et en attente de traitement par l'admin
+            // A partir d'ici, il y a un dossier en cours ou terminé. On affiche la box.
+            zoneDossier.style.display = 'block';
+
+            // 2. Demande en cours d'analyse
             if (profil.statut_resiliation === 'en_attente') {
-                notifZone.style.display = 'block';
-                notifZone.style.background = 'rgba(255, 165, 0, 0.15)'; 
-                notifZone.style.color = '#ffa500';
+                zoneDossier.className = 'dossier-box etat-attente';
+                titreDossier.innerHTML = '⏳ Dossier en cours d\'analyse';
                 
-                // Calcul des 48h
                 const dateDemande = new Date(profil.date_demande_resiliation);
-                const maintenant = new Date();
-                const heuresEcoulees = Math.abs(maintenant - dateDemande) / 36e5;
+                const heuresEcoulees = Math.abs(new Date() - dateDemande) / 36e5;
 
                 if (heuresEcoulees >= 48) {
-                    notifZone.innerHTML = "Le délai de traitement de 48h est dépassé. Vous pouvez annuler votre abonnement instantanément et manuellement via notre portail de secours sécurisé.";
-                    btnPortail.style.display = 'block';
+                    texteDossier.innerHTML = "Notre service de traitement manuel rencontre un délai supérieur à 48h. Pour ne pas vous pénaliser, vous pouvez finaliser votre demande instantanément et de manière sécurisée via le portail de notre partenaire bancaire Stripe.";
+                    btnStripe.style.display = 'flex';
                 } else {
-                    notifZone.innerHTML = "Votre demande de résiliation a bien été prise en compte. Elle sera traitée par notre équipe sous 48h maximum. Vos accès restent actifs jusqu'à la fin de la période payée.";
+                    texteDossier.innerHTML = "Votre demande de clôture a bien été transmise à notre service de facturation. Elle sera traitée sous 48h ouvrées. Aucun prélèvement supplémentaire ne sera effectué durant ce délai.";
                 }
             }
 
-            // 3. Demande traitée par l'admin
+            // 3. L'admin a demandé de passer par Stripe
+            if (profil.statut_resiliation === 'redirection_stripe') {
+                zoneDossier.className = 'dossier-box etat-action';
+                titreDossier.innerHTML = '🔔 Action requise : Sécurité Bancaire';
+                texteDossier.innerHTML = "Suite à votre demande, notre équipe n'a pas pu intervenir manuellement sur votre méthode de paiement (restrictions de sécurité). Afin de garantir la clôture immédiate de votre contrat, veuillez utiliser le portail crypté de notre partenaire Stripe ci-dessous.";
+                btnStripe.style.display = 'flex';
+            }
+
+            // 4. Dossier clôturé
             if (profil.statut_resiliation === 'traitee') {
-                notifZone.style.display = 'block';
-                notifZone.style.background = 'rgba(0, 230, 118, 0.15)'; 
-                notifZone.style.color = '#00e676';
-                notifZone.innerHTML = "Votre abonnement a été résilié par notre équipe. Il se terminera définitivement à la fin de votre période de facturation en cours.";
+                zoneDossier.className = 'dossier-box etat-clos';
+                titreDossier.innerHTML = '✅ Contrat clôturé';
+                texteDossier.innerHTML = "Votre demande a été traitée avec succès par nos services. Votre abonnement ne sera plus renouvelé. Vous conservez toutefois l'accès à vos avantages jusqu'à la fin de la période en cours.";
             }
         }
 
         async function lancerResiliation() {
-            const confirmation = confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Votre demande sera envoyée à notre équipe.");
+            const confirmation = confirm("Souhaitez-vous transmettre une demande de résiliation au service de facturation ?");
             if (!confirmation) return;
 
             const { data: { user } } = await supabaseClient.auth.getUser();
 
-            // Met à jour la base de données avec l'heure exacte et le statut "en_attente"
             const { error } = await supabaseClient
                 .from('profils')
                 .update({ 
@@ -176,10 +189,9 @@
                 .eq('id', user.id);
 
             if (!error) {
-                alert("Votre demande de résiliation a été envoyée avec succès.");
-                location.reload(); // Recharge la page pour afficher la nouvelle interface
+                location.reload(); 
             } else {
-                alert("Une erreur est survenue lors de l'envoi de la demande. Veuillez réessayer.");
+                alert("Erreur système. Veuillez réessayer.");
             }
         }
 
@@ -188,7 +200,6 @@
             window.location.href = 'index.html';
         }
 
-        // Exécute la fonction au chargement de la page
         initialiserCompte();
     </script>
 </body>
