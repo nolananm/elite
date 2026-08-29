@@ -6,7 +6,7 @@ export async function onRequest(context) {
     const matchId = url.searchParams.get('id');
     
     const apiKey = '4736f4d750eb0ade21db88f57eca9978';
-    const saison = '2023'; // Saison riche en données pour tester tes statistiques Premium
+    const saison = '2023'; // Saison riche en données
     let apiUrl = '';
 
     if (action === 'standings') {
@@ -26,20 +26,18 @@ export async function onRequest(context) {
         
         const data = await apiResponse.json();
 
-        // On renvoie la donnée en forçant Cloudflare à ignorer son cache système
         return new Response(JSON.stringify(data), {
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-                'Cache-Control': 'no-store, no-cache, must-revalidate',
-                'X-Worker-Status': 'API-Sports-Active'
+                // Le cache est remis à zéro pour forcer la mise à jour lors de tes tests
+                'Cache-Control': 'no-store, no-cache, must-revalidate'
             }
         });
 
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), { 
             status: 500,
-            headers: { 'Access-Control-Allow-Origin': '*' }
+            headers: { 'Content-Type': 'application/json' }
         });
     }
 }
