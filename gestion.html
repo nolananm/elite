@@ -11,7 +11,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-dark); color: var(--text-main); padding: 40px 20px; display: flex; justify-content: center; }
         
-        .admin-container { background: var(--bg-card); padding: 40px; border-radius: 20px; width: 100%; max-width: 900px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .admin-container { background: var(--bg-card); padding: 40px; border-radius: 20px; width: 100%; max-width: 900px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.5); position: relative; }
         .admin-container h2 { text-align: center; margin-bottom: 25px; font-weight: 800; text-transform: uppercase; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .tabs { display: flex; margin-bottom: 30px; border-bottom: 2px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
@@ -40,13 +40,24 @@
         .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-edit { background: #0055ff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         
-        /* Nouveaux boutons Résiliation */
+        /* Boutons Résiliation */
         .btn-valider { background: #00e676; color: #000; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-deleguer { background: #635bff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
         th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+
+        /* MODALE ADMIN */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .modal-box h3 { margin-bottom: 15px; font-size: 20px; color: white; }
+        .modal-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
+        .modal-btn-group { display: flex; gap: 15px; justify-content: center; }
+        .modal-btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; flex: 1; }
+        .btn-cancel { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-confirm { background: #00e676; color: #000; }
+        .btn-confirm.blue { background: #635bff; color: white; }
 
         @media (max-width: 768px) {
             body { padding: 20px 10px; }
@@ -147,6 +158,7 @@
                 <div id="div-file-audio" style="display:none; background: rgba(0,85,255,0.1); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px dashed #0055ff;">
                     <label style="color:#0055ff;">Uploader le fichier MP3/WAV :</label>
                     <input type="file" id="file-media" accept="audio/*">
+                    <p style="font-size:11px; color:var(--text-muted); margin-top:5px;">Assurez-vous d'avoir créé le bucket "medias" (Public) dans Supabase.</p>
                 </div>
                 <label>Accès :</label>
                 <select id="niveau-acces-media"><option value="free">Free</option><option value="classic" selected>Classic</option><option value="premium">Premium</option></select>
@@ -196,6 +208,18 @@
             </div>
         </div>
 
+        <!-- MODALE ADMIN -->
+        <div id="modal-admin" class="modal-overlay">
+            <div class="modal-box">
+                <h3 id="admin-modal-titre">Confirmation</h3>
+                <p id="admin-modal-texte">Texte de confirmation...</p>
+                <div class="modal-btn-group">
+                    <button class="modal-btn btn-cancel" onclick="document.getElementById('modal-admin').style.display='none'">Annuler</button>
+                    <button id="admin-modal-btn" class="modal-btn btn-confirm">Confirmer</button>
+                </div>
+            </div>
+        </div>
+
     </div>
     
     <script>
@@ -208,6 +232,7 @@
         let tousLesUsers = [];
         let listeArticlesAdmin = [];
         let listeAvantagesAdmin = [];
+        let actionResiliationEnCours = null; // Variable pour la modale
 
         async function verifierAdmin() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -250,10 +275,50 @@
             }); 
             document.getElementById('liste-medias').innerHTML = html || "Aucun média.";
         }
-        
-        async function sauvegarderMedia() { /* Code upload allégé pour la lecture (le tien reste inchangé si besoin) */ }
 
-        // --- GESTION DES RÉSILIATIONS (NOUVELLES ACTIONS) ---
+        async function sauvegarderMedia() {
+            const typeMedia = document.getElementById('type-media').value;
+            const titre = document.getElementById('titre-media').value;
+            if (!titre) return alert("Il faut un titre !");
+            
+            const btnSubmit = document.getElementById('btn-submit-media');
+            btnSubmit.innerText = "Traitement en cours...";
+            btnSubmit.disabled = true;
+
+            let finalUrl = "";
+
+            if (typeMedia === 'video') {
+                finalUrl = document.getElementById('url-media').value;
+            } else {
+                const fileInput = document.getElementById('file-media');
+                if (fileInput.files.length === 0) {
+                    alert("Sélectionnez un fichier audio !");
+                    btnSubmit.innerText = "Publier le Média"; btnSubmit.disabled = false;
+                    return;
+                }
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                
+                const { error } = await supabaseClient.storage.from('medias').upload(fileName, file);
+                if (error) {
+                    alert("Erreur d'upload.\n" + error.message);
+                    btnSubmit.innerText = "Publier le Média"; btnSubmit.disabled = false;
+                    return;
+                }
+                const { data: publicData } = supabaseClient.storage.from('medias').getPublicUrl(fileName);
+                finalUrl = publicData.publicUrl;
+            }
+
+            const dataToInsert = { type_media: typeMedia, titre: titre, description: document.getElementById('desc-media').value, url_media: finalUrl, niveau_acces: document.getElementById('niveau-acces-media').value };
+            await supabaseClient.from('medias').insert([dataToInsert]); 
+            
+            document.getElementById('titre-media').value = ""; document.getElementById('url-media').value = ""; document.getElementById('desc-media').value = ""; document.getElementById('file-media').value = "";
+            btnSubmit.innerText = "Publier le Média"; btnSubmit.disabled = false;
+            chargerMedias();
+        }
+
+        // --- GESTION DES RÉSILIATIONS ---
         async function chargerDemandesResiliation() {
             const { data: demandes, error } = await supabaseClient
                 .from('profils')
@@ -282,35 +347,60 @@
                         <div style="font-size: 12px; color: var(--text-muted);">Demandé le : ${dateDemande}</div>
                     </div>
                     <div class="manage-actions">
-                        <button class="btn-deleguer" onclick="changerStatutResiliation('${demande.id}', 'redirection_stripe')">Déléguer à Stripe</button>
-                        <button class="btn-valider" onclick="changerStatutResiliation('${demande.id}', 'traitee')">Validé manuellement</button>
+                        <button class="btn-deleguer" onclick="preparerChangementStatut('${demande.id}', 'redirection_stripe')">Déléguer à Stripe</button>
+                        <button class="btn-valider" onclick="preparerChangementStatut('${demande.id}', 'traitee')">Validé manuellement</button>
                     </div>
                 `;
                 conteneur.appendChild(card);
             });
         }
 
-        async function changerStatutResiliation(userId, nouveauStatut) {
-            let messageConfirmation = nouveauStatut === 'traitee' 
-                ? "As-tu bien annulé l'abonnement sur Stripe avant de valider ?"
-                : "Le client recevra une alerte pour annuler lui-même via Stripe. Confirmer ?";
-                
-            if (!confirm(messageConfirmation)) return;
+        function preparerChangementStatut(userId, nouveauStatut) {
+            const modal = document.getElementById('modal-admin');
+            const titre = document.getElementById('admin-modal-titre');
+            const texte = document.getElementById('admin-modal-texte');
+            const btn = document.getElementById('admin-modal-btn');
+            
+            actionResiliationEnCours = { userId, nouveauStatut };
 
+            if (nouveauStatut === 'traitee') {
+                titre.innerText = "Validation Manuelle";
+                texte.innerHTML = "As-tu bien annulé l'abonnement sur <strong>Stripe</strong> avant de valider cette clôture ?";
+                btn.className = "modal-btn btn-confirm";
+                btn.innerText = "Oui, c'est fait";
+            } else {
+                titre.innerText = "Déléguer à Stripe";
+                texte.innerHTML = "Le client recevra une alerte sur son espace pour annuler lui-même via le portail Stripe. Confirmer ?";
+                btn.className = "modal-btn btn-confirm blue";
+                btn.innerText = "Envoyer la notification";
+            }
+
+            btn.onclick = executerChangementStatut;
+            modal.style.display = 'flex';
+        }
+
+        async function executerChangementStatut() {
+            if (!actionResiliationEnCours) return;
+            
+            document.getElementById('admin-modal-btn').innerText = "Chargement...";
+            
+            const { userId, nouveauStatut } = actionResiliationEnCours;
             const { error } = await supabaseClient
                 .from('profils')
                 .update({ statut_resiliation: nouveauStatut })
                 .eq('id', userId);
 
+            document.getElementById('modal-admin').style.display = 'none';
+
             if (!error) {
                 chargerDemandesResiliation(); 
                 if (document.getElementById('form-user').style.display === 'block') chargerUtilisateurs(); 
             } else {
-                alert("Erreur lors de la validation : " + error.message);
+                console.error("Erreur :", error.message);
             }
         }
 
-        // --- AUTRES FONCTIONS DE GESTION (Raccourcies pour lisibilité) ---
+        // --- AUTRES FONCTIONS DE GESTION ---
         async function chargerLancement() { const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single(); if (data) { document.getElementById('check-maintenance').checked = data.compte_a_rebours_actif; if (data.date_lancement) document.getElementById('date-lancement').value = new Date(data.date_lancement).toISOString().slice(0, 16); } }
         async function sauvegarderLancement() { const actif = document.getElementById('check-maintenance').checked; const dateInput = document.getElementById('date-lancement').value; let isoDate = dateInput ? new Date(dateInput).toISOString() : new Date().toISOString(); await supabaseClient.from('reglages_site').upsert([{ id: 1, compte_a_rebours_actif: actif, date_lancement: isoDate }]); alert('Réglages sauvegardés !'); }
         async function chargerAvantages() { const { data } = await supabaseClient.from('avantages').select('*').order('plan', { ascending: true }); listeAvantagesAdmin = data || []; let html = ''; listeAvantagesAdmin.forEach(av => { let icone = av.type_icone === 'check' ? '✅' : '❌'; let couleurPlan = av.plan === 'premium' ? 'var(--accent)' : 'white'; html += `<div class="manage-card"><div class="manage-info"><div class="manage-title" style="color:${couleurPlan}">[${av.plan.toUpperCase()}] ${icone} ${av.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('avantages', '${av.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-avantages').innerHTML = html || 'Aucun avantage.'; }
