@@ -2,7 +2,6 @@ export async function onRequest(context) {
     const { request } = context;
     const url = new URL(request.url);
     
-    // Le Worker comprend ce qu'on lui demande (calendrier, classement, ou un match précis)
     const action = url.searchParams.get('action') || 'fixtures';
     const matchId = url.searchParams.get('id');
     
@@ -11,17 +10,14 @@ export async function onRequest(context) {
     let response = await cache.match(cacheKey);
 
     if (!response) {
-        // Ta nouvelle clé API-Football (API-Sports)
         const apiKey = '4736f4d750eb0ade21db88f57eca9978';
         let apiUrl = '';
 
-        // 61 = Ligue 1 | L'API utilise l'année de début pour la saison (ex: 2026 pour 2026/2027)
         if (action === 'standings') {
             apiUrl = 'https://v3.football.api-sports.io/standings?league=61&season=2026';
         } else if (action === 'match' && matchId) {
             apiUrl = `https://v3.football.api-sports.io/fixtures?id=${matchId}`;
         } else {
-            // Par défaut : tous les matchs de la saison
             apiUrl = 'https://v3.football.api-sports.io/fixtures?league=61&season=2026';
         }
 
@@ -34,7 +30,18 @@ export async function onRequest(context) {
             
             const data = await apiResponse.json();
 
-            // Bouclier Cache de 5 minutes (300 secondes) pour économiser les 100 requêtes gratuites
+            // 🚨 NOUVEAU : Si l'API renvoie une erreur, on NE MET PAS EN CACHE !
+            // Ça permet de retester instantanément sans attendre 5 minutes
+            if (data.errors && Object.keys(data.errors).length > 0) {
+                return new Response(JSON.stringify(data), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+            }
+
+            // Si tout va bien, on met en cache pendant 5 minutes (300 secondes)
             response = new Response(JSON.stringify(data), {
                 headers: {
                     'Content-Type': 'application/json',
