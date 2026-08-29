@@ -131,10 +131,9 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // 🚨 TON LIEN DE TEST CLASSIC 🚨
+        // --- GESTION DES PAIEMENTS STRIPE ---
         const LIEN_STRIPE_CLASSIC = "https://buy.stripe.com/test_3cIcN41SffTZbyrgOm7Vm00";
-        // Remplacer ce lien par un lien de test Premium quand tu l'auras
-        const LIEN_STRIPE_PREMIUM = "https://buy.stripe.com/test_14A5kC1SheK6ctc5MqgQE00";
+        const LIEN_STRIPE_PREMIUM = "METS_TON_LIEN_DE_PAIEMENT_PREMIUM_ICI"; // Attention : Ne mets pas le lien du portail de facturation ici !
 
         async function redirigerVersStripe(planChoisi) {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -145,15 +144,55 @@
                 return;
             }
 
-            // On choisit le bon lien en fonction du bouton cliqué
-            let urlStripe = planChoisi === 'premium' ? LIEN_STRIPE_PREMIUM : LIEN_STRIPE_CLASSIC;
+            if (planChoisi === 'premium' && LIEN_STRIPE_PREMIUM === "METS_TON_LIEN_DE_PAIEMENT_PREMIUM_ICI") {
+                alert("Le lien de paiement Premium n'est pas encore configuré.");
+                return;
+            }
 
-            // La ligne corrigée qui intègre proprement l'ID utilisateur à l'URL
+            let urlStripe = planChoisi === 'premium' ? LIEN_STRIPE_PREMIUM : LIEN_STRIPE_CLASSIC;
             const urlFinale = `${urlStripe}?client_reference_id=${user.id}`;
-            
-            // Redirection vers le paiement Stripe
             window.location.href = urlFinale;
         }
+
+        // --- 🛡️ BOUCLIER ANTI-PUB INTELLIGENT ---
+        async function activerBouclierAntiPub() {
+            let doitAfficherPub = true; // Par défaut, on affiche la pub (visiteur)
+
+            const { data: { user } } = await supabaseClient.auth.getUser();
+
+            if (user) {
+                const { data: profil } = await supabaseClient
+                    .from('profils')
+                    .select('plan')
+                    .eq('id', user.id)
+                    .single();
+
+                // Si l'abonné paie, on bloque la pub
+                if (profil && (profil.plan === 'classic' || profil.plan === 'premium')) {
+                    doitAfficherPub = false;
+                }
+            }
+
+            if (doitAfficherPub) {
+                console.log("🟢 Mode Gratuit : Publicité activée");
+                chargerScriptPublicite();
+            } else {
+                console.log("🛡️ Mode VIP : Publicités bloquées !");
+            }
+        }
+
+        // Fonction pour injecter ton code publicitaire proprement
+        function chargerScriptPublicite() {
+            // Remplace "TON_LIEN_DE_REGIE_PUB.js" par le lien exact que ta régie pub t'a fourni
+            const scriptPub = document.createElement('script');
+            scriptPub.src = "TON_LIEN_DE_REGIE_PUB.js";
+            scriptPub.async = true;
+            document.head.appendChild(scriptPub);
+        }
+
+        // Lancement immédiat de la vérification au chargement
+        activerBouclierAntiPub();
+
     </script>
 </body>
 </html>
