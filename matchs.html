@@ -140,6 +140,7 @@
 
         <div class="layout-grid">
             <div class="col-matchs">
+                
                 <div class="ad-zone">
                     <span class="ad-label">Sponsorisé</span>
                     <script>
@@ -259,10 +260,10 @@
 
         async function chargerClassement() {
             try {
-                const req = await fetch(API_URL + '?action=standings');
+                // Le v=2 force Cloudflare à récupérer la nouvelle donnée
+                const req = await fetch(API_URL + '?action=standings&v=2');
                 const data = await req.json();
                 
-                // 🚨 DIAGNOSTIC ERREUR API : Si l'API renvoie un message d'erreur
                 if (data.errors && Object.keys(data.errors).length > 0) {
                     throw new Error("API-Sports: " + Object.values(data.errors)[0]);
                 }
@@ -291,15 +292,15 @@
                 const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*');
                 if (matchsBdd) reglageMatchsBDD = matchsBdd;
                 
-                const req = await fetch(API_URL + '?action=fixtures');
+                // Le v=2 force Cloudflare à récupérer la nouvelle donnée
+                const req = await fetch(API_URL + '?action=fixtures&v=2');
                 const data = await req.json();
                 
-                // 🚨 DIAGNOSTIC ERREUR API : On affiche exactement ce que l'API reproche
                 if (data.errors && Object.keys(data.errors).length > 0) {
                     throw new Error("API-Sports : " + Object.values(data.errors)[0]);
                 }
                 if (!data.response || data.response.length === 0) {
-                    throw new Error("Aucun match de Ligue 1 trouvé pour la saison 2026.");
+                    throw new Error("Aucun match trouvé pour cette saison.");
                 }
 
                 tousLesMatchsAPI = data.response;
@@ -408,7 +409,8 @@
             document.getElementById('modal-match-content').innerHTML = `<div class="loading-text">📡 Récupération des données professionnelles...</div>`;
 
             try {
-                const reqMatch = await fetch(API_URL + '?action=match&id=' + idApiStr);
+                // Le v=2 force le rafraîchissement au clic pour avoir la stat ultra fraîche
+                const reqMatch = await fetch(API_URL + '?action=match&id=' + idApiStr + '&v=2');
                 const dataMatch = await reqMatch.json();
                 const infos = dataMatch.response[0];
                 
