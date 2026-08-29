@@ -9,51 +9,36 @@
     <style>
         :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: radial-gradient(circle at top left, rgba(229, 0, 70, 0.1), transparent 50%), var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         a { text-decoration: none; color: inherit; }
 
-        header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        header { width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo { font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
-        nav { display: flex; gap: 30px; align-items: center; }
+        nav { display: flex; gap: 30px; }
         nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
 
-        .container { max-width: 600px; margin: 150px auto 50px auto; padding: 0 20px; }
+        .container { max-width: 600px; width: 100%; margin: 80px auto; padding: 40px; background: var(--bg-card); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; }
         
-        .box { background: var(--bg-card); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 40px; text-align: center; }
-        .box h2 { font-size: 32px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; }
-
-        .form-group { text-align: left; margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
-        .form-group input { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-family: 'Poppins', sans-serif; font-size: 15px; outline: none; transition: 0.3s; }
-        .form-group input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
-
-        .btn { width: 100%; padding: 15px; color: white; font-weight: 800; border-radius: 8px; text-transform: uppercase; border: none; cursor: pointer; transition: 0.3s; margin-bottom: 15px; font-size: 16px; }
-        .btn.primary { background: var(--gradient); box-shadow: 0 10px 20px rgba(229,0,70,0.3); }
-        .btn.primary:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(229,0,70,0.4); }
-        .btn.secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-        .btn.secondary:hover { background: rgba(255,255,255,0.1); }
+        h1 { font-size: 32px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; }
         
-        .btn.danger { background: rgba(255,50,50,0.1); color: #ff4444; border: 1px solid rgba(255,50,50,0.2); margin-top: 20px; }
-        .btn.danger:hover { background: rgba(255,50,50,0.2); }
+        .info-group { margin-bottom: 25px; text-align: left; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; }
+        .info-group label { display: block; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .info-group p { font-size: 18px; font-weight: 600; }
+        .plan-badge { display: inline-block; padding: 5px 15px; background: var(--gradient); border-radius: 20px; font-size: 14px; font-weight: 800; text-transform: uppercase; margin-top: 5px; }
 
-        .btn.stripe-btn { background: #635bff; color: white; box-shadow: 0 10px 20px rgba(99,91,255,0.3); margin-top: 30px; }
-        .btn.stripe-btn:hover { background: #5851df; transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99,91,255,0.4); }
+        /* Styles spécifiques à la gestion d'abonnement */
+        .gestion-abonnement { background: rgba(255,255,255,0.03); padding: 25px; border-radius: 10px; margin-top: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: left; }
+        .gestion-abonnement h3 { font-size: 18px; margin-bottom: 15px; }
+        .notif-zone { display: none; padding: 15px; margin-bottom: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; line-height: 1.5; }
+        .btn-action { width: 100%; padding: 12px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin-top: 10px; display: none; border: none; }
+        .btn-resilier { background: #e50046; color: white; }
+        .btn-resilier:hover { background: #ff004f; }
+        .btn-secours { background: #2c313f; color: white; }
+        .btn-secours:hover { background: #3a4152; }
 
-        .toggle-link { color: var(--accent); font-size: 14px; cursor: pointer; font-weight: 600; text-decoration: underline; }
-        
-        .status-badge { display: inline-block; padding: 8px 20px; font-size: 14px; font-weight: 800; text-transform: uppercase; border-radius: 8px; margin: 20px 0; letter-spacing: 1px; }
-        .status-free { background: #222; border: 1px solid rgba(255,255,255,0.2); }
-        .status-classic { background: #0055ff; color: white; }
-        .status-premium { background: var(--gradient); color: white; box-shadow: 0 10px 20px rgba(229,0,70,0.3); }
-
-        #dashboard-section, #auth-section { display: none; }
-
-        @media (max-width: 768px) {
-            header { flex-direction: column; padding: 15px; gap: 10px; }
-            nav { flex-wrap: wrap; justify-content: center; gap: 10px; }
-            .container { margin-top: 140px; }
-        }
+        .btn-logout { width: 100%; padding: 15px; background: transparent; color: var(--text-muted); font-weight: 600; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; margin-top: 30px; }
+        .btn-logout:hover { background: rgba(255,255,255,0.05); color: white; }
     </style>
 </head>
 <body>
@@ -61,55 +46,41 @@
     <header>
         <a href="index.html" class="logo">ÉLITE</a>
         <nav>
+            <a href="index.html">Accueil</a>
             <a href="articles.html">Articles</a>
-            <a href="matchs.html">Matchs & Fan Zone</a>
-            <a href="medias.html">Émissions & Podcasts</a>
-            <a href="compte.html" style="color: var(--accent);">Compte</a>
         </nav>
     </header>
 
     <div class="container">
+        <h1>Mon Espace</h1>
         
-        <!-- SECTION AUTHENTIFICATION (Si non connecté) -->
-        <div class="box" id="auth-section">
-            <h2 id="auth-title">Connexion</h2>
-            
-            <div class="form-group">
-                <label>Adresse Email</label>
-                <input type="email" id="email" placeholder="jean@exemple.com">
-            </div>
-            
-            <div class="form-group">
-                <label>Mot de passe</label>
-                <input type="password" id="password" placeholder="••••••••">
-            </div>
-
-            <button class="btn primary" id="auth-btn" onclick="gererAuth()">Se connecter</button>
-            <p style="color: var(--text-muted); font-size: 14px; margin-top: 15px;">
-                <span id="auth-toggle-text">Pas encore de compte ?</span> 
-                <span class="toggle-link" onclick="toggleAuthMode()">Créer un compte</span>
-            </p>
+        <div class="info-group">
+            <label>Adresse Email</label>
+            <p id="user-email">Chargement...</p>
         </div>
 
-        <!-- SECTION DASHBOARD (Si connecté) -->
-        <div class="box" id="dashboard-section">
-            <h2>Mon Profil</h2>
-            <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 5px;">Connecté en tant que :</p>
-            <h3 id="user-email" style="font-size: 20px; font-weight: 600;">...</h3>
-            
-            <div style="margin: 30px 0; padding: 20px; background: rgba(0,0,0,0.5); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                <p style="color: var(--text-muted); font-size: 14px; text-transform: uppercase; font-weight: 800;">Niveau d'Abonnement</p>
-                <div id="plan-badge" class="status-badge status-free">Chargement...</div>
-                <p id="plan-desc" style="font-size: 14px; color: var(--text-muted);">...</p>
-            </div>
-
-            <!-- BOUTON POUR GERER L'ABONNEMENT SUR STRIPE -->
-            <button class="btn stripe-btn" onclick="gererAbonnementStripe()">Gérer mon abonnement (Factures / Résiliation)</button>
-            
-            <button class="btn secondary" style="margin-top: 15px;" onclick="window.location.href='index.html#abonnements'">Voir les offres</button>
-            <button class="btn danger" onclick="seDeconnecter()">Se déconnecter</button>
+        <div class="info-group">
+            <label>Statut de l'abonnement</label>
+            <div id="user-plan" class="plan-badge" style="background: #333;">...</div>
         </div>
 
+        <!-- ZONE DE GESTION D'ABONNEMENT HYBRIDE -->
+        <div class="gestion-abonnement">
+            <h3>Gestion de mon abonnement</h3>
+            
+            <div id="notif-resiliation" class="notif-zone"></div>
+
+            <button id="btn-demander-resiliation" class="btn-action btn-resilier" onclick="lancerResiliation()">
+                Résilier mon abonnement
+            </button>
+
+            <!-- REMPLACE LE LIEN CI-DESSOUS PAR TON LIEN DE PORTAIL STRIPE -->
+            <button id="btn-portail-stripe" class="btn-action btn-secours" onclick="window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank')">
+                Accéder au portail d'annulation d'urgence
+            </button>
+        </div>
+
+        <button class="btn-logout" onclick="seDeconnecter()">Se déconnecter</button>
     </div>
 
     <script>
@@ -117,97 +88,108 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let isLoginMode = true;
-
-        // 🚨 REMPLACE CE LIEN PAR LE LIEN DU PORTAIL CLIENT STRIPE (À générer dans Stripe > Portail client) 🚨
-        const LIEN_PORTAIL_STRIPE = "https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00";
-
-        async function verifierSession() {
+        async function initialiserCompte() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             
-            if (user) {
-                document.getElementById('auth-section').style.display = 'none';
-                document.getElementById('dashboard-section').style.display = 'block';
-                document.getElementById('user-email').innerText = user.email;
+            if (!user) {
+                // Redirige vers l'accueil si la personne n'est pas connectée
+                window.location.href = 'index.html';
+                return;
+            }
 
-                // Récupération du plan
-                const { data: profil } = await supabaseClient.from('profils').select('plan').eq('id', user.id).single();
-                let plan = profil ? profil.plan : 'free';
+            // Affiche l'email
+            document.getElementById('user-email').innerText = user.email;
+
+            // Récupère les infos complètes de l'utilisateur dans la table profils
+            const { data: profil, error } = await supabaseClient
+                .from('profils')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profil) {
+                // Affiche le niveau d'abonnement
+                const planActuel = profil.plan ? profil.plan.toUpperCase() : 'FREE';
+                const badgePlan = document.getElementById('user-plan');
+                badgePlan.innerText = planActuel;
                 
-                let badge = document.getElementById('plan-badge');
-                let desc = document.getElementById('plan-desc');
-                
-                badge.className = `status-badge status-${plan}`;
-                badge.innerText = plan.toUpperCase();
+                if(planActuel === 'PREMIUM') badgePlan.style.background = 'var(--gradient)';
+                else if(planActuel === 'CLASSIC') badgePlan.style.background = '#0055ff';
+                else badgePlan.style.background = '#333';
 
-                if(plan === 'premium') desc.innerText = "Accès total débloqué. Merci pour votre soutien !";
-                else if (plan === 'classic') desc.innerText = "Vous avez accès aux articles et podcasts complets.";
-                else desc.innerText = "Vous utilisez la version gratuite restreinte.";
-
-            } else {
-                document.getElementById('auth-section').style.display = 'block';
-                document.getElementById('dashboard-section').style.display = 'none';
+                // Lance le moteur de vérification pour la résiliation
+                gererInterfaceResiliation(profil);
             }
         }
 
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            document.getElementById('auth-title').innerText = isLoginMode ? "Connexion" : "Inscription";
-            document.getElementById('auth-btn').innerText = isLoginMode ? "Se connecter" : "Créer mon compte";
-            document.getElementById('auth-toggle-text').innerText = isLoginMode ? "Pas encore de compte ?" : "Déjà un compte ?";
-            document.querySelector('.toggle-link').innerText = isLoginMode ? "Créer un compte" : "Se connecter";
+        function gererInterfaceResiliation(profil) {
+            const btnDemander = document.getElementById('btn-demander-resiliation');
+            const btnPortail = document.getElementById('btn-portail-stripe');
+            const notifZone = document.getElementById('notif-resiliation');
+
+            // 1. Abonné normal sans demande en cours -> On affiche juste le bouton rouge
+            if (profil.plan !== 'free' && (!profil.statut_resiliation || profil.statut_resiliation === 'aucun')) {
+                btnDemander.style.display = 'block';
+            }
+
+            // 2. Demande envoyée et en attente de traitement par l'admin
+            if (profil.statut_resiliation === 'en_attente') {
+                notifZone.style.display = 'block';
+                notifZone.style.background = 'rgba(255, 165, 0, 0.15)'; 
+                notifZone.style.color = '#ffa500';
+                
+                // Calcul des 48h
+                const dateDemande = new Date(profil.date_demande_resiliation);
+                const maintenant = new Date();
+                const heuresEcoulees = Math.abs(maintenant - dateDemande) / 36e5;
+
+                if (heuresEcoulees >= 48) {
+                    notifZone.innerHTML = "Le délai de traitement de 48h est dépassé. Vous pouvez annuler votre abonnement instantanément et manuellement via notre portail de secours sécurisé.";
+                    btnPortail.style.display = 'block';
+                } else {
+                    notifZone.innerHTML = "Votre demande de résiliation a bien été prise en compte. Elle sera traitée par notre équipe sous 48h maximum. Vos accès restent actifs jusqu'à la fin de la période payée.";
+                }
+            }
+
+            // 3. Demande traitée par l'admin
+            if (profil.statut_resiliation === 'traitee') {
+                notifZone.style.display = 'block';
+                notifZone.style.background = 'rgba(0, 230, 118, 0.15)'; 
+                notifZone.style.color = '#00e676';
+                notifZone.innerHTML = "Votre abonnement a été résilié par notre équipe. Il se terminera définitivement à la fin de votre période de facturation en cours.";
+            }
         }
 
-        async function gererAuth() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        async function lancerResiliation() {
+            const confirmation = confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Votre demande sera envoyée à notre équipe.");
+            if (!confirmation) return;
 
-            if (!email || !password) { alert("Remplissez tous les champs !"); return; }
+            const { data: { user } } = await supabaseClient.auth.getUser();
 
-            const btn = document.getElementById('auth-btn');
-            btn.innerText = "Patientez...";
+            // Met à jour la base de données avec l'heure exacte et le statut "en_attente"
+            const { error } = await supabaseClient
+                .from('profils')
+                .update({ 
+                    statut_resiliation: 'en_attente',
+                    date_demande_resiliation: new Date().toISOString()
+                })
+                .eq('id', user.id);
 
-            if (isLoginMode) {
-                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) alert("Erreur : " + error.message);
-                else { window.location.reload(); }
+            if (!error) {
+                alert("Votre demande de résiliation a été envoyée avec succès.");
+                location.reload(); // Recharge la page pour afficher la nouvelle interface
             } else {
-                const { error } = await supabaseClient.auth.signUp({ email, password });
-                if (error) alert("Erreur : " + error.message);
-                else { alert("Compte créé avec succès ! Tu peux maintenant te connecter."); toggleAuthMode(); }
+                alert("Une erreur est survenue lors de l'envoi de la demande. Veuillez réessayer.");
             }
-            btn.innerText = isLoginMode ? "Se connecter" : "Créer mon compte";
         }
 
         async function seDeconnecter() {
             await supabaseClient.auth.signOut();
-            window.location.reload();
+            window.location.href = 'index.html';
         }
 
-        function gererAbonnementStripe() {
-            window.location.href = LIEN_PORTAIL_STRIPE;
-        }
-
-        verifierSession();
-        <!-- ZONE DE GESTION D'ABONNEMENT -->
-<div class="gestion-abonnement" style="background: #12151c; padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.1);">
-    <h3>Gestion de mon abonnement</h3>
-    
-    <!-- Zone de notification (cachée par défaut) -->
-    <div id="notif-resiliation" style="display: none; padding: 15px; margin: 15px 0; border-radius: 8px; font-weight: bold;">
-        <!-- Le texte changera via Javascript -->
-    </div>
-
-    <!-- Le bouton de demande initiale -->
-    <button id="btn-demander-resiliation" onclick="lancerResiliation()" style="display: none; background: #e50046; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-        Résilier mon abonnement
-    </button>
-
-    <!-- Le bouton de secours Stripe (caché par défaut) -->
-    <button id="btn-portail-stripe" onclick="window.open('TON_LIEN_PORTAIL_STRIPE_ICI', '_blank')" style="display: none; background: #8b92a5; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;">
-        Accéder au portail d'annulation d'urgence
-    </button>
-</div>
+        // Exécute la fonction au chargement de la page
+        initialiserCompte();
     </script>
 </body>
 </html>
