@@ -38,6 +38,7 @@
         .manage-actions { display: flex; gap: 5px; }
         .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-edit { background: #0055ff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-valider { background: #00e676; color: #000; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
@@ -66,6 +67,8 @@
             <div class="tab" id="tab-media" onclick="changerOnglet('media')">🎙️ Médias</div>
             <div class="tab" id="tab-article" onclick="changerOnglet('article')">📝 Articles</div>
             <div class="tab" id="tab-user" onclick="changerOnglet('user')">👥 Abonnés</div>
+            <!-- NOUVEL ONGLET RÉSILIATIONS -->
+            <div class="tab" id="tab-resiliation" onclick="changerOnglet('resiliation')" style="color: #ff9800; font-weight: 800;">⚠️ Résiliations</div>
         </div>
 
         <div id="form-lancement">
@@ -179,8 +182,20 @@
                 <h3>Liste des abonnés</h3>
                 <input type="text" id="search-user" onkeyup="filtrerUsers()" placeholder="🔍 Rechercher un email..." style="margin-bottom: 15px; border-radius: 20px; padding: 12px; width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none;">
                 <div style="overflow-x: auto;">
-                    <table><thead><tr><th>Email</th><th>Abonnement</th></tr></thead><tbody id="liste-users"></tbody></table>
+                    <table><thead><tr><th>Email & État</th><th>Abonnement</th></tr></thead><tbody id="liste-users"></tbody></table>
                 </div>
+            </div>
+        </div>
+
+        <!-- NOUVEL ONGLET : FORMULAIRE RÉSILIATION -->
+        <div id="form-resiliation" style="display: none;">
+            <div class="list-section">
+                <h3 style="color: #ff9800;">Demandes de résiliation à traiter</h3>
+                <div style="background: rgba(255, 152, 0, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+                    1. Copie l'email.<br>2. Annule l'abonnement sur Stripe ("À la fin de la période").<br>3. Clique sur "Valider".
+                </div>
+                <div id="liste-demandes-resiliation">Chargement...</div>
+                <p id="message-vide-resiliation" style="display: none; color: var(--text-muted); font-style: italic; margin-top: 15px;">Aucune demande de résiliation en attente. Tout est à jour !</p>
             </div>
         </div>
 
@@ -216,10 +231,11 @@
             if (onglet === 'article') chargerArticles();
             if (onglet === 'lancement') chargerLancement();
             if (onglet === 'media') chargerMedias();
+            if (onglet === 'resiliation') chargerDemandesResiliation();
         }
 
         async function chargerToutesLesListes() {
-            chargerLancement(); chargerMatchs(); chargerMedias(); chargerArticles(); chargerFlashes(); chargerAvantages();
+            chargerLancement(); chargerMatchs(); chargerMedias(); chargerArticles(); chargerFlashes(); chargerAvantages(); chargerDemandesResiliation();
         }
 
         // --- GESTION MEDIAS AVEC UPLOAD ---
@@ -298,6 +314,62 @@
             chargerMedias();
         }
 
+        // --- GESTION DES RÉSILIATIONS (NOUVEAU) ---
+        async function chargerDemandesResiliation() {
+            const { data: demandes, error } = await supabaseClient
+                .from('profils')
+                .select('id, email, plan, date_demande_resiliation')
+                .eq('statut_resiliation', 'en_attente')
+                .order('date_demande_resiliation', { ascending: true });
+
+            const conteneur = document.getElementById('liste-demandes-resiliation');
+            const messageVide = document.getElementById('message-vide-resiliation');
+            conteneur.innerHTML = '';
+
+            if (error || !demandes || demandes.length === 0) {
+                messageVide.style.display = 'block';
+                return;
+            }
+
+            messageVide.style.display = 'none';
+
+            demandes.forEach(demande => {
+                const dateDemande = new Date(demande.date_demande_resiliation).toLocaleString('fr-FR');
+                const card = document.createElement('div');
+                card.className = 'manage-card';
+                card.style.borderLeft = '4px solid #ff9800'; // Liseré orange
+                card.innerHTML = `
+                    <div class="manage-info">
+                        <div class="manage-title" style="user-select: all;">${demande.email || 'Email inconnu'} <span style="background: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 5px; text-transform: uppercase;">${demande.plan}</span></div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Demandé le : ${dateDemande}</div>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-valider" onclick="marquerCommeTraitee('${demande.id}')">Valider (Stripe OK)</button>
+                    </div>
+                `;
+                conteneur.appendChild(card);
+            });
+        }
+
+        async function marquerCommeTraitee(userId) {
+            const confirmAction = confirm("As-tu bien annulé l'abonnement de ce client sur Stripe ?");
+            if (!confirmAction) return;
+
+            const { error } = await supabaseClient
+                .from('profils')
+                .update({ statut_resiliation: 'traitee' })
+                .eq('id', userId);
+
+            if (!error) {
+                chargerDemandesResiliation(); // Met à jour l'onglet résiliation
+                if (document.getElementById('form-user').style.display === 'block') {
+                    chargerUtilisateurs(); // Met à jour la liste des abonnés si elle est ouverte
+                }
+            } else {
+                alert("Erreur lors de la validation : " + error.message);
+            }
+        }
+
         // --- AUTRES FONCTIONS DE GESTION (Identiques) ---
         async function chargerLancement() { const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single(); if (data) { document.getElementById('check-maintenance').checked = data.compte_a_rebours_actif; if (data.date_lancement) document.getElementById('date-lancement').value = new Date(data.date_lancement).toISOString().slice(0, 16); } }
         async function sauvegarderLancement() { const actif = document.getElementById('check-maintenance').checked; const dateInput = document.getElementById('date-lancement').value; let isoDate = dateInput ? new Date(dateInput).toISOString() : new Date().toISOString(); await supabaseClient.from('reglages_site').upsert([{ id: 1, compte_a_rebours_actif: actif, date_lancement: isoDate }]); alert('Réglages sauvegardés !'); }
@@ -316,7 +388,29 @@
         async function chargerFlashes() { const { data } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false }); let html = ''; (data || []).forEach(f => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${f.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('flashes', '${f.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-flashes').innerHTML = html || 'Aucun flash.'; }
         async function sauvegarderFlash() { const texte = document.getElementById('texte-flash').value; if(!texte) return; await supabaseClient.from('flashes').insert([{ texte: texte }]); document.getElementById('texte-flash').value = ''; chargerFlashes(); }
         async function chargerUtilisateurs() { const { data } = await supabaseClient.from('profils').select('*'); tousLesUsers = data || []; afficherUsers(tousLesUsers); }
-        function afficherUsers(liste) { let html = ''; liste.forEach(u => { html += `<tr><td>${u.email || 'Email caché'}</td><td><select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333; padding:5px;"><option value="free" ${u.plan === 'free' ? 'selected' : ''}>Free</option><option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>Classic</option><option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>Premium</option></select></td></tr>`; }); document.getElementById('liste-users').innerHTML = html || '<tr><td colspan="2" style="text-align:center;">Aucun utilisateur.</td></tr>'; }
+        
+        // Affichage des utilisateurs modifié pour voir l'état des résiliations
+        function afficherUsers(liste) { 
+            let html = ''; 
+            liste.forEach(u => { 
+                let alertResiliation = '';
+                if (u.statut_resiliation === 'en_attente') alertResiliation = '<br><span style="color:#ff9800; font-size:11px;">⚠️ Demande de résiliation</span>';
+                if (u.statut_resiliation === 'traitee') alertResiliation = '<br><span style="color:#00e676; font-size:11px;">✅ Annulé (Fin de mois)</span>';
+
+                html += `<tr>
+                    <td>${u.email || 'Email caché'} ${alertResiliation}</td>
+                    <td>
+                        <select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333; padding:5px;">
+                            <option value="free" ${u.plan === 'free' ? 'selected' : ''}>Free</option>
+                            <option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>Classic</option>
+                            <option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>Premium</option>
+                        </select>
+                    </td>
+                </tr>`; 
+            }); 
+            document.getElementById('liste-users').innerHTML = html || '<tr><td colspan="2" style="text-align:center;">Aucun utilisateur.</td></tr>'; 
+        }
+        
         function filtrerUsers() { const query = document.getElementById('search-user').value.toLowerCase(); afficherUsers(tousLesUsers.filter(u => (u.email || '').toLowerCase().includes(query))); }
         async function changerPlanUtilisateur(id, plan) { await supabaseClient.from('profils').update({ plan: plan }).eq('id', id); }
         async function supprimerElement(table, id) { if (confirm("Supprimer ?")) { await supabaseClient.from(table).delete().eq('id', id); changerOnglet(table.replace('es', 'e').replace('s', '')); chargerToutesLesListes();} }
