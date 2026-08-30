@@ -40,9 +40,13 @@
         
         .plan-features { list-style: none; margin-bottom: 40px; width: 100%; text-align: left; }
         .plan-features li { margin-bottom: 15px; font-size: 15px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
-        .plan-features li::before { content: '✓'; color: #00e676; font-weight: bold; }
+        
+        /* Icônes dynamiques pour les avantages */
+        .plan-features li::before { content: '✓'; color: #00e676; font-weight: bold; } /* Check par défaut */
         .plan-features li.cross::before { content: '✕'; color: #ff3333; }
         .plan-features li.cross { opacity: 0.5; }
+        .plan-features li.dash::before { content: '➖'; color: #ffa500; font-size: 10px; }
+        .plan-features li.dash { opacity: 0.8; }
 
         .btn-subscribe { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); color: white; font-weight: 800; border-radius: 8px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; margin-top: auto; }
         .btn-subscribe:hover { background: rgba(255,255,255,0.1); }
@@ -83,13 +87,8 @@
                 <div class="pricing-card">
                     <div class="plan-name">Free</div>
                     <div class="plan-price">0€<span>/mois</span></div>
-                    <ul class="plan-features">
-                        <li>Accès aux articles publics</li>
-                        <li>Résumés de matchs basiques</li>
-                        <li>Extraits médias (1 minute)</li>
-                        <li class="cross">Podcasts intégraux</li>
-                        <li class="cross">Vidéos exclusives</li>
-                        <li class="cross">Sans publicité</li>
+                    <ul class="plan-features" id="features-free">
+                        <li>Chargement des avantages...</li>
                     </ul>
                     <button class="btn-subscribe" onclick="window.location.href='compte.html'">Créer un compte</button>
                 </div>
@@ -98,12 +97,8 @@
                 <div class="pricing-card">
                     <div class="plan-name" style="color: #0055ff;">Classic</div>
                     <div class="plan-price">4,99€<span>/mois</span></div>
-                    <ul class="plan-features">
-                        <li>Tous les articles</li>
-                        <li>Podcasts complets</li>
-                        <li>Accès à la Fan Zone</li>
-                        <li class="cross">Vidéos exclusives</li>
-                        <li class="cross">Sans publicité</li>
+                    <ul class="plan-features" id="features-classic">
+                        <li>Chargement des avantages...</li>
                     </ul>
                     <button class="btn-subscribe accent" style="background: #0055ff; box-shadow: 0 10px 20px rgba(0,85,255,0.3);" onclick="redirigerVersStripe('classic')">S'abonner Classic</button>
                 </div>
@@ -113,12 +108,8 @@
                     <div class="badge-pop">POPULAIRE</div>
                     <div class="plan-name" style="color: var(--accent);">Premium</div>
                     <div class="plan-price">9,99€<span>/mois</span></div>
-                    <ul class="plan-features">
-                        <li>Accès total et illimité</li>
-                        <li>Podcasts et Vidéos exclusives</li>
-                        <li>Zéro publicité</li>
-                        <li>Analyses tactiques poussées</li>
-                        <li>Badge Premium sur le profil</li>
+                    <ul class="plan-features" id="features-premium">
+                        <li>Chargement des avantages...</li>
                     </ul>
                     <button class="btn-subscribe accent" onclick="redirigerVersStripe('premium')">S'abonner Premium</button>
                 </div>
@@ -133,7 +124,7 @@
 
         // --- GESTION DES PAIEMENTS STRIPE ---
         const LIEN_STRIPE_CLASSIC = "https://buy.stripe.com/test_3cIcN41SffTZbyrgOm7Vm00";
-        const LIEN_STRIPE_PREMIUM = "METS_TON_LIEN_DE_PAIEMENT_PREMIUM_ICI"; // Attention : Ne mets pas le lien du portail de facturation ici !
+        const LIEN_STRIPE_PREMIUM = "METS_TON_LIEN_DE_PAIEMENT_PREMIUM_ICI"; 
 
         async function redirigerVersStripe(planChoisi) {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -154,9 +145,48 @@
             window.location.href = urlFinale;
         }
 
+        // --- CHARGEMENT DYNAMIQUE DES AVANTAGES ---
+        async function chargerAvantages() {
+            const { data: avantages, error } = await supabaseClient
+                .from('avantages')
+                .select('*')
+                .order('id', { ascending: true }); // On garde l'ordre de création
+                
+            if (error || !avantages) return;
+
+            // On vide les listes "Chargement..."
+            document.getElementById('features-free').innerHTML = '';
+            document.getElementById('features-classic').innerHTML = '';
+            document.getElementById('features-premium').innerHTML = '';
+
+            avantages.forEach(av => {
+                let li = document.createElement('li');
+                li.textContent = av.texte;
+                
+                // On applique la classe CSS correspondante à l'icône choisie dans l'admin
+                if (av.type_icone === 'cross') li.className = 'cross';
+                else if (av.type_icone === 'dash') li.className = 'dash';
+                // Si c'est 'check', c'est le style par défaut (pas besoin de classe)
+
+                // On injecte dans la bonne colonne
+                if (av.plan === 'free') {
+                    document.getElementById('features-free').appendChild(li);
+                } else if (av.plan === 'classic') {
+                    document.getElementById('features-classic').appendChild(li);
+                } else if (av.plan === 'premium') {
+                    document.getElementById('features-premium').appendChild(li);
+                }
+            });
+            
+            // Sécurité : si jamais un plan n'a aucun avantage enregistré, on met un texte vide pour garder le design propre
+            if (document.getElementById('features-free').innerHTML === '') document.getElementById('features-free').innerHTML = '<li class="dash">Aucun avantage défini</li>';
+            if (document.getElementById('features-classic').innerHTML === '') document.getElementById('features-classic').innerHTML = '<li class="dash">Aucun avantage défini</li>';
+            if (document.getElementById('features-premium').innerHTML === '') document.getElementById('features-premium').innerHTML = '<li class="dash">Aucun avantage défini</li>';
+        }
+
         // --- 🛡️ BOUCLIER ANTI-PUB INTELLIGENT ---
         async function activerBouclierAntiPub() {
-            let doitAfficherPub = true; // Par défaut, on affiche la pub (visiteur)
+            let doitAfficherPub = true; 
 
             const { data: { user } } = await supabaseClient.auth.getUser();
 
@@ -167,31 +197,21 @@
                     .eq('id', user.id)
                     .single();
 
-                // Si l'abonné paie, on bloque la pub
                 if (profil && (profil.plan === 'classic' || profil.plan === 'premium')) {
                     doitAfficherPub = false;
                 }
             }
 
             if (doitAfficherPub) {
-                console.log("🟢 Mode Gratuit : Publicité activée");
-                chargerScriptPublicite();
-            } else {
-                console.log("🛡️ Mode VIP : Publicités bloquées !");
+                const scriptPub = document.createElement('script');
+                scriptPub.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js";
+                document.head.appendChild(scriptPub);
             }
         }
 
-        // Fonction pour injecter ton code publicitaire proprement
-        function chargerScriptPublicite() {
-            // Remplace "TON_LIEN_DE_REGIE_PUB.js" par le lien exact que ta régie pub t'a fourni
-            const scriptPub = document.createElement('script');
-            scriptPub.src = "TON_LIEN_DE_REGIE_PUB.js";
-            scriptPub.async = true;
-            document.head.appendChild(scriptPub);
-        }
-
-        // Lancement immédiat de la vérification au chargement
+        // Lancement immédiat au chargement de la page
         activerBouclierAntiPub();
+        chargerAvantages();
 
     </script>
 </body>
