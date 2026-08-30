@@ -18,13 +18,14 @@
             --gradient: linear-gradient(135deg, #e50046, #8000ff); 
             --success: #00e676;
             --danger: #ff3333;
+            --warning: #ffa500;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
 
-        /* HEADER (Repris de l'accueil pour cohérence) */
+        /* HEADER */
         header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); backdrop-filter: blur(10px); z-index: 1000; border-bottom: 1px solid var(--border-color); }
         .logo { font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
         nav { display: flex; gap: 30px; align-items: center; }
@@ -34,7 +35,7 @@
         /* LAYOUT DU COMPTE */
         .account-wrapper { display: flex; max-width: 1200px; margin: 120px auto 50px auto; padding: 0 20px; gap: 40px; min-height: 60vh; }
         
-        /* SIDEBAR (Onglets) */
+        /* SIDEBAR */
         .sidebar { width: 250px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
         .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 15px 20px; text-align: left; font-size: 15px; font-weight: 500; font-family: inherit; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; }
         .tab-btn:hover { background: var(--bg-card); color: var(--text-main); }
@@ -45,10 +46,8 @@
 
         /* CONTENT AREA */
         .content-area { flex-grow: 1; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); padding: 40px; }
-        
         .tab-content { display: none; animation: fadeIn 0.4s ease; }
         .tab-content.active { display: block; }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* TYPOGRAPHIE & ELEMENTS COMMUNS */
@@ -67,8 +66,18 @@
         .badge.free { background: #333; color: var(--text-main); }
         
         .status-box { display: flex; align-items: flex-start; gap: 15px; background: rgba(0, 230, 118, 0.05); border-left: 4px solid var(--success); padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 25px; }
-        .status-box.cancelled { background: rgba(255, 51, 51, 0.05); border-color: var(--danger); }
+        .status-box.cancelled { background: rgba(255, 51, 51, 0.05); border-color: var(--danger); border-left-color: var(--danger); }
+        .status-box.offert { background: rgba(255, 165, 0, 0.05); border-color: var(--warning); border-left-color: var(--warning); }
         
+        /* LISTE DES AVANTAGES */
+        .plan-features { list-style: none; margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 8px; }
+        .plan-features li { margin-bottom: 12px; font-size: 14px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .plan-features li::before { content: '✓'; color: #00e676; font-weight: bold; } 
+        .plan-features li.cross::before { content: '✕'; color: #ff3333; }
+        .plan-features li.cross { opacity: 0.5; color: var(--text-muted); }
+        .plan-features li.dash::before { content: '➖'; color: #ffa500; font-size: 10px; }
+        .plan-features li.dash { opacity: 0.8; color: var(--text-muted); }
+
         /* FORMULAIRES */
         .form-group { margin-bottom: 20px; }
         .form-control { width: 100%; max-width: 400px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; padding: 14px 18px; border-radius: 8px; font-family: inherit; font-size: 14px; transition: 0.3s; }
@@ -80,12 +89,10 @@
         .btn-outline { background: transparent; color: white; border: 1px solid var(--border-color); padding: 12px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; font-family: inherit; text-decoration: none; display: inline-block; }
         .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: white; }
 
-        /* MESSAGES & NOTIFS */
         .alert { padding: 12px 20px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; display: none; }
         .alert-success { background: rgba(0,230,118,0.1); color: var(--success); border: 1px solid rgba(0,230,118,0.2); }
         .alert-error { background: rgba(255,51,51,0.1); color: var(--danger); border: 1px solid rgba(255,51,51,0.2); }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             header { padding: 15px; flex-direction: column; gap: 15px; }
             .account-wrapper { flex-direction: column; margin-top: 130px; }
@@ -108,7 +115,6 @@
     </header>
 
     <div class="account-wrapper">
-        <!-- BARRE LATERALE / ONGLETS -->
         <aside class="sidebar">
             <button class="tab-btn active" data-target="tab-profil">👤 Mon Profil</button>
             <button class="tab-btn" data-target="tab-abo">⭐ Abonnement</button>
@@ -117,7 +123,6 @@
             <button class="tab-btn btn-logout" onclick="deconnexion()">🚪 Déconnexion</button>
         </aside>
 
-        <!-- CONTENU PRINCIPAL -->
         <main class="content-area">
             
             <!-- ONGLET 1 : PROFIL -->
@@ -128,8 +133,8 @@
                     <div class="info-value" id="display-email">Chargement...</div>
                 </div>
                 <div class="info-group">
-                    <span class="info-label">ID Utilisateur Sécurisé</span>
-                    <div class="info-value" id="display-uid" style="font-family: monospace; font-size: 13px; color: var(--text-muted);">Chargement...</div>
+                    <span class="info-label">Membre Élite depuis le</span>
+                    <div class="info-value" id="display-creation-date">Chargement...</div>
                 </div>
             </div>
 
@@ -143,28 +148,43 @@
                         <span class="badge" id="display-plan-badge">CHARGEMENT</span>
                     </div>
 
-                    <!-- Boite de statut dynamique -->
-                    <div class="status-box" id="abo-status-box">
+                    <!-- Statut : Actif -->
+                    <div class="status-box" id="abo-status-active" style="display: none;">
                         <div style="font-size: 20px;">✅</div>
                         <div>
                             <strong style="display:block; margin-bottom:5px;">Abonnement Actif</strong>
-                            <p style="font-size: 13px; color: var(--text-muted); margin:0;">Votre prélèvement mensuel est actif. Vous profitez de tous les avantages de votre offre.</p>
+                            <p style="font-size: 13px; color: var(--text-muted); margin:0;" id="abo-active-text">Renouvellement automatique activé.</p>
                         </div>
                     </div>
 
-                    <!-- Notice si résilié (cachée par défaut) -->
-                    <div class="status-box cancelled" id="abo-cancelled-box" style="display: none;">
+                    <!-- Statut : Offert (Cadeau/Promo) -->
+                    <div class="status-box offert" id="abo-status-offert" style="display: none;">
+                        <div style="font-size: 20px;">🎁</div>
+                        <div>
+                            <strong style="display:block; margin-bottom:5px; color: var(--warning);">Abonnement Offert</strong>
+                            <p style="font-size: 13px; color: var(--text-muted); margin:0;" id="abo-offert-text">Vous profitez de cet abonnement gratuitement.</p>
+                        </div>
+                    </div>
+
+                    <!-- Statut : Annulé / Fini -->
+                    <div class="status-box cancelled" id="abo-status-cancelled" style="display: none;">
                         <div style="font-size: 20px;">⚠️</div>
                         <div>
-                            <strong style="display:block; margin-bottom:5px;">Contrat clôturé / En attente d'annulation</strong>
-                            <p style="font-size: 13px; color: var(--text-muted); margin:0;">Votre demande a été prise en compte. Votre abonnement ne sera pas renouvelé à la prochaine date de facturation.</p>
+                            <strong style="display:block; margin-bottom:5px; color: var(--danger);">Contrat clôturé ou en attente d'annulation</strong>
+                            <p style="font-size: 13px; color: var(--text-muted); margin:0;" id="abo-cancelled-text">Votre abonnement ne sera pas renouvelé.</p>
                         </div>
                     </div>
 
-                    <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Pour modifier votre moyen de paiement, changer d'offre ou annuler votre renouvellement automatique, accédez au portail sécurisé.</p>
-                        <!-- Lien vers le portail client Stripe (Customer Portal) -->
-                        <a href="https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00" id="stripe-portal-btn" class="btn-outline">Gérer mon abonnement (Portail)</a>
+                    <div style="margin-top: 30px;">
+                        <span class="info-label">Ce qui est inclus dans votre offre :</span>
+                        <ul class="plan-features" id="current-plan-features">
+                            <li class="dash">Chargement des avantages...</li>
+                        </ul>
+                    </div>
+
+                    <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;" id="stripe-portal-container">
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Pour modifier votre moyen de paiement, changer d'offre ou gérer vos factures, accédez au portail sécurisé.</p>
+                        <a href="https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00" id="stripe-portal-btn" class="btn-outline">Gérer mon abonnement (Portail Stripe)</a>
                     </div>
                 </div>
             </div>
@@ -173,7 +193,6 @@
             <div id="tab-secu" class="tab-content">
                 <h2 class="section-title">Sécurité du compte</h2>
                 <div id="secu-alert" class="alert"></div>
-                
                 <form id="form-password">
                     <div class="form-group">
                         <span class="info-label">Nouveau mot de passe</span>
@@ -193,7 +212,6 @@
                 <p style="margin-bottom: 30px; color: var(--text-muted); line-height: 1.6;">
                     Vous rencontrez un bug, vous avez une question sur votre facturation ou une suggestion pour améliorer la Fan Zone ? L'équipe technique d'Élite est à votre disposition.
                 </p>
-
                 <div class="sub-card" style="display: flex; align-items: center; gap: 20px;">
                     <div style="font-size: 40px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">✉️</div>
                     <div>
@@ -213,78 +231,142 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // --- 2. LOGIQUE DES ONGLETS (Sans bug) ---
+        // --- 2. GESTION DES ONGLETS ---
         const tabBtns = document.querySelectorAll('.tab-btn:not(.btn-logout)');
         const tabContents = document.querySelectorAll('.tab-content');
 
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Retirer la classe active de tous les boutons et contenus
                 tabBtns.forEach(b => b.classList.remove('active'));
                 tabContents.forEach(c => c.classList.remove('active'));
-
-                // Ajouter la classe active au bouton cliqué et au contenu correspondant
                 btn.classList.add('active');
-                const targetId = btn.getAttribute('data-target');
-                document.getElementById(targetId).classList.add('active');
+                document.getElementById(btn.getAttribute('data-target')).classList.add('active');
             });
         });
 
-        // --- 3. CHARGEMENT DES DONNÉES UTILISATEUR ---
+        // --- Formater une date proprement ---
+        function formaterDate(dateString) {
+            if (!dateString) return '';
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('fr-FR', options);
+        }
+
+        // --- 3. CHARGEMENT DES DONNÉES DU COMPTE ---
         async function chargerDonneesCompte() {
             const { data: { user }, error } = await supabaseClient.auth.getUser();
             
             if (error || !user) {
-                // Redirection si non connecté
                 window.location.href = 'connexion.html';
                 return;
             }
 
-            // Remplir les infos du profil
+            // Profil basique (Email et Date d'inscription)
             document.getElementById('display-email').textContent = user.email;
-            document.getElementById('display-uid').textContent = user.id;
+            document.getElementById('display-creation-date').textContent = formaterDate(user.created_at) || 'Date inconnue';
 
-            // Récupérer le plan depuis la table "profils"
+            // Récupération de la BDD (table profils)
+            // Assure-toi d'avoir ces colonnes dans ta BDD Supabase : plan, statut_abo, date_renouvellement, est_offert
             const { data: profil } = await supabaseClient
                 .from('profils')
-                .select('plan, statut_abo') // Assure-toi d'avoir une colonne statut_abo si tu gères l'annulation
+                .select('*')
                 .eq('id', user.id)
                 .single();
 
             const badgeElement = document.getElementById('display-plan-badge');
+            let userPlan = 'free';
             
             if (profil) {
-                const planStr = profil.plan ? profil.plan.toLowerCase() : 'free';
+                userPlan = profil.plan ? profil.plan.toLowerCase() : 'free';
                 
-                if (planStr === 'premium') {
+                // Mettre à jour le Badge
+                if (userPlan === 'premium') {
                     badgeElement.textContent = 'PREMIUM';
                     badgeElement.className = 'badge premium';
-                } else if (planStr === 'classic') {
+                } else if (userPlan === 'classic') {
                     badgeElement.textContent = 'CLASSIC';
                     badgeElement.className = 'badge classic';
                 } else {
                     badgeElement.textContent = 'FREE';
                     badgeElement.className = 'badge free';
-                    document.getElementById('abo-status-box').style.display = 'none';
                 }
 
-                // Logique optionnelle pour afficher le bloc d'annulation (si géré en BDD)
-                // if (profil.statut_abo === 'cancelled') {
-                //     document.getElementById('abo-status-box').style.display = 'none';
-                //     document.getElementById('abo-cancelled-box').style.display = 'flex';
-                // }
+                // GESTION DES STATUTS, DATES ET ABOS OFFERTS
+                const boxActive = document.getElementById('abo-status-active');
+                const boxOffert = document.getElementById('abo-status-offert');
+                const boxCancelled = document.getElementById('abo-status-cancelled');
+                const portalContainer = document.getElementById('stripe-portal-container');
+                
+                // On cache tout par défaut
+                boxActive.style.display = 'none';
+                boxOffert.style.display = 'none';
+                boxCancelled.style.display = 'none';
+
+                if (userPlan === 'free') {
+                    portalContainer.style.display = 'none'; // Pas de portail Stripe pour les comptes gratuits
+                } else {
+                    const dateRenouvFormatee = formaterDate(profil.date_renouvellement);
+                    
+                    if (profil.est_offert === true) {
+                        // Cas : Abonnement Offert / Cadeau
+                        boxOffert.style.display = 'flex';
+                        portalContainer.style.display = 'none'; // Pas de facturation si c'est offert
+                        if (dateRenouvFormatee) {
+                            document.getElementById('abo-offert-text').textContent = `Vous profitez de cet abonnement gratuitement jusqu'au ${dateRenouvFormatee}.`;
+                        }
+                    } 
+                    else if (profil.statut_abo === 'cancelled' || profil.statut_abo === 'annule') {
+                        // Cas : Annulé
+                        boxCancelled.style.display = 'flex';
+                        if (dateRenouvFormatee) {
+                            document.getElementById('abo-cancelled-text').textContent = `Votre offre prendra fin le ${dateRenouvFormatee}.`;
+                        }
+                    } 
+                    else {
+                        // Cas : Actif normal (Payant)
+                        boxActive.style.display = 'flex';
+                        if (dateRenouvFormatee) {
+                            document.getElementById('abo-active-text').textContent = `Prochaine facturation prévue le ${dateRenouvFormatee}.`;
+                        }
+                    }
+                }
             } else {
                 badgeElement.textContent = 'FREE';
                 badgeElement.className = 'badge free';
-                document.getElementById('abo-status-box').style.display = 'none';
+                document.getElementById('stripe-portal-container').style.display = 'none';
             }
-            
-            // Lien Stripe Customer Portal (Généralement tu dois générer ce lien via ton backend, 
-            // ici on met un lien vers l'accueil ou le lien fixe Stripe si tu en as un)
-            // ex: document.getElementById('stripe-portal-btn').href = "https://billing.stripe.com/p/login/ton_lien";
+
+            // CHARGEMENT DES AVANTAGES DEPUIS LA BDD POUR L'OFFRE ACTUELLE
+            chargerAvantages(userPlan);
         }
 
-        // --- 4. MODIFICATION DU MOT DE PASSE ---
+        // --- 4. CHARGEMENT DYNAMIQUE DES AVANTAGES ---
+        async function chargerAvantages(plan) {
+            const { data: avantages, error } = await supabaseClient
+                .from('avantages')
+                .select('*')
+                .eq('plan', plan)
+                .order('ordre', { ascending: true });
+                
+            const listContainer = document.getElementById('current-plan-features');
+            listContainer.innerHTML = ''; // On vide la liste
+
+            if (error || !avantages || avantages.length === 0) {
+                listContainer.innerHTML = '<li class="dash">Aucun avantage spécifique défini pour cette offre.</li>';
+                return;
+            }
+
+            avantages.forEach(av => {
+                let li = document.createElement('li');
+                li.textContent = av.texte;
+                
+                if (av.type_icone === 'cross') li.className = 'cross';
+                else if (av.type_icone === 'dash') li.className = 'dash';
+                
+                listContainer.appendChild(li);
+            });
+        }
+
+        // --- 5. MODIFICATION MOT DE PASSE ---
         document.getElementById('form-password').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-update-pwd');
@@ -293,7 +375,6 @@
             const confirmPwd = document.getElementById('confirm-pwd').value;
 
             alertBox.style.display = 'none';
-
             if (newPwd !== confirmPwd) {
                 showAlert('Les mots de passe ne correspondent pas.', 'error');
                 return;
@@ -322,13 +403,13 @@
             alertBox.style.display = 'block';
         }
 
-        // --- 5. DECONNEXION ---
+        // --- 6. DECONNEXION ---
         async function deconnexion() {
             await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
 
-        // Lancer au démarrage
+        // Lancement initial
         chargerDonneesCompte();
     </script>
 </body>
