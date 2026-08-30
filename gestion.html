@@ -113,23 +113,36 @@
             </div>
         </div>
 
-        <!-- ONGLET OFFRES / AVANTAGES -->
+        <!-- ONGLET OFFRES / AVANTAGES NETTOYÉ -->
         <div id="form-abonnement" style="display: none;">
             <div class="form-section">
                 <h3 id="titre-form-avantage">Ajouter un avantage</h3>
                 <input type="hidden" id="id-avantage">
                 <label>Offre :</label>
-                <select id="plan-avantage"><option value="free">Offre Free</option><option value="classic">Offre Classic</option><option value="premium">Offre Premium</option></select>
-                <label>Texte :</label><input type="text" id="texte-avantage">
+                <select id="plan-avantage">
+                    <option value="free">Offre Free</option>
+                    <option value="classic">Offre Classic</option>
+                    <option value="premium">Offre Premium</option>
+                </select>
+                <label>Texte :</label>
+                <input type="text" id="texte-avantage">
                 <label>Icône :</label>
-                <select id="type-icone-avantage"><option value="check">✅ Coche verte</option><option value="dash">➖ Trait orange</option><option value="cross">❌ Croix rouge</option></select>
+                <select id="type-icone-avantage">
+                    <option value="check">✅ Coche verte</option>
+                    <option value="dash">➖ Trait orange</option>
+                    <option value="cross">❌ Croix rouge</option>
+                </select>
                 <label>Ordre d'affichage (1 = en haut) :</label>
                 <input type="number" id="ordre-avantage" value="1">
+                
                 <div style="display:flex; gap:10px;">
-                    <button class="btn-submit" onclick="sauvegarderAvantage()" id="btn-save-avantage">Sauvegarder</button>
+                    <button class="btn-submit" onclick="sauvegarderAvantage()" id="btn-save-avantage">Ajouter l'avantage</button>
+                    <button class="btn-submit" style="background:#444; display:none;" onclick="resetFormAvantage()" id="btn-cancel-avantage">Annuler</button>
                 </div>
             </div>
-            <div class="list-section"><div id="liste-avantages">Chargement...</div></div>
+            <div class="list-section">
+                <div id="liste-avantages">Chargement...</div>
+            </div>
         </div>
 
         <div id="form-flash" style="display: none;">
@@ -387,21 +400,70 @@
         async function chargerLancement() { const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single(); if (data) { document.getElementById('check-maintenance').checked = data.compte_a_rebours_actif; if (data.date_lancement) document.getElementById('date-lancement').value = new Date(data.date_lancement).toISOString().slice(0, 16); } }
         async function sauvegarderLancement() { const actif = document.getElementById('check-maintenance').checked; const dateInput = document.getElementById('date-lancement').value; let isoDate = dateInput ? new Date(dateInput).toISOString() : new Date().toISOString(); await supabaseClient.from('reglages_site').upsert([{ id: 1, compte_a_rebours_actif: actif, date_lancement: isoDate }]); alert('Réglages sauvegardés !'); }
         
-        // --- GESTION DES AVANTAGES ---
+        // --- 💎 GESTION DES AVANTAGES NETTOYÉE ---
         async function chargerAvantages() { 
-            // On trie par plan, puis par ordre
-            const { data } = await supabaseClient.from('avantages').select('*').order('plan', { ascending: true }).order('ordre', { ascending: true }); 
+            const { data } = await supabaseClient.from('avantages').select('*')
+                .order('plan', { ascending: true })
+                .order('ordre', { ascending: true }); 
+            
             listeAvantagesAdmin = data || []; 
             let html = ''; 
-            listeAvantagesAdmin.forEach(av => { 
-                let icone = av.type_icone === 'check' ? '✅' : (av.type_icone === 'cross' ? '❌' : '➖'); 
-                let couleurPlan = av.plan === 'premium' ? 'var(--accent)' : 'white'; 
-                html += `<div class="manage-card"><div class="manage-info"><div class="manage-title" style="color:${couleurPlan}">[${av.plan.toUpperCase()}] (Ordre: ${av.ordre || 1}) ${icone} ${av.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('avantages', '${av.id}')">Sup.</button></div></div>`; 
-            }); 
-            document.getElementById('liste-avantages').innerHTML = html || 'Aucun avantage.'; 
+
+            const plans = ['free', 'classic', 'premium'];
+            
+            // On boucle par type de plan pour bien les séparer visuellement
+            plans.forEach(planNom => {
+                const planItems = listeAvantagesAdmin.filter(av => av.plan === planNom);
+                if (planItems.length > 0) {
+                    let color = planNom === 'premium' ? 'var(--accent)' : (planNom === 'classic' ? '#0055ff' : 'white');
+                    html += `<h4 style="margin-top: 25px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); color: ${color}; text-transform: uppercase;">PLAN ${planNom}</h4>`;
+                    
+                    planItems.forEach(av => { 
+                        let icone = av.type_icone === 'check' ? '✅' : (av.type_icone === 'cross' ? '❌' : '➖'); 
+                        html += `
+                        <div class="manage-card">
+                            <div class="manage-info">
+                                <div class="manage-title"><span style="color:var(--text-muted); font-size:11px; margin-right:8px;">[Ordre: ${av.ordre || 1}]</span> ${icone} ${av.texte}</div>
+                            </div>
+                            <div class="manage-actions">
+                                <button class="btn-edit" onclick="editerAvantage('${av.id}')">Modifier</button>
+                                <button class="btn-delete" onclick="supprimerElement('avantages', '${av.id}')">Sup.</button>
+                            </div>
+                        </div>`; 
+                    });
+                }
+            });
+
+            document.getElementById('liste-avantages').innerHTML = html || 'Aucun avantage enregistré.'; 
+        }
+
+        function editerAvantage(id) {
+            const av = listeAvantagesAdmin.find(a => a.id == id);
+            if(!av) return;
+
+            document.getElementById('id-avantage').value = av.id;
+            document.getElementById('plan-avantage').value = av.plan;
+            document.getElementById('texte-avantage').value = av.texte;
+            document.getElementById('type-icone-avantage').value = av.type_icone;
+            document.getElementById('ordre-avantage').value = av.ordre || 1;
+
+            document.getElementById('titre-form-avantage').innerText = "Modifier l'avantage";
+            document.getElementById('btn-save-avantage').innerText = "Mettre à jour";
+            document.getElementById('btn-cancel-avantage').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetFormAvantage() {
+            document.getElementById('id-avantage').value = '';
+            document.getElementById('texte-avantage').value = '';
+            document.getElementById('ordre-avantage').value = '1';
+            document.getElementById('titre-form-avantage').innerText = "Ajouter un avantage";
+            document.getElementById('btn-save-avantage').innerText = "Ajouter l'avantage";
+            document.getElementById('btn-cancel-avantage').style.display = 'none';
         }
 
         async function sauvegarderAvantage() {
+            const id = document.getElementById('id-avantage').value;
             const plan = document.getElementById('plan-avantage').value;
             const texte = document.getElementById('texte-avantage').value;
             const icone = document.getElementById('type-icone-avantage').value;
@@ -413,11 +475,15 @@
             btn.innerText = "Enregistrement...";
             btn.disabled = true;
 
-            await supabaseClient.from('avantages').insert([{ plan: plan, texte: texte, type_icone: icone, ordre: ordre }]);
+            if (id) {
+                // Modification (Update)
+                await supabaseClient.from('avantages').update({ plan: plan, texte: texte, type_icone: icone, ordre: ordre }).eq('id', id);
+            } else {
+                // Création (Insert)
+                await supabaseClient.from('avantages').insert([{ plan: plan, texte: texte, type_icone: icone, ordre: ordre }]);
+            }
             
-            document.getElementById('texte-avantage').value = '';
-            document.getElementById('ordre-avantage').value = '1';
-            btn.innerText = "Sauvegarder";
+            resetFormAvantage();
             btn.disabled = false;
             chargerAvantages();
         }
@@ -473,7 +539,14 @@
         }
         function filtrerUsers() { const query = document.getElementById('search-user').value.toLowerCase(); afficherUsers(tousLesUsers.filter(u => (u.email || '').toLowerCase().includes(query))); }
         async function changerPlanUtilisateur(id, plan) { await supabaseClient.from('profils').update({ plan: plan }).eq('id', id); }
-        async function supprimerElement(table, id) { if (confirm("Supprimer ?")) { await supabaseClient.from(table).delete().eq('id', id); changerOnglet(table.replace('es', 'e').replace('s', '')); chargerToutesLesListes();} }
+        
+        async function supprimerElement(table, id) { 
+            if (confirm("Supprimer ?")) { 
+                await supabaseClient.from(table).delete().eq('id', id); 
+                if (table === 'avantages') chargerAvantages();
+                else { changerOnglet(table.replace('es', 'e').replace('s', '')); chargerToutesLesListes(); }
+            } 
+        }
 
         verifierAdmin();
     </script>
