@@ -3,66 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Compte - Élite</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>Mon Espace - Élite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg-dark: #07080b; --bg-card: #12151c; --accent: #e50046; --text-main: #ffffff; --text-muted: #8b92a5; --gradient: linear-gradient(135deg, #e50046, #8000ff); }
+        :root { 
+            --bg-dark: #07080b; 
+            --bg-card: #12151c; 
+            --bg-card-hover: #1a1e28;
+            --accent: #e50046; 
+            --text-main: #ffffff; 
+            --text-muted: #8b92a5; 
+            --border-color: rgba(255,255,255,0.08);
+            --gradient: linear-gradient(135deg, #e50046, #8000ff); 
+            --success: #00e676;
+            --danger: #ff3333;
+        }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
 
-        header { width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        /* HEADER (Repris de l'accueil pour cohérence) */
+        header { position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; background: rgba(7, 8, 11, 0.95); backdrop-filter: blur(10px); z-index: 1000; border-bottom: 1px solid var(--border-color); }
         .logo { font-size: 28px; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
-        nav { display: flex; gap: 30px; }
+        nav { display: flex; gap: 30px; align-items: center; }
         nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
 
-        .container { max-width: 650px; width: 100%; margin: 80px auto; padding: 40px; background: var(--bg-card); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        /* LAYOUT DU COMPTE */
+        .account-wrapper { display: flex; max-width: 1200px; margin: 120px auto 50px auto; padding: 0 20px; gap: 40px; min-height: 60vh; }
         
-        h1 { font-size: 32px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; text-align: center; }
+        /* SIDEBAR (Onglets) */
+        .sidebar { width: 250px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 15px 20px; text-align: left; font-size: 15px; font-weight: 500; font-family: inherit; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; }
+        .tab-btn:hover { background: var(--bg-card); color: var(--text-main); }
+        .tab-btn.active { background: var(--bg-card); color: var(--text-main); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; font-weight: 600; }
         
-        .info-group { margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; }
-        .info-group label { display: block; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-        .info-group p { font-size: 18px; font-weight: 600; }
-        .plan-badge { display: inline-block; padding: 5px 15px; background: var(--gradient); border-radius: 20px; font-size: 14px; font-weight: 800; text-transform: uppercase; margin-top: 5px; }
+        .btn-logout { margin-top: auto; background: rgba(255, 51, 51, 0.1); color: var(--danger); border: 1px solid rgba(255, 51, 51, 0.2); }
+        .btn-logout:hover { background: rgba(255, 51, 51, 0.2); }
 
-        /* DESIGN PRO GESTION ABONNEMENT */
-        .gestion-abonnement { background: rgba(255,255,255,0.02); padding: 30px; border-radius: 12px; margin-top: 30px; border: 1px solid rgba(255,255,255,0.05); }
-        .gestion-abonnement h3 { font-size: 18px; margin-bottom: 20px; color: white; display: flex; align-items: center; gap: 10px; }
+        /* CONTENT AREA */
+        .content-area { flex-grow: 1; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); padding: 40px; }
         
-        .dossier-box { display: none; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid; font-size: 14px; line-height: 1.6; background: rgba(255,255,255,0.03); }
-        .dossier-box h4 { margin-bottom: 12px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
-        .date-dossier { display: inline-block; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; font-weight: 600; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TYPOGRAPHIE & ELEMENTS COMMUNS */
+        .section-title { font-size: 24px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         
-        .etat-attente { border-color: #ffa500; }
-        .etat-attente h4 { color: #ffa500; }
-        .etat-action { border-color: #6699ff; }
-        .etat-action h4 { color: #6699ff; }
-        .etat-clos { border-color: #00e676; }
-        .etat-clos h4 { color: #00e676; }
+        .info-group { margin-bottom: 25px; }
+        .info-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 8px; display: block; }
+        .info-value { font-size: 16px; font-weight: 500; background: var(--bg-dark); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
 
-        .btn-action { width: 100%; padding: 15px; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: none; font-size: 14px; display: none; }
-        .btn-resilier { background: #1a1d26; color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); margin-top: 10px; }
-        .btn-resilier:hover { background: #e50046; color: white; border-color: #e50046; }
-        .btn-stripe { background: #635bff; color: white; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-stripe:hover { background: #5851df; box-shadow: 0 5px 15px rgba(99,91,255,0.4); }
-.btn-stripe.disabled { background: #1a1d26; color: #444; border: 1px dashed #333; cursor: not-allowed; box-shadow: none; }
-.btn-stripe.disabled:hover { background: #1a1d26; box-shadow: none; }
-        .btn-logout { width: 100%; padding: 15px; background: transparent; color: var(--text-muted); font-weight: 600; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; margin-top: 30px; }
-        .btn-logout:hover { background: rgba(255,255,255,0.05); color: white; }
+        /* BADGES ET CARTES D'ABONNEMENT */
+        .sub-card { background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        .sub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .badge { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .badge.premium { background: var(--gradient); color: white; }
+        .badge.classic { background: #0055ff; color: white; }
+        .badge.free { background: #333; color: var(--text-main); }
+        
+        .status-box { display: flex; align-items: flex-start; gap: 15px; background: rgba(0, 230, 118, 0.05); border-left: 4px solid var(--success); padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 25px; }
+        .status-box.cancelled { background: rgba(255, 51, 51, 0.05); border-color: var(--danger); }
+        
+        /* FORMULAIRES */
+        .form-group { margin-bottom: 20px; }
+        .form-control { width: 100%; max-width: 400px; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; padding: 14px 18px; border-radius: 8px; font-family: inherit; font-size: 14px; transition: 0.3s; }
+        .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(229,0,70,0.1); }
+        
+        .btn-primary { background: var(--gradient); color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; font-family: inherit; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(229,0,70,0.3); }
+        
+        .btn-outline { background: transparent; color: white; border: 1px solid var(--border-color); padding: 12px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; font-family: inherit; text-decoration: none; display: inline-block; }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: white; }
 
-        /* FENÊTRES MODALES CUSTOM */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-box { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); max-width: 450px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .modal-box h3 { margin-bottom: 15px; font-size: 20px; color: white; }
-        .modal-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
-        .modal-btn-group { display: flex; gap: 15px; justify-content: center; }
-        .modal-btn { padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; flex: 1; transition: 0.3s; }
-        .btn-cancel { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); }
-        .btn-cancel:hover { background: rgba(255,255,255,0.05); }
-        .btn-confirm { background: var(--accent); color: white; }
-        .btn-confirm:hover { background: #ff004f; }
+        /* MESSAGES & NOTIFS */
+        .alert { padding: 12px 20px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; display: none; }
+        .alert-success { background: rgba(0,230,118,0.1); color: var(--success); border: 1px solid rgba(0,230,118,0.2); }
+        .alert-error { background: rgba(255,51,51,0.1); color: var(--danger); border: 1px solid rgba(255,51,51,0.2); }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            header { padding: 15px; flex-direction: column; gap: 15px; }
+            .account-wrapper { flex-direction: column; margin-top: 130px; }
+            .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .tab-btn { flex: 1; text-align: center; justify-content: center; border-radius: 8px; padding: 12px; }
+            .tab-btn.active { border-left: none; border-bottom: 3px solid var(--accent); border-radius: 8px; }
+            .content-area { padding: 25px 20px; }
+        }
     </style>
 </head>
 <body>
@@ -70,209 +101,235 @@
     <header>
         <a href="index.html" class="logo">ÉLITE</a>
         <nav>
-            <a href="index.html">Accueil</a>
             <a href="articles.html">Articles</a>
+            <a href="matchs.html">Matchs & Fan Zone</a>
+            <a href="index.html">Accueil</a>
         </nav>
     </header>
 
-    <div class="container">
-        <h1>Mon Espace</h1>
-        
-        <div class="info-group">
-            <label>Identifiant Compte</label>
-            <p id="user-email">Chargement...</p>
-        </div>
+    <div class="account-wrapper">
+        <!-- BARRE LATERALE / ONGLETS -->
+        <aside class="sidebar">
+            <button class="tab-btn active" data-target="tab-profil">👤 Mon Profil</button>
+            <button class="tab-btn" data-target="tab-abo">⭐ Abonnement</button>
+            <button class="tab-btn" data-target="tab-secu">🔒 Sécurité</button>
+            <button class="tab-btn" data-target="tab-support">🎧 Support</button>
+            <button class="tab-btn btn-logout" onclick="deconnexion()">🚪 Déconnexion</button>
+        </aside>
 
-        <div class="info-group">
-            <label>Offre Souscrite</label>
-            <div id="user-plan" class="plan-badge" style="background: #333;">...</div>
-        </div>
-
-        <div class="gestion-abonnement">
-            <h3>⚙️ Contrat & Facturation</h3>
+        <!-- CONTENU PRINCIPAL -->
+        <main class="content-area">
             
-            <div id="zone-dossier" class="dossier-box">
-                <h4 id="titre-dossier">Statut</h4>
-                <div id="date-dossier" class="date-dossier" style="display:none;"></div>
-                <p id="texte-dossier">Détails...</p>
+            <!-- ONGLET 1 : PROFIL -->
+            <div id="tab-profil" class="tab-content active">
+                <h2 class="section-title">Mon Espace</h2>
+                <div class="info-group">
+                    <span class="info-label">Identifiant Compte (Email)</span>
+                    <div class="info-value" id="display-email">Chargement...</div>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">ID Utilisateur Sécurisé</span>
+                    <div class="info-value" id="display-uid" style="font-family: monospace; font-size: 13px; color: var(--text-muted);">Chargement...</div>
+                </div>
             </div>
 
-            <button id="btn-demander-resiliation" class="btn-action btn-resilier" onclick="ouvrirModalConfirmation()">
-                Mettre fin à mon contrat
-            </button>
+            <!-- ONGLET 2 : ABONNEMENT -->
+            <div id="tab-abo" class="tab-content">
+                <h2 class="section-title">Contrat & Facturation</h2>
+                
+                <div class="sub-card">
+                    <div class="sub-header">
+                        <span class="info-label" style="margin:0;">Offre souscrite actuellement</span>
+                        <span class="badge" id="display-plan-badge">CHARGEMENT</span>
+                    </div>
 
-            <button id="btn-portail-stripe" class="btn-action btn-stripe" onclick="window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank')">
-                🔒 Accéder au portail Stripe
-            </button>
-        </div>
+                    <!-- Boite de statut dynamique -->
+                    <div class="status-box" id="abo-status-box">
+                        <div style="font-size: 20px;">✅</div>
+                        <div>
+                            <strong style="display:block; margin-bottom:5px;">Abonnement Actif</strong>
+                            <p style="font-size: 13px; color: var(--text-muted); margin:0;">Votre prélèvement mensuel est actif. Vous profitez de tous les avantages de votre offre.</p>
+                        </div>
+                    </div>
 
-        <button class="btn-logout" onclick="seDeconnecter()">Déconnexion</button>
-    </div>
+                    <!-- Notice si résilié (cachée par défaut) -->
+                    <div class="status-box cancelled" id="abo-cancelled-box" style="display: none;">
+                        <div style="font-size: 20px;">⚠️</div>
+                        <div>
+                            <strong style="display:block; margin-bottom:5px;">Contrat clôturé / En attente d'annulation</strong>
+                            <p style="font-size: 13px; color: var(--text-muted); margin:0;">Votre demande a été prise en compte. Votre abonnement ne sera pas renouvelé à la prochaine date de facturation.</p>
+                        </div>
+                    </div>
 
-    <!-- MODALE DE CONFIRMATION DE RÉSILIATION -->
-    <div id="modal-confirmation" class="modal-overlay">
-        <div class="modal-box">
-            <h3>Demande de résiliation</h3>
-            <p>Êtes-vous sûr de vouloir mettre fin à votre contrat ?<br>Une demande sera officiellement transmise à notre service de facturation pour traitement.</p>
-            <div class="modal-btn-group">
-                <button class="modal-btn btn-cancel" onclick="fermerModal()">Annuler</button>
-                <button id="btn-valider-resil" class="modal-btn btn-confirm" onclick="validerResiliation()">Oui, résilier</button>
+                    <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Pour modifier votre moyen de paiement, changer d'offre ou annuler votre renouvellement automatique, accédez au portail sécurisé.</p>
+                        <!-- Lien vers le portail client Stripe (Customer Portal) -->
+                        <a href="#" id="stripe-portal-btn" class="btn-outline">Gérer mon abonnement (Portail)</a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- MODALE D'INFORMATION (Succès/Erreur) -->
-    <div id="modal-info" class="modal-overlay">
-        <div class="modal-box">
-            <h3 id="info-titre">Information</h3>
-            <p id="info-texte">Message...</p>
-            <button class="modal-btn btn-cancel" style="width: 100%; margin-top: 10px;" onclick="rechargerPage()">Fermer</button>
-        </div>
+            <!-- ONGLET 3 : SÉCURITÉ -->
+            <div id="tab-secu" class="tab-content">
+                <h2 class="section-title">Sécurité du compte</h2>
+                <div id="secu-alert" class="alert"></div>
+                
+                <form id="form-password">
+                    <div class="form-group">
+                        <span class="info-label">Nouveau mot de passe</span>
+                        <input type="password" id="new-pwd" class="form-control" placeholder="Entrez un mot de passe fort" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <span class="info-label">Confirmer le mot de passe</span>
+                        <input type="password" id="confirm-pwd" class="form-control" placeholder="Répétez le mot de passe" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn-primary" id="btn-update-pwd">Mettre à jour</button>
+                </form>
+            </div>
+
+            <!-- ONGLET 4 : SUPPORT -->
+            <div id="tab-support" class="tab-content">
+                <h2 class="section-title">Besoin d'aide ?</h2>
+                <p style="margin-bottom: 30px; color: var(--text-muted); line-height: 1.6;">
+                    Vous rencontrez un bug, vous avez une question sur votre facturation ou une suggestion pour améliorer la Fan Zone ? L'équipe technique d'Élite est à votre disposition.
+                </p>
+
+                <div class="sub-card" style="display: flex; align-items: center; gap: 20px;">
+                    <div style="font-size: 40px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">✉️</div>
+                    <div>
+                        <span class="info-label">Email du support technique</span>
+                        <a href="mailto:elitemedia.infos@gmail.com" style="font-size: 20px; font-weight: 600; color: white;">elitemedia.infos@gmail.com</a>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Nous répondons généralement sous 24 à 48 heures ouvrées.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
     <script>
+        // --- 1. INITIALISATION SUPABASE ---
         const supabaseUrl = 'https://dmfbjpotgicqpfxlsycv.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function initialiserCompte() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) { window.location.href = 'index.html'; return; }
+        // --- 2. LOGIQUE DES ONGLETS (Sans bug) ---
+        const tabBtns = document.querySelectorAll('.tab-btn:not(.btn-logout)');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-            document.getElementById('user-email').innerText = user.email;
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Retirer la classe active de tous les boutons et contenus
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
 
-            const { data: profil } = await supabaseClient.from('profils').select('*').eq('id', user.id).single();
+                // Ajouter la classe active au bouton cliqué et au contenu correspondant
+                btn.classList.add('active');
+                const targetId = btn.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
 
-            if (profil) {
-                const planActuel = profil.plan ? profil.plan.toUpperCase() : 'FREE';
-                const badgePlan = document.getElementById('user-plan');
-                badgePlan.innerText = planActuel;
-                
-                if(planActuel === 'PREMIUM') badgePlan.style.background = 'var(--gradient)';
-                else if(planActuel === 'CLASSIC') badgePlan.style.background = '#0055ff';
-                else badgePlan.style.background = '#333';
-
-                gererInterfaceResiliation(profil);
+        // --- 3. CHARGEMENT DES DONNÉES UTILISATEUR ---
+        async function chargerDonneesCompte() {
+            const { data: { user }, error } = await supabaseClient.auth.getUser();
+            
+            if (error || !user) {
+                // Redirection si non connecté
+                window.location.href = 'connexion.html';
+                return;
             }
-        }
 
-        function gererInterfaceResiliation(profil) {
-    const btnDemander = document.getElementById('btn-demander-resiliation');
-    const btnStripe = document.getElementById('btn-portail-stripe');
-    const zoneDossier = document.getElementById('zone-dossier');
-    const titreDossier = document.getElementById('titre-dossier');
-    const texteDossier = document.getElementById('texte-dossier');
-    const dateDossier = document.getElementById('date-dossier');
+            // Remplir les infos du profil
+            document.getElementById('display-email').textContent = user.email;
+            document.getElementById('display-uid').textContent = user.id;
 
-    if (profil.plan !== 'free' && (!profil.statut_resiliation || profil.statut_resiliation === 'aucun')) {
-        btnDemander.style.display = 'block';
-        return; 
-    }
-
-    zoneDossier.style.display = 'block';
-
-    if (profil.date_demande_resiliation) {
-        const dateJS = new Date(profil.date_demande_resiliation);
-        const dateFormatee = dateJS.toLocaleString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        dateDossier.innerHTML = `📅 Demande du : ${dateFormatee}`;
-        dateDossier.style.display = 'inline-block';
-    }
-
-    if (profil.statut_resiliation === 'en_attente') {
-        zoneDossier.className = 'dossier-box etat-attente';
-        titreDossier.innerHTML = '⏳ Dossier en cours d\'analyse';
-        
-        const dateDemande = new Date(profil.date_demande_resiliation);
-        const heuresEcoulees = Math.abs(new Date() - dateDemande) / 36e5;
-
-        // On affiche le bouton Stripe dans tous les cas, mais on change son état
-        btnStripe.style.display = 'flex';
-
-        if (heuresEcoulees >= 48) {
-            texteDossier.innerHTML = `Notre service rencontre un délai de traitement supérieur à 48h. Pour vous garantir une annulation immédiate, <strong>notre système a débloqué l'accès au portail de notre partenaire Stripe.</strong><br><br>Veuillez finaliser votre annulation ci-dessous.`;
-            
-            btnStripe.className = 'btn-action btn-stripe'; // Bouton Actif
-            btnStripe.innerHTML = '🔓 Accéder au portail Stripe';
-            btnStripe.onclick = () => window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank');
-        } else {
-            texteDossier.innerHTML = `Votre demande a bien été enregistrée. Elle est en attente de traitement par un conseiller (délai estimé : 48h ouvrées).<br><br><span style="color: #9ba1a6; font-size: 13px;"><em>📌 Le portail de résiliation direct sera automatiquement débloqué si notre équipe ne traite pas votre demande dans les temps.</em></span>`;
-            
-            btnStripe.className = 'btn-action btn-stripe disabled'; // Bouton Grisé
-            btnStripe.innerHTML = '🔒 Portail Stripe (En attente d\'autorisation)';
-            btnStripe.onclick = (e) => { 
-                e.preventDefault(); 
-                afficherInfo("Action bloquée", "Veuillez patienter. Votre dossier est en cours d'analyse par notre équipe. Le portail se débloquera automatiquement si le délai de 48h est dépassé."); 
-            };
-        }
-    }
-
-    if (profil.statut_resiliation === 'redirection_stripe') {
-        zoneDossier.className = 'dossier-box etat-action';
-        titreDossier.innerHTML = '🔔 Action requise : Sécurité Bancaire';
-        texteDossier.innerHTML = "Suite à votre demande, notre équipe n'a pas pu intervenir manuellement sur votre méthode de paiement (restrictions de sécurité Stripe). Afin de garantir la clôture de votre contrat, veuillez utiliser le portail crypté ci-dessous.";
-        
-        btnStripe.style.display = 'flex';
-        btnStripe.className = 'btn-action btn-stripe';
-        btnStripe.innerHTML = '🔓 Accéder au portail Stripe';
-        btnStripe.onclick = () => window.open('https://billing.stripe.com/p/login/14A5kC1SheK6ctc5MqgQE00', '_blank');
-    }
-
-    if (profil.statut_resiliation === 'traitee') {
-        zoneDossier.className = 'dossier-box etat-clos';
-        titreDossier.innerHTML = '✅ Contrat clôturé';
-        texteDossier.innerHTML = "Votre demande a été traitée avec succès. Votre abonnement ne sera plus renouvelé. Vous conservez toutefois l'accès à vos avantages jusqu'à la fin de la période en cours.";
-    }
-}
-
-        // GESTION DES MODALES
-        function ouvrirModalConfirmation() {
-            document.getElementById('modal-confirmation').style.display = 'flex';
-        }
-
-        function fermerModal() {
-            document.getElementById('modal-confirmation').style.display = 'none';
-        }
-
-        function afficherInfo(titre, texte) {
-            document.getElementById('modal-confirmation').style.display = 'none';
-            document.getElementById('info-titre').innerText = titre;
-            document.getElementById('info-texte').innerHTML = texte;
-            document.getElementById('modal-info').style.display = 'flex';
-        }
-
-        function rechargerPage() {
-            location.reload();
-        }
-
-        async function validerResiliation() {
-            document.getElementById('btn-valider-resil').innerText = "Traitement...";
-            document.getElementById('btn-valider-resil').disabled = true;
-
-            const { data: { user } } = await supabaseClient.auth.getUser();
-
-            const { error } = await supabaseClient
+            // Récupérer le plan depuis la table "profils"
+            const { data: profil } = await supabaseClient
                 .from('profils')
-                .update({ 
-                    statut_resiliation: 'en_attente',
-                    date_demande_resiliation: new Date().toISOString()
-                })
-                .eq('id', user.id);
+                .select('plan, statut_abo') // Assure-toi d'avoir une colonne statut_abo si tu gères l'annulation
+                .eq('id', user.id)
+                .single();
 
-            if (!error) {
-                afficherInfo("Demande transmise", "Votre demande a été envoyée avec succès au service de facturation.");
+            const badgeElement = document.getElementById('display-plan-badge');
+            
+            if (profil) {
+                const planStr = profil.plan ? profil.plan.toLowerCase() : 'free';
+                
+                if (planStr === 'premium') {
+                    badgeElement.textContent = 'PREMIUM';
+                    badgeElement.className = 'badge premium';
+                } else if (planStr === 'classic') {
+                    badgeElement.textContent = 'CLASSIC';
+                    badgeElement.className = 'badge classic';
+                } else {
+                    badgeElement.textContent = 'FREE';
+                    badgeElement.className = 'badge free';
+                    document.getElementById('abo-status-box').style.display = 'none';
+                }
+
+                // Logique optionnelle pour afficher le bloc d'annulation (si géré en BDD)
+                // if (profil.statut_abo === 'cancelled') {
+                //     document.getElementById('abo-status-box').style.display = 'none';
+                //     document.getElementById('abo-cancelled-box').style.display = 'flex';
+                // }
             } else {
-                afficherInfo("Erreur système", "Impossible d'envoyer la demande. Veuillez réessayer.");
-                document.getElementById('btn-valider-resil').innerText = "Oui, résilier";
-                document.getElementById('btn-valider-resil').disabled = false;
+                badgeElement.textContent = 'FREE';
+                badgeElement.className = 'badge free';
+                document.getElementById('abo-status-box').style.display = 'none';
             }
+            
+            // Lien Stripe Customer Portal (Généralement tu dois générer ce lien via ton backend, 
+            // ici on met un lien vers l'accueil ou le lien fixe Stripe si tu en as un)
+            // ex: document.getElementById('stripe-portal-btn').href = "https://billing.stripe.com/p/login/ton_lien";
         }
 
-        async function seDeconnecter() {
+        // --- 4. MODIFICATION DU MOT DE PASSE ---
+        document.getElementById('form-password').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-update-pwd');
+            const alertBox = document.getElementById('secu-alert');
+            const newPwd = document.getElementById('new-pwd').value;
+            const confirmPwd = document.getElementById('confirm-pwd').value;
+
+            alertBox.style.display = 'none';
+
+            if (newPwd !== confirmPwd) {
+                showAlert('Les mots de passe ne correspondent pas.', 'error');
+                return;
+            }
+
+            btn.textContent = 'Mise à jour...';
+            btn.disabled = true;
+
+            const { error } = await supabaseClient.auth.updateUser({ password: newPwd });
+
+            if (error) {
+                showAlert(error.message, 'error');
+            } else {
+                showAlert('Mot de passe mis à jour avec succès.', 'success');
+                document.getElementById('form-password').reset();
+            }
+
+            btn.textContent = 'Mettre à jour';
+            btn.disabled = false;
+        });
+
+        function showAlert(msg, type) {
+            const alertBox = document.getElementById('secu-alert');
+            alertBox.textContent = msg;
+            alertBox.className = type === 'success' ? 'alert alert-success' : 'alert alert-error';
+            alertBox.style.display = 'block';
+        }
+
+        // --- 5. DECONNEXION ---
+        async function deconnexion() {
             await supabaseClient.auth.signOut();
             window.location.href = 'index.html';
         }
 
-        initialiserCompte();
+        // Lancer au démarrage
+        chargerDonneesCompte();
     </script>
 </body>
 </html>
