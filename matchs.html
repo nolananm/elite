@@ -141,13 +141,8 @@
         <div class="layout-grid">
             <div class="col-matchs">
                 
-                <div class="ad-zone">
-                    <span class="ad-label">Sponsorisé</span>
-                    <script>
-                        atOptions = { 'key' : 'a75626ad776c3791da4b7e1f47f54670', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
-                    </script>
-                    <script src="https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js"></script>
-                </div>
+                <!-- Zone de publicité vide dans le HTML, injectée uniquement si nécessaire -->
+                <div class="ad-zone" id="ad-top-banner"></div>
 
                 <div class="filter-bar">
                     <h2 class="section-title" style="margin-bottom: 0; border: none; padding: 0;">Calendrier & Replays</h2>
@@ -167,6 +162,9 @@
                         <div class="loading-text">Chargement du fil info...</div>
                     </div>
                 </div>
+                
+                <!-- Zone de publicité latérale vide dans le HTML -->
+                <div class="ad-zone" id="ad-sidebar"></div>
 
                 <h2 class="section-title">Ligue 1</h2>
                 <div class="standings-container">
@@ -225,11 +223,10 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let profilActuel = 'none'; 
+        let profilActuel = 'free'; 
         let tousLesMatchsAPI = []; 
         let reglageMatchsBDD = []; 
 
-        // L'API pointe localement vers ton dossier Cloudflare Pages functions/api
         const API_URL = '/api/classement';
 
         async function initialiserPage() {
@@ -243,13 +240,34 @@
             document.body.style.visibility = 'visible';
             document.body.style.opacity = '1';
 
-            if (profilActuel === 'premium') {
-                document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
-            } else if (profilActuel === 'classic') {
-                document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex');
-            } else {
-                document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
-                const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
+            // Injection dynamique stricte des publicités pour protéger les Premium
+            if (profilActuel !== 'premium') {
+                const adTop = document.getElementById('ad-top-banner');
+                adTop.style.display = 'flex';
+                adTop.innerHTML = `<span class="ad-label">Sponsorisé</span>`;
+                
+                const scriptConfTop = document.createElement('script');
+                scriptConfTop.innerHTML = `atOptions = { 'key' : 'a75626ad776c3791da4b7e1f47f54670', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };`;
+                adTop.appendChild(scriptConfTop);
+                
+                const scriptInvokeTop = document.createElement('script');
+                scriptInvokeTop.src = "https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js";
+                adTop.appendChild(scriptInvokeTop);
+
+                // Les bannières latérales et les pop-unders agressifs sont uniquement pour l'offre gratuite
+                if (profilActuel === 'free') {
+                    const adSidebar = document.getElementById('ad-sidebar');
+                    adSidebar.style.display = 'flex';
+                    adSidebar.innerHTML = `<span class="ad-label">Publicité</span><div id="container-ef5aa0c7919108b05eacd11170186658"></div>`;
+                    
+                    const scriptSidebar = document.createElement('script');
+                    scriptSidebar.async = true;
+                    scriptSidebar.dataset.cfasync = "false";
+                    scriptSidebar.src = "https://pl31058277.profitableratecpmnetwork.com/ef5aa0c7919108b05eacd11170186658/invoke.js";
+                    adSidebar.appendChild(scriptSidebar);
+
+                    const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
+                }
             }
 
             chargerFlashes();
