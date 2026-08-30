@@ -68,7 +68,6 @@
 
         .loading-text { text-align: center; color: var(--text-muted); font-size: 18px; width: 100%; grid-column: 1/-1; padding: 50px; }
 
-        /* VRAI RESPONSIVE MOBILE */
         @media (max-width: 768px) {
             header { flex-direction: column; padding: 15px; gap: 10px; }
             nav { flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
@@ -104,13 +103,8 @@
             <p>Analyses tactiques, enquêtes exclusives et éditos.</p>
         </div>
 
-        <div class="ad-zone">
-            <span class="ad-label">Sponsorisé</span>
-            <script>
-                atOptions = { 'key' : 'a75626ad776c3791da4b7e1f47f54670', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
-            </script>
-            <script src="https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js"></script>
-        </div>
+        <!-- HTML vidé des scripts pubs -->
+        <div class="ad-zone" id="ad-top-banner"></div>
 
         <div class="articles-grid" id="articles-container">
             <div class="loading-text">Recherche des articles...</div>
@@ -134,13 +128,8 @@
         
         <div class="reader-body-wrapper" id="reader-body-wrapper">
             
-            <div class="ad-zone ad-intrusive" style="margin: 20px auto; max-width: 320px; padding: 0; background: transparent; border: none;">
-                <span class="ad-label" style="position: static; margin-bottom: 5px;">Publicité</span>
-                <script>
-                    atOptions = { 'key' : 'c720d1dbca9531853ac018b1f3f493c5', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };
-                </script>
-                <script src="https://www.highrevenueformat.com/c720d1dbca9531853ac018b1f3f493c5/invoke.js"></script>
-            </div>
+            <!-- HTML vidé des scripts pubs -->
+            <div class="ad-zone ad-intrusive" id="ad-article-inline" style="margin: 20px auto; max-width: 320px; padding: 0; background: transparent; border: none;"></div>
 
             <div class="reader-text" id="reader-content"></div>
             
@@ -148,7 +137,7 @@
                 <div class="icon-lock">🔒</div>
                 <h2 id="paywall-title">Abonnement Requis</h2>
                 <p id="paywall-message">Cet article est réservé aux abonnés. Continue ta lecture en débloquant l'accès à ce contenu.</p>
-                <a href="index.html#abonnements" class="btn-upgrade">Voir les offres d'abonnement</a>
+                <a href="index.html#abonnements" class="btn-upgrade">Voir les offres</a>
             </div>
         </div>
     </div>
@@ -158,7 +147,7 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let profilActuel = 'none'; 
+        let profilActuel = 'free'; 
         let tousLesArticles = [];
 
         async function verifierCompteARebours(estAdmin) {
@@ -170,33 +159,16 @@
                         .timer-box { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px 20px; min-width: 130px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
                         .timer-num { font-size: 48px; font-weight: 800; color: white; line-height: 1; }
                         .timer-label { font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; font-weight: 600; }
-                        @media (max-width: 768px) {
-                            .timer-box { min-width: 80px; padding: 15px 10px; border-radius: 12px; gap: 10px;}
-                            .timer-num { font-size: 28px; }
-                            .timer-label { font-size: 10px; letter-spacing: 1px; }
-                            h1.launch-title { font-size: 36px !important; }
-                            p.launch-desc { font-size: 14px !important; }
-                        }
                     </style>
-                    <div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b), url('https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop') center/cover; position: relative; font-family: 'Poppins', sans-serif;">
+                    <div style="min-height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(7,8,11,0.85), #07080b), url('https://images.unsplash.com/photo-1518605368461-1eb47b2c2865?q=80&auto=format&fit=crop') center/cover; position: relative;">
                         <div style="position: relative; z-index: 10; text-align: center; padding: 20px; width: 100%;">
-                            <div style="font-size: 20px; font-weight: 800; letter-spacing: 6px; color: white; margin-bottom: 20px; opacity: 0.8;">ÉLITE</div>
-                            <h1 class="launch-title" style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase; line-height: 1.1;">L'expérience ultime<br>du football arrive.</h1>
-                            <p class="launch-desc" style="color: #a0a5b0; font-size: 18px; max-width: 600px; margin: 0 auto 50px auto;">Nous préparons la plateforme. Analyses tactiques, résumés vidéos et immersion totale en Ligue 1.</p>
+                            <h1 style="font-size: 56px; font-weight: 800; background: linear-gradient(135deg, #e50046, #8000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; text-transform: uppercase;">L'expérience arrive.</h1>
                             <div class="timer-container" id="timer-display"></div>
                         </div>
                     </div>
                 `;
                 document.body.style.visibility = 'visible';
                 document.body.style.opacity = '1';
-
-                const dateLancement = new Date(data.date_lancement).getTime();
-                setInterval(() => {
-                    const distance = dateLancement - new Date().getTime();
-                    if (distance < 0) { document.getElementById('timer-display').innerHTML = "<div style='font-size: 24px; font-weight: bold; color: #00e676;'>Ouverture imminente ! Rechargez la page.</div>"; return; }
-                    const jours = Math.floor(distance / (1000 * 60 * 60 * 24)); const heures = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)); const secondes = Math.floor((distance % (1000 * 60)) / 1000);
-                    document.getElementById('timer-display').innerHTML = `<div class="timer-box"><div class="timer-num">${jours}</div><div class="timer-label">Jours</div></div><div class="timer-box"><div class="timer-num">${heures}</div><div class="timer-label">Heures</div></div><div class="timer-box"><div class="timer-num">${minutes}</div><div class="timer-label">Minutes</div></div><div class="timer-box"><div class="timer-num">${secondes}</div><div class="timer-label">Secondes</div></div>`;
-                }, 1000);
                 return true; 
             }
             return false;
@@ -208,7 +180,7 @@
 
             if (user) {
                 const { data: profil } = await supabaseClient.from('profils').select('plan, est_admin').eq('id', user.id).single();
-                if (profil) { profilActuel = profil.plan; estAdmin = profil.est_admin; }
+                if (profil) { profilActuel = profil.plan || 'free'; estAdmin = profil.est_admin; }
             }
 
             if (await verifierCompteARebours(estAdmin)) return;
@@ -216,15 +188,30 @@
             document.body.style.visibility = 'visible';
             document.body.style.opacity = '1';
 
-            if (profilActuel === 'premium') {
-                document.querySelectorAll('.ad-zone').forEach(zone => zone.remove());
-            } else if (profilActuel === 'classic') {
-                document.querySelectorAll('.ad-zone:not(.ad-intrusive)').forEach(zone => zone.style.display = 'flex');
-                document.querySelectorAll('.ad-intrusive').forEach(zone => zone.remove());
-            } else {
-                document.querySelectorAll('.ad-zone').forEach(zone => zone.style.display = 'flex');
-                const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
-                const socialScript = document.createElement('script'); socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js"; document.body.appendChild(socialScript);
+            // Injection des pubs stricte selon le niveau
+            if (profilActuel !== 'premium') {
+                const adTop = document.getElementById('ad-top-banner');
+                if (adTop) {
+                    adTop.style.display = 'flex';
+                    adTop.innerHTML = `<span class="ad-label">Sponsorisé</span>`;
+                    const s1 = document.createElement('script'); s1.innerHTML = `atOptions = { 'key' : 'a75626ad776c3791da4b7e1f47f54670', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };`;
+                    const s2 = document.createElement('script'); s2.src = "https://www.highrevenueformat.com/a75626ad776c3791da4b7e1f47f54670/invoke.js";
+                    adTop.append(s1, s2);
+                }
+
+                if (profilActuel === 'free') {
+                    const popScript = document.createElement('script'); popScript.src = "https://pl31058278.profitableratecpmnetwork.com/ac/4a/a0/ac4aa076c7a844541fd71b86260b9f9a.js"; document.body.appendChild(popScript);
+                    const socialScript = document.createElement('script'); socialScript.src = "https://pl31058280.profitableratecpmnetwork.com/74/db/2c/74db2c432b6da757b455440f65270e23.js"; document.body.appendChild(socialScript);
+                    
+                    const adInline = document.getElementById('ad-article-inline');
+                    if(adInline) {
+                        adInline.style.display = 'flex';
+                        adInline.innerHTML = `<span class="ad-label" style="position: static; margin-bottom: 5px;">Publicité</span>`;
+                        const s3 = document.createElement('script'); s3.innerHTML = `atOptions = { 'key' : 'c720d1dbca9531853ac018b1f3f493c5', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };`;
+                        const s4 = document.createElement('script'); s4.src = "https://www.highrevenueformat.com/c720d1dbca9531853ac018b1f3f493c5/invoke.js";
+                        adInline.append(s3, s4);
+                    }
+                }
             }
 
             const { data: articles, error } = await supabaseClient.from('articles').select('*');
@@ -300,7 +287,7 @@
                 const titreElement = document.getElementById('paywall-title');
                 if (accesRequis === 'premium') {
                     titreElement.innerHTML = "Élite <span style='color: var(--accent)'>Premium</span>";
-                    document.getElementById('paywall-message').textContent = "La suite de cette enquête est une exclusivité absolue Premium. Rejoins l'élite pour la lire.";
+                    document.getElementById('paywall-message').textContent = "La suite de cette enquête est une exclusivité Premium.";
                 } else {
                     titreElement.innerHTML = "Élite <span style='color: #0055ff'>Classic</span>";
                     document.getElementById('paywall-message').textContent = "La suite de cet article est réservée aux abonnés Classic et Premium.";
