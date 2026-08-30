@@ -96,24 +96,44 @@
             </div>
         </div>
 
+        <!-- ONGLET MATCHS AVEC CASE DONNÉES BRUTES -->
         <div id="form-match" style="display: none;">
             <div class="form-section" id="box-edition-match" style="display: none;">
-                <h3 id="titre-section-match">Ajouter du contenu au match</h3>
+                <h3 id="titre-section-match">Détails & Contenu du Match</h3>
                 <input type="hidden" id="id-api-match">
                 <p id="label-nom-match" style="color: white; font-weight: bold; margin-bottom: 15px;"></p>
-                <label>Accès :</label>
-                <select id="niveau-acces-match"><option value="free">Free</option><option value="classic" selected>Classic</option><option value="premium">Premium</option></select>
-                <label>Lien YouTube :</label><input type="text" id="youtube-match">
-                <label>Résumé :</label><textarea id="resume-match"></textarea>
-                <button class="btn-submit" onclick="sauvegarderMatch()">Enregistrer</button>
+                
+                <label>Niveau d'accès requis :</label>
+                <select id="niveau-acces-match">
+                    <option value="free">Free</option>
+                    <option value="classic" selected>Classic</option>
+                    <option value="premium">Premium</option>
+                </select>
+
+                <label>Lien Vidéo YouTube (Highlights) :</label>
+                <input type="text" id="youtube-match" placeholder="https://www.youtube.com/watch?v=...">
+
+                <label>Résumé / Analyse écrite :</label>
+                <textarea id="resume-match" placeholder="Écrivez votre débrief de la rencontre..."></textarea>
+
+                <label style="color: var(--accent);">📊 Données brutes (Stats & Compos) :</label>
+                <textarea id="donnees-brutes-match" placeholder="Collez ici le bloc de données brutes fourni..." style="font-family: monospace; font-size: 12px; min-height: 140px;"></textarea>
+
+                <div style="display:flex; gap:10px; margin-top: 15px;">
+                    <button class="btn-submit" onclick="sauvegarderMatch()" id="btn-save-match">Enregistrer le match</button>
+                    <button class="btn-submit" style="background:#444;" onclick="document.getElementById('box-edition-match').style.display='none'">Fermer</button>
+                </div>
             </div>
+
             <div class="list-section">
-                <select id="filtre-journee-admin" onchange="filtrerMatchsAdmin()" style="margin-bottom: 15px; width: 100%;"><option value="">Chargement...</option></select>
+                <select id="filtre-journee-admin" onchange="filtrerMatchsAdmin()" style="margin-bottom: 15px; width: 100%;">
+                    <option value="">Chargement...</option>
+                </select>
                 <div id="liste-matchs">Chargement...</div>
             </div>
         </div>
 
-        <!-- ONGLET OFFRES / AVANTAGES NETTOYÉ -->
+        <!-- ONGLET OFFRES -->
         <div id="form-abonnement" style="display: none;">
             <div class="form-section">
                 <h3 id="titre-form-avantage">Ajouter un avantage</h3>
@@ -237,7 +257,7 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
+        const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
         let donneesEnMemoire = { matchsAPI: [], matchsBDD: [] };
         let tousLesUsers = [];
         let listeArticlesAdmin = [];
@@ -400,7 +420,7 @@ const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
         async function chargerLancement() { const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single(); if (data) { document.getElementById('check-maintenance').checked = data.compte_a_rebours_actif; if (data.date_lancement) document.getElementById('date-lancement').value = new Date(data.date_lancement).toISOString().slice(0, 16); } }
         async function sauvegarderLancement() { const actif = document.getElementById('check-maintenance').checked; const dateInput = document.getElementById('date-lancement').value; let isoDate = dateInput ? new Date(dateInput).toISOString() : new Date().toISOString(); await supabaseClient.from('reglages_site').upsert([{ id: 1, compte_a_rebours_actif: actif, date_lancement: isoDate }]); alert('Réglages sauvegardés !'); }
         
-        // --- 💎 GESTION DES AVANTAGES NETTOYÉE ---
+        // --- 💎 GESTION DES AVANTAGES ---
         async function chargerAvantages() { 
             const { data } = await supabaseClient.from('avantages').select('*')
                 .order('plan', { ascending: true })
@@ -411,7 +431,6 @@ const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
 
             const plans = ['free', 'classic', 'premium'];
             
-            // On boucle par type de plan pour bien les séparer visuellement
             plans.forEach(planNom => {
                 const planItems = listeAvantagesAdmin.filter(av => av.plan === planNom);
                 if (planItems.length > 0) {
@@ -476,10 +495,8 @@ const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
             btn.disabled = true;
 
             if (id) {
-                // Modification (Update)
                 await supabaseClient.from('avantages').update({ plan: plan, texte: texte, type_icone: icone, ordre: ordre }).eq('id', id);
             } else {
-                // Création (Insert)
                 await supabaseClient.from('avantages').insert([{ plan: plan, texte: texte, type_icone: icone, ordre: ordre }]);
             }
             
@@ -490,26 +507,91 @@ const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
 
         async function chargerArticles() { const { data } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false }); listeArticlesAdmin = data || []; let html = ''; listeArticlesAdmin.forEach(a => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${a.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('articles', '${a.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-articles').innerHTML = html || 'Aucun article.'; }
         
+        // --- ⚽ GESTION DES MATCHS (AVEC DONNÉES BRUTES) ---
         async function chargerMatchs() { 
             try { 
-                const req = await fetch(API_URL + '?action=fixtures'); const data = await req.json(); 
-                donneesEnMemoire.matchsAPI = data.response || []; 
-                const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*'); donneesEnMemoire.matchsBDD = matchsBdd || []; 
-                const matchdays = [...new Set(donneesEnMemoire.matchsAPI.map(m => { let r = m.league.round.match(/\d+/); return r ? parseInt(r[0]) : null; }))].filter(d => d).sort((a, b) => a - b); 
-                let optionsHtml = ''; matchdays.forEach(day => { optionsHtml += `<option value="${day}">Journée ${day}</option>`; }); 
-                document.getElementById('filtre-journee-admin').innerHTML = optionsHtml; filtrerMatchsAdmin(); 
+                const req = await fetch(API_URL + '?action=fixtures'); 
+                const data = await req.json(); 
+                donneesEnMemoire.matchsAPI = data.matches || []; 
+                
+                const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*'); 
+                donneesEnMemoire.matchsBDD = matchsBdd || []; 
+
+                const matchdays = [...new Set(donneesEnMemoire.matchsAPI.map(m => m.matchday))].filter(d => d).sort((a, b) => a - b); 
+                let optionsHtml = ''; 
+                matchdays.forEach(day => { optionsHtml += `<option value="${day}">Journée ${day}</option>`; }); 
+                document.getElementById('filtre-journee-admin').innerHTML = optionsHtml; 
+                filtrerMatchsAdmin(); 
             } catch (err) { console.error(err); } 
         }
 
         function filtrerMatchsAdmin() { 
             const journee = parseInt(document.getElementById('filtre-journee-admin').value); 
-            const matchsJournee = donneesEnMemoire.matchsAPI.filter(m => { let r = m.league.round.match(/\d+/); return r && parseInt(r[0]) === journee; }); 
+            const matchsJournee = donneesEnMemoire.matchsAPI.filter(m => m.matchday === journee); 
             let html = ''; 
             matchsJournee.forEach(m => { 
-                let dom = m.teams.home.name; let ext = m.teams.away.name; 
-                html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${dom} VS ${ext}</div></div><div class="manage-actions"><button class="btn-edit" onclick="editerMatch('${m.fixture.id}', '${dom} - ${ext}')">Modifier</button></div></div>`; 
+                let dom = m.homeTeam.name; 
+                let ext = m.awayTeam.name; 
+                let infoBdd = donneesEnMemoire.matchsBDD.find(r => r.id_api == m.id);
+                let badgeCustom = infoBdd ? `<span style="background:var(--accent); color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px;">Personnalisé</span>` : '';
+                
+                html += `
+                <div class="manage-card">
+                    <div class="manage-info">
+                        <div class="manage-title">${dom} VS ${ext} ${badgeCustom}</div>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-edit" onclick="editerMatch('${m.id}', '${dom} - ${ext}')">Modifier</button>
+                    </div>
+                </div>`; 
             }); 
             document.getElementById('liste-matchs').innerHTML = html; 
+        }
+
+        function editerMatch(idApi, titre) {
+            document.getElementById('id-api-match').value = idApi;
+            document.getElementById('label-nom-match').innerText = titre;
+            
+            const matchBdd = donneesEnMemoire.matchsBDD.find(r => r.id_api == idApi) || {};
+            document.getElementById('niveau-acces-match').value = matchBdd.niveau_acces || 'classic';
+            document.getElementById('youtube-match').value = matchBdd.youtube_url || '';
+            document.getElementById('resume-match').value = matchBdd.resume_texte || '';
+            document.getElementById('donnees-brutes-match').value = matchBdd.donnees_brutes || '';
+
+            const box = document.getElementById('box-edition-match');
+            box.style.display = 'block';
+            window.scrollTo({ top: box.offsetTop - 50, behavior: 'smooth' });
+        }
+
+        async function sauvegarderMatch() {
+            const idApi = document.getElementById('id-api-match').value;
+            const acces = document.getElementById('niveau-acces-match').value;
+            const youtube = document.getElementById('youtube-match').value;
+            const resume = document.getElementById('resume-match').value;
+            const brutes = document.getElementById('donnees-brutes-match').value;
+
+            const btn = document.getElementById('btn-save-match');
+            btn.innerText = "Enregistrement...";
+            btn.disabled = true;
+
+            const { error } = await supabaseClient.from('matchs_enrichis').upsert([{
+                id_api: idApi,
+                niveau_acces: acces,
+                youtube_url: youtube,
+                resume_texte: resume,
+                donnees_brutes: brutes
+            }], { onConflict: 'id_api' });
+
+            btn.innerText = "Enregistrer le match";
+            btn.disabled = false;
+
+            if (error) {
+                alert("Erreur : " + error.message);
+            } else {
+                alert("Données du match enregistrées avec succès !");
+                document.getElementById('box-edition-match').style.display = 'none';
+                chargerMatchs();
+            }
         }
 
         async function chargerFlashes() { const { data } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false }); let html = ''; (data || []).forEach(f => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${f.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('flashes', '${f.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-flashes').innerHTML = html || 'Aucun flash.'; }
