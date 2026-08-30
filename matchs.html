@@ -68,34 +68,61 @@
         td.team-cell img { width: 20px; height: 20px; object-fit: contain; }
         .pts-col { font-weight: 800; color: white; }
 
+        /* --- STYLES MODAL PREMIUM --- */
         .site-modal { display: none; position: fixed; inset: 0; background: rgba(5, 7, 12, 0.9); z-index: 3000; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; padding: 20px; }
         .site-modal.show { opacity: 1; }
         .modal-box { background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; position: relative; }
         .modal-header-bar { position: sticky; top: 0; background: rgba(18, 21, 28, 0.95); backdrop-filter: blur(10px); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        .modal-header-bar h2 { font-size: 18px; font-weight: 800; text-transform: uppercase; }
+        .modal-header-bar h2 { font-size: 18px; font-weight: 800; text-transform: uppercase; margin: 0;}
         .btn-close-modal { background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; transition: 0.2s; }
         .btn-close-modal:hover { background: var(--accent); }
         .modal-body { padding: 30px; }
+
+        .match-score-header { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 30px; }
+        .match-score-header img { width: 70px; }
+        .match-score-header .score { font-size: 48px; font-weight: 800; }
+
+        /* Tabs dans le modal */
+        .modal-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        .m-tab { padding: 8px 15px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 6px; transition: 0.2s; text-transform: uppercase; }
+        .m-tab:hover { background: rgba(255,255,255,0.05); color: white; }
+        .m-tab.active { background: var(--accent); color: white; }
+        .m-tab-content { display: none; }
+        .m-tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Blocs de contenu */
+        .content-bloc { margin-bottom: 30px; }
+        .content-bloc h3 { font-size: 15px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px;}
+        .resume-text { font-size: 14px; line-height: 1.7; color: #d0d0d0; white-space: pre-wrap; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
         
-        .match-score-header { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 40px; }
-        .match-score-header img { width: 60px; }
-        .match-score-header .score { font-size: 40px; font-weight: 800; }
-        
-        .content-bloc { margin-bottom: 40px; }
-        .content-bloc h3 { font-size: 16px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px;}
-        .resume-text { font-size: 14px; line-height: 1.7; color: #d0d0d0; white-space: pre-wrap; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; }
-        
-        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; font-weight: 600;}
-        .stat-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; display: flex; overflow: hidden; margin-bottom: 20px; }
+        /* Stats Styles */
+        .stat-grid { display: grid; gap: 15px; }
+        .stat-row-container { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02); }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+        .stat-label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        .stat-val-dom { color: #0055ff; font-weight: 800; font-size: 16px; }
+        .stat-val-ext { color: var(--accent); font-weight: 800; font-size: 16px; }
+        .stat-bar-bg { width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; display: flex; overflow: hidden; }
         .stat-bar-home { height: 100%; background: #0055ff; }
         .stat-bar-away { height: 100%; background: var(--accent); }
         
+        /* MVP Box */
+        .mvp-box { display: flex; align-items: center; gap: 20px; background: linear-gradient(135deg, rgba(229,0,70,0.1), rgba(128,0,255,0.1)); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .mvp-icon { font-size: 40px; }
+        .mvp-info h4 { font-size: 18px; font-weight: 800; margin: 0; color: white; }
+        .mvp-info .note { font-size: 16px; font-weight: 800; color: var(--accent); margin: 5px 0; }
+        .mvp-info p { font-size: 13px; color: #d0d0d0; margin: 0; }
+
+        /* Compositions */
         .lineups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .lineup-team h4 { text-align: center; font-size: 14px; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; }
-        .player-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 13px; }
+        .lineup-team { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .lineup-team h4 { text-align: center; font-size: 16px; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
+        .formation-tag { text-align: center; font-size: 12px; color: var(--accent); font-weight: 800; margin-bottom: 20px; letter-spacing: 2px; }
+        .player-row { display: flex; justify-content: space-between; padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; font-weight: 600; }
         .player-row:last-child { border-bottom: none; }
         
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #000; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #000; border: 1px solid rgba(255,255,255,0.1); }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
         .premium-box { max-width: 480px; text-align: center; padding: 40px; background: linear-gradient(145deg, #161a25, #0f111a); border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 30px 60px rgba(0,0,0,0.8); }
@@ -109,6 +136,9 @@
             .filter-bar { flex-direction: column; gap: 15px; align-items: stretch; }
             .match-card { padding: 15px; }
             .lineups-grid { grid-template-columns: 1fr; }
+            .match-score-header .score { font-size: 32px; }
+            .match-score-header img { width: 50px; }
+            .modal-tabs { overflow-x: auto; white-space: nowrap; }
         }
     </style>
 </head>
@@ -320,7 +350,7 @@
                 let acces = matchAdmin.niveau_acces || "classic"; 
                 let badgeClass = acces === "premium" ? "badge-premium" : (acces === "classic" ? "badge-classic" : "badge-free");
 
-                // L'ARME ABSOLUE : Vérification du "Score Forcé" dans la base de données
+                // Score Forcé
                 let scoreForce = null;
                 if (matchAdmin.donnees_brutes) {
                     try {
@@ -335,7 +365,6 @@
                 let matchDate = new Date(m.utcDate);
                 let now = new Date();
 
-                // DÉTECTION BLINDÉE DU SCORE API (Cherche dans fullTime et regularTime)
                 let sDom = null;
                 let sExt = null;
                 let hasScore = false;
@@ -356,12 +385,9 @@
                 let isPostponed = ['POSTPONED', 'CANCELED', 'CANCELLED', 'SUSPENDED'].includes(m.status);
 
                 if (scoreForce) {
-                    // SI TU AS RENTRÉ UN SCORE DANS L'ADMINISTRATION, IL ÉCRASE L'API DÉFAILLANTE !
                     scoreText = scoreForce;
                     libelleDate = `Terminé le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
-                
                 } else if (hasScore || isFinished) {
-                    // Fonctionnement normal : l'API fait bien son travail
                     scoreText = `${sDom !== null ? sDom : 0} - ${sExt !== null ? sExt : 0}`;
                     if (isLive) {
                         libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
@@ -374,19 +400,15 @@
                     boxClass += " score-upcoming";
                     libelleDate = `<span style="color:#ff9800; font-weight:bold;">Reporté</span>`;
                 } else {
-                    // L'API n'a pas de score et n'est pas "Terminé". On remet l'heure classique.
                     if (now > new Date(matchDate.getTime() + (3 * 60 * 60 * 1000))) {
-                        // Match passé depuis plus de 3h, l'API est en retard
                         scoreText = `- - -`;
                         boxClass += " score-upcoming";
                         libelleDate = `<span style="color:var(--text-muted);">En attente du résultat</span>`;
                     } else if (now > matchDate) {
-                        // Le match devrait être en direct
                         scoreText = `0 - 0`;
                         boxClass += " score-upcoming";
                         libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
                     } else {
-                        // Le match est dans le futur
                         scoreText = matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
                         boxClass += " score-upcoming"; 
                         libelleDate = `Le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
@@ -412,6 +434,40 @@
             if(id === 'modal-match') document.getElementById('modal-match-content').innerHTML = '';
         }
 
+        function switchTab(tabId) {
+            document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.m-tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector(`.m-tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function generateStatBar(label, valDom, valExt, format = 'number') {
+            if (valDom === undefined || valExt === undefined) return '';
+            
+            let numDom = parseFloat(valDom);
+            let numExt = parseFloat(valExt);
+            let total = numDom + numExt;
+            let pctDom = total > 0 ? (numDom / total) * 100 : 50;
+            let pctExt = total > 0 ? (numExt / total) * 100 : 50;
+
+            let displayDom = format === 'pct' ? `${valDom}` : valDom;
+            let displayExt = format === 'pct' ? `${valExt}` : valExt;
+
+            return `
+            <div class="stat-row-container">
+                <div class="stat-row">
+                    <span class="stat-val-dom">${displayDom}</span>
+                    <span class="stat-label">${label}</span>
+                    <span class="stat-val-ext">${displayExt}</span>
+                </div>
+                <div class="stat-bar-bg">
+                    <div class="stat-bar-home" style="width:${pctDom}%"></div>
+                    <div class="stat-bar-away" style="width:${pctExt}%"></div>
+                </div>
+            </div>`;
+        }
+
         function ouvrirMatch(accesRequis, status, idApiStr, nomDom, nomExt, logoDom, logoExt, scoreAffiche) {
             let aLeDroit = false;
             if (accesRequis === 'free') aLeDroit = true;
@@ -428,69 +484,118 @@
 
             const matchAdmin = reglageMatchsBDD.find(r => r.id_api == idApiStr) || {};
             
-            let statsHtml = `<div class="loading-text">Statistiques détaillées non renseignées pour ce match.</div>`;
-            let lineupsHtml = `<div class="loading-text" style="grid-column: 1/-1;">Compositions d'équipes non renseignées.</div>`;
+            let tabResumeContent = '';
+            let tabStatsContent = `<div class="resume-text">Les statistiques détaillées ne sont pas encore disponibles pour cette rencontre.</div>`;
+            let tabComposContent = `<div class="resume-text">Les compositions d'équipes ne sont pas encore disponibles.</div>`;
 
+            // Parsing des données Premium
             if (matchAdmin.donnees_brutes) {
                 try {
                     const data = JSON.parse(matchAdmin.donnees_brutes);
                     
-                    if (data.possession) {
-                        let posDom = parseInt(data.possession.dom) || 50;
-                        let posExt = parseInt(data.possession.ext) || 50;
-                        let tirsDom = parseInt(data.tirs?.dom) || 0;
-                        let tirsExt = parseInt(data.tirs?.ext) || 0;
-                        let pctTirs = (tirsDom + tirsExt) > 0 ? (tirsDom / (tirsDom + tirsExt)) * 100 : 50;
+                    // 1. STATISTIQUES AVANCÉES
+                    if (data.stats_globales) {
+                        let sg = data.stats_globales;
+                        let statsHtml = '<div class="stat-grid">';
+                        
+                        if(sg.possession) statsHtml += generateStatBar("Possession", sg.possession.dom, sg.possession.ext, 'pct');
+                        if(sg.xg_expected_goals) statsHtml += generateStatBar("Expected Goals (xG)", sg.xg_expected_goals.dom, sg.xg_expected_goals.ext, 'number');
+                        if(sg.tirs_totaux) statsHtml += generateStatBar("Tirs Totaux", sg.tirs_totaux.dom, sg.tirs_totaux.ext, 'number');
+                        if(sg.tirs_cadres) statsHtml += generateStatBar("Tirs Cadrés", sg.tirs_cadres.dom, sg.tirs_cadres.ext, 'number');
+                        if(sg.passes_reussies) statsHtml += generateStatBar("Passes Réussies", sg.passes_reussies.dom, sg.passes_reussies.ext, 'pct');
+                        if(sg.duels_gagnes) statsHtml += generateStatBar("Duels Gagnés", sg.duels_gagnes.dom, sg.duels_gagnes.ext, 'pct');
+                        if(sg.corners) statsHtml += generateStatBar("Corners", sg.corners.dom, sg.corners.ext, 'number');
+                        if(sg.fautes) statsHtml += generateStatBar("Fautes Commises", sg.fautes.dom, sg.fautes.ext, 'number');
+                        if(sg.cartons_jaunes) statsHtml += generateStatBar("Cartons Jaunes", sg.cartons_jaunes.dom, sg.cartons_jaunes.ext, 'number');
+                        if(sg.cartons_rouges) statsHtml += generateStatBar("Cartons Rouges", sg.cartons_rouges.dom, sg.cartons_rouges.ext, 'number');
+                        if(sg.arrets_gardien) statsHtml += generateStatBar("Arrêts du Gardien", sg.arrets_gardien.dom, sg.arrets_gardien.ext, 'number');
 
-                        statsHtml = `
-                            <div class="stat-row"><span>${posDom}%</span><span style="color:var(--text-muted)">Possession</span><span>${posExt}%</span></div>
-                            <div class="stat-bar-bg"><div class="stat-bar-home" style="width:${posDom}%"></div><div class="stat-bar-away" style="width:${posExt}%"></div></div>
-                            
-                            <div class="stat-row"><span>${tirsDom}</span><span style="color:var(--text-muted)">Tirs Totaux</span><span>${tirsExt}</span></div>
-                            <div class="stat-bar-bg"><div class="stat-bar-home" style="width:${pctTirs}%"></div><div class="stat-bar-away" style="width:${100 - pctTirs}%"></div></div>
-                        `;
+                        statsHtml += '</div>';
+                        tabStatsContent = statsHtml;
+                    } else if (data.possession) {
+                         // Rétrocompatibilité avec l'ancien format
+                        let posDom = parseInt(data.possession.dom) || 50; let posExt = parseInt(data.possession.ext) || 50;
+                        let tirsDom = parseInt(data.tirs?.dom) || 0; let tirsExt = parseInt(data.tirs?.ext) || 0;
+                        tabStatsContent = `<div class="stat-grid">${generateStatBar("Possession", posDom, posExt, 'pct')} ${generateStatBar("Tirs", tirsDom, tirsExt, 'number')}</div>`;
                     }
 
+                    // 2. HOMME DU MATCH (MVP)
+                    if (data.homme_du_match && data.homme_du_match.nom) {
+                        tabResumeContent += `
+                        <div class="content-bloc">
+                            <h3>⭐ Homme du Match</h3>
+                            <div class="mvp-box">
+                                <div class="mvp-icon">🏅</div>
+                                <div class="mvp-info">
+                                    <h4>${data.homme_du_match.nom}</h4>
+                                    <div class="note">${data.homme_du_match.note}</div>
+                                    <p>${data.homme_du_match.stat_cle}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+
+                    // 3. COMPOSITIONS & TACTIQUE
                     if (data.compositions) {
                         let formatTeam = (arr) => (arr || []).map(p => `<div class="player-row"><span>${p}</span></div>`).join('');
-                        lineupsHtml = `
-                            <div class="lineup-team">
-                                <h4>${nomDom}</h4>
-                                ${formatTeam(data.compositions.dom)}
-                            </div>
-                            <div class="lineup-team">
-                                <h4>${nomExt}</h4>
-                                ${formatTeam(data.compositions.ext)}
+                        let formDom = data.tactique?.formation_dom ? `<div class="formation-tag">${data.tactique.formation_dom}</div>` : '';
+                        let formExt = data.tactique?.formation_ext ? `<div class="formation-tag">${data.tactique.formation_ext}</div>` : '';
+                        
+                        tabComposContent = `
+                            <div class="lineups-grid">
+                                <div class="lineup-team">
+                                    <h4>${nomDom}</h4>
+                                    ${formDom}
+                                    ${formatTeam(data.compositions.dom)}
+                                </div>
+                                <div class="lineup-team">
+                                    <h4>${nomExt}</h4>
+                                    ${formExt}
+                                    ${formatTeam(data.compositions.ext)}
+                                </div>
                             </div>
                         `;
                     }
+
                 } catch(e) {
-                    statsHtml = `<div class="resume-text">${matchAdmin.donnees_brutes}</div>`;
+                    // Si c'est juste du texte collé
+                    tabStatsContent = `<div class="resume-text">${matchAdmin.donnees_brutes}</div>`;
                 }
             }
 
-            let videoHtml = '';
-            if (matchAdmin.youtube_url) {
-                let embedUrl = matchAdmin.youtube_url.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
-                videoHtml = `<div class="content-bloc"><h3>🎞️ Les Images de la rencontre</h3><div class="video-container"><iframe src="${embedUrl}" allowfullscreen></iframe></div></div>`;
+            // RÉSUMÉ TEXTE
+            if (matchAdmin.resume_texte) {
+                tabResumeContent += `<div class="content-bloc"><h3>📝 L'Analyse Élite</h3><div class="resume-text">${matchAdmin.resume_texte}</div></div>`;
             }
 
-            let txtResume = matchAdmin.resume_texte ? `<div class="content-bloc"><h3>📝 L'Analyse Élite</h3><div class="resume-text">${matchAdmin.resume_texte}</div></div>` : '';
+            // VIDÉO YOUTUBE
+            if (matchAdmin.youtube_url) {
+                let embedUrl = matchAdmin.youtube_url.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
+                tabResumeContent += `<div class="content-bloc"><h3>🎞️ Les Images de la rencontre</h3><div class="video-container"><iframe src="${embedUrl}" allowfullscreen></iframe></div></div>`;
+            }
+
+            if(tabResumeContent === '') {
+                tabResumeContent = `<div class="resume-text">Le résumé de ce match sera bientôt disponible.</div>`;
+            }
 
             document.getElementById('modal-match-content').innerHTML = `
                 <div class="match-score-header"><img src="${logoDom}"><div class="score">${scoreAffiche}</div><img src="${logoExt}"></div>
-                ${txtResume}
-                <div class="content-bloc">
-                    <h3>📊 Statistiques clés</h3>
-                    ${statsHtml}
+                
+                <div class="modal-tabs">
+                    <div class="m-tab active" onclick="switchTab('tab-resume')">Résumé</div>
+                    <div class="m-tab" onclick="switchTab('tab-stats')">Statistiques</div>
+                    <div class="m-tab" onclick="switchTab('tab-compos')">Compositions</div>
                 </div>
-                <div class="content-bloc">
-                    <h3>📋 Compositions</h3>
-                    <div class="lineups-grid">
-                        ${lineupsHtml}
-                    </div>
+
+                <div id="tab-resume" class="m-tab-content active">
+                    ${tabResumeContent}
                 </div>
-                ${videoHtml}
+                <div id="tab-stats" class="m-tab-content">
+                    ${tabStatsContent}
+                </div>
+                <div id="tab-compos" class="m-tab-content">
+                    ${tabComposContent}
+                </div>
             `;
         }
 
