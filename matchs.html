@@ -227,8 +227,7 @@
         let tousLesMatchsAPI = []; 
         let reglageMatchsBDD = []; 
 
-        const API_URL = '/api/classement';
-
+const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
         async function initialiserPage() {
             const { data: { user } } = await supabaseClient.auth.getUser();
 
