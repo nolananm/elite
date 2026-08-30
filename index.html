@@ -41,8 +41,7 @@
         .plan-features { list-style: none; margin-bottom: 40px; width: 100%; text-align: left; }
         .plan-features li { margin-bottom: 15px; font-size: 15px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
         
-        /* Icônes dynamiques pour les avantages */
-        .plan-features li::before { content: '✓'; color: #00e676; font-weight: bold; } /* Check par défaut */
+        .plan-features li::before { content: '✓'; color: #00e676; font-weight: bold; } 
         .plan-features li.cross::before { content: '✕'; color: #ff3333; }
         .plan-features li.cross { opacity: 0.5; }
         .plan-features li.dash::before { content: '➖'; color: #ffa500; font-size: 10px; }
@@ -122,7 +121,6 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // --- GESTION DES PAIEMENTS STRIPE ---
         const LIEN_STRIPE_CLASSIC = "https://buy.stripe.com/test_3cIcN41SffTZbyrgOm7Vm00";
         const LIEN_STRIPE_PREMIUM = "METS_TON_LIEN_DE_PAIEMENT_PREMIUM_ICI"; 
 
@@ -145,16 +143,16 @@
             window.location.href = urlFinale;
         }
 
-        // --- CHARGEMENT DYNAMIQUE DES AVANTAGES ---
         async function chargerAvantages() {
+            // NOUVEAU : On ajoute le tri par "ordre" ascendant
             const { data: avantages, error } = await supabaseClient
                 .from('avantages')
                 .select('*')
-                .order('id', { ascending: true }); // On garde l'ordre de création
+                .order('plan', { ascending: true })
+                .order('ordre', { ascending: true });
                 
             if (error || !avantages) return;
 
-            // On vide les listes "Chargement..."
             document.getElementById('features-free').innerHTML = '';
             document.getElementById('features-classic').innerHTML = '';
             document.getElementById('features-premium').innerHTML = '';
@@ -163,12 +161,9 @@
                 let li = document.createElement('li');
                 li.textContent = av.texte;
                 
-                // On applique la classe CSS correspondante à l'icône choisie dans l'admin
                 if (av.type_icone === 'cross') li.className = 'cross';
                 else if (av.type_icone === 'dash') li.className = 'dash';
-                // Si c'est 'check', c'est le style par défaut (pas besoin de classe)
 
-                // On injecte dans la bonne colonne
                 if (av.plan === 'free') {
                     document.getElementById('features-free').appendChild(li);
                 } else if (av.plan === 'classic') {
@@ -178,13 +173,11 @@
                 }
             });
             
-            // Sécurité : si jamais un plan n'a aucun avantage enregistré, on met un texte vide pour garder le design propre
             if (document.getElementById('features-free').innerHTML === '') document.getElementById('features-free').innerHTML = '<li class="dash">Aucun avantage défini</li>';
             if (document.getElementById('features-classic').innerHTML === '') document.getElementById('features-classic').innerHTML = '<li class="dash">Aucun avantage défini</li>';
             if (document.getElementById('features-premium').innerHTML === '') document.getElementById('features-premium').innerHTML = '<li class="dash">Aucun avantage défini</li>';
         }
 
-        // --- 🛡️ BOUCLIER ANTI-PUB INTELLIGENT ---
         async function activerBouclierAntiPub() {
             let doitAfficherPub = true; 
 
@@ -209,7 +202,6 @@
             }
         }
 
-        // Lancement immédiat au chargement de la page
         activerBouclierAntiPub();
         chargerAvantages();
 
