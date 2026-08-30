@@ -311,20 +311,29 @@
             
             const container = document.getElementById('matchs-container');
             let html = '';
+            
             matchsJournee.forEach(m => {
                 let nomDom = m.homeTeam.shortName || m.homeTeam.name;
                 let nomExt = m.awayTeam.shortName || m.awayTeam.name;
-                let reglageAdmin = reglageMatchsBDD.find(r => r.id_api == m.id);
-                let acces = reglageAdmin ? reglageAdmin.niveau_acces : "classic"; 
+                
+                let matchAdmin = reglageMatchsBDD.find(r => r.id_api == m.id) || {};
+                let acces = matchAdmin.niveau_acces || "classic"; 
                 let badgeClass = acces === "premium" ? "badge-premium" : (acces === "classic" ? "badge-classic" : "badge-free");
+
+                // L'ARME ABSOLUE : Vérification du "Score Forcé" dans la base de données
+                let scoreForce = null;
+                if (matchAdmin.donnees_brutes) {
+                    try {
+                        let parsed = JSON.parse(matchAdmin.donnees_brutes);
+                        if (parsed.score) scoreForce = parsed.score;
+                    } catch(e) {}
+                }
 
                 let scoreText = ""; 
                 let boxClass = "score-box"; 
                 let libelleDate = "";
                 let matchDate = new Date(m.utcDate);
-                let now = new Date();
 
-                // LA VRAIE LOGIQUE INFAILLIBLE : On cherche en priorité s'il y a un score !
                 let hasScore = m.score && m.score.fullTime && m.score.fullTime.home !== null;
                 let sDom = hasScore ? m.score.fullTime.home : null;
                 let sExt = hasScore ? m.score.fullTime.away : null;
@@ -333,8 +342,12 @@
                 let isFinished = ['FINISHED', 'AWARDED'].includes(m.status);
                 let isPostponed = ['POSTPONED', 'CANCELED', 'CANCELLED', 'SUSPENDED'].includes(m.status);
 
-                if (hasScore || isFinished) {
-                    // Si l'API a le score, on l'affiche d'office (même si le statut bugge)
+                if (scoreForce) {
+                    // Si un score a été tapé dans la zone "Données Brutes", IL ÉCRASE L'API DÉFAILLANTE !
+                    scoreText = scoreForce;
+                    libelleDate = `Terminé le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                } else if (hasScore || isFinished) {
+                    // Le fonctionnement normal si l'API a bien les buts
                     scoreText = `${sDom !== null ? sDom : 0} - ${sExt !== null ? sExt : 0}`;
                     if (isLive) {
                         libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
@@ -347,23 +360,10 @@
                     boxClass += " score-upcoming";
                     libelleDate = `<span style="color:#ff9800; font-weight:bold;">Reporté</span>`;
                 } else {
-                    // Aucun score fourni par l'API
-                    if (now > new Date(matchDate.getTime() + (2.5 * 60 * 60 * 1000))) {
-                        // 2h30 écoulées et toujours zéro score : l'API est en retard
-                        scoreText = `- - -`;
-                        boxClass += " score-upcoming";
-                        libelleDate = `<span style="color:var(--text-muted);">En attente du résultat</span>`;
-                    } else if (now >= matchDate) {
-                        // Le match a commencé mais pas de score = on simule le live
-                        scoreText = `0 - 0`;
-                        boxClass += " score-upcoming";
-                        libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
-                    } else {
-                        // Le match est dans le futur
-                        scoreText = matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                        boxClass += " score-upcoming"; 
-                        libelleDate = `Le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
-                    }
+                    // L'API n'a pas de score et n'est pas "Terminé". On remet l'heure classique.
+                    scoreText = matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    boxClass += " score-upcoming"; 
+                    libelleDate = `Le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
                 }
 
                 html += `
