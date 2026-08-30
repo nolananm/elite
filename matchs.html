@@ -333,21 +333,35 @@
                 let boxClass = "score-box"; 
                 let libelleDate = "";
                 let matchDate = new Date(m.utcDate);
+                let now = new Date();
 
-                let hasScore = m.score && m.score.fullTime && m.score.fullTime.home !== null;
-                let sDom = hasScore ? m.score.fullTime.home : null;
-                let sExt = hasScore ? m.score.fullTime.away : null;
+                // DÉTECTION BLINDÉE DU SCORE API (Cherche dans fullTime et regularTime)
+                let sDom = null;
+                let sExt = null;
+                let hasScore = false;
+                if (m.score) {
+                    if (m.score.fullTime && m.score.fullTime.home !== null) {
+                        sDom = m.score.fullTime.home;
+                        sExt = m.score.fullTime.away;
+                        hasScore = true;
+                    } else if (m.score.regularTime && m.score.regularTime.home !== null) {
+                        sDom = m.score.regularTime.home;
+                        sExt = m.score.regularTime.away;
+                        hasScore = true;
+                    }
+                }
                 
                 let isLive = ['IN_PLAY', 'PAUSED', 'LIVE'].includes(m.status);
                 let isFinished = ['FINISHED', 'AWARDED'].includes(m.status);
                 let isPostponed = ['POSTPONED', 'CANCELED', 'CANCELLED', 'SUSPENDED'].includes(m.status);
 
                 if (scoreForce) {
-                    // Si un score a été tapé dans la zone "Données Brutes", IL ÉCRASE L'API DÉFAILLANTE !
+                    // SI TU AS RENTRÉ UN SCORE DANS L'ADMINISTRATION, IL ÉCRASE L'API DÉFAILLANTE !
                     scoreText = scoreForce;
                     libelleDate = `Terminé le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                
                 } else if (hasScore || isFinished) {
-                    // Le fonctionnement normal si l'API a bien les buts
+                    // Fonctionnement normal : l'API fait bien son travail
                     scoreText = `${sDom !== null ? sDom : 0} - ${sExt !== null ? sExt : 0}`;
                     if (isLive) {
                         libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
@@ -361,9 +375,22 @@
                     libelleDate = `<span style="color:#ff9800; font-weight:bold;">Reporté</span>`;
                 } else {
                     // L'API n'a pas de score et n'est pas "Terminé". On remet l'heure classique.
-                    scoreText = matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                    boxClass += " score-upcoming"; 
-                    libelleDate = `Le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                    if (now > new Date(matchDate.getTime() + (3 * 60 * 60 * 1000))) {
+                        // Match passé depuis plus de 3h, l'API est en retard
+                        scoreText = `- - -`;
+                        boxClass += " score-upcoming";
+                        libelleDate = `<span style="color:var(--text-muted);">En attente du résultat</span>`;
+                    } else if (now > matchDate) {
+                        // Le match devrait être en direct
+                        scoreText = `0 - 0`;
+                        boxClass += " score-upcoming";
+                        libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
+                    } else {
+                        // Le match est dans le futur
+                        scoreText = matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        boxClass += " score-upcoming"; 
+                        libelleDate = `Le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                    }
                 }
 
                 html += `
