@@ -40,7 +40,6 @@
         .btn-delete { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-edit { background: #0055ff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         
-        /* Boutons Résiliation */
         .btn-valider { background: #00e676; color: #000; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-deleguer { background: #635bff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
         
@@ -48,7 +47,6 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
         th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
 
-        /* MODALE ADMIN */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-box { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .modal-box h3 { margin-bottom: 15px; font-size: 20px; color: white; }
@@ -115,6 +113,7 @@
             </div>
         </div>
 
+        <!-- ONGLET OFFRES / AVANTAGES -->
         <div id="form-abonnement" style="display: none;">
             <div class="form-section">
                 <h3 id="titre-form-avantage">Ajouter un avantage</h3>
@@ -124,9 +123,10 @@
                 <label>Texte :</label><input type="text" id="texte-avantage">
                 <label>Icône :</label>
                 <select id="type-icone-avantage"><option value="check">✅ Coche verte</option><option value="dash">➖ Trait orange</option><option value="cross">❌ Croix rouge</option></select>
+                <label>Ordre d'affichage (1 = en haut) :</label>
+                <input type="number" id="ordre-avantage" value="1">
                 <div style="display:flex; gap:10px;">
-                    <button class="btn-submit" onclick="sauvegarderAvantage()">Sauvegarder</button>
-                    <button class="btn-submit" style="background:#444; display:none;" onclick="resetFormAvantage()" id="btn-cancel-avantage">Annuler</button>
+                    <button class="btn-submit" onclick="sauvegarderAvantage()" id="btn-save-avantage">Sauvegarder</button>
                 </div>
             </div>
             <div class="list-section"><div id="liste-avantages">Chargement...</div></div>
@@ -178,7 +178,6 @@
                 <select id="niveau-acces-article"><option value="free">Free</option><option value="classic" selected>Classic</option><option value="premium">Premium</option></select>
                 <div style="display:flex; gap:10px;">
                     <button class="btn-submit" onclick="sauvegarderArticle()">Sauvegarder</button>
-                    <button class="btn-submit" style="background:#444; display:none;" onclick="resetFormArticle()" id="btn-cancel-article">Annuler</button>
                 </div>
             </div>
             <div class="list-section"><div id="liste-articles"></div></div>
@@ -194,7 +193,6 @@
             </div>
         </div>
 
-        <!-- ONGLET RÉSILIATIONS AMÉLIORÉ -->
         <div id="form-resiliation" style="display: none;">
             <div class="list-section">
                 <h3 style="color: #ff9800;">Demandes de résiliation à traiter</h3>
@@ -208,7 +206,6 @@
             </div>
         </div>
 
-        <!-- MODALE ADMIN -->
         <div id="modal-admin" class="modal-overlay">
             <div class="modal-box">
                 <h3 id="admin-modal-titre">Confirmation</h3>
@@ -227,12 +224,12 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtZmJqcG90Z2ljcXBmeGxzeWN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDIyNjYsImV4cCI6MjEwMzMxODI2Nn0.WbVuFOdEEaWGSrn3hb8hHLi9Tvzw8AHotc42Q7XH1JE';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const API_URL = 'https://api-foot.antomicha-nl.workers.dev';
+        const API_URL = '/api/classement';
         let donneesEnMemoire = { matchsAPI: [], matchsBDD: [] };
         let tousLesUsers = [];
         let listeArticlesAdmin = [];
         let listeAvantagesAdmin = [];
-        let actionResiliationEnCours = null; // Variable pour la modale
+        let actionResiliationEnCours = null;
 
         async function verifierAdmin() {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -318,7 +315,6 @@
             chargerMedias();
         }
 
-        // --- GESTION DES RÉSILIATIONS ---
         async function chargerDemandesResiliation() {
             const { data: demandes, error } = await supabaseClient
                 .from('profils')
@@ -381,32 +377,75 @@
 
         async function executerChangementStatut() {
             if (!actionResiliationEnCours) return;
-            
             document.getElementById('admin-modal-btn').innerText = "Chargement...";
-            
             const { userId, nouveauStatut } = actionResiliationEnCours;
-            const { error } = await supabaseClient
-                .from('profils')
-                .update({ statut_resiliation: nouveauStatut })
-                .eq('id', userId);
-
+            const { error } = await supabaseClient.from('profils').update({ statut_resiliation: nouveauStatut }).eq('id', userId);
             document.getElementById('modal-admin').style.display = 'none';
-
-            if (!error) {
-                chargerDemandesResiliation(); 
-                if (document.getElementById('form-user').style.display === 'block') chargerUtilisateurs(); 
-            } else {
-                console.error("Erreur :", error.message);
-            }
+            if (!error) { chargerDemandesResiliation(); if (document.getElementById('form-user').style.display === 'block') chargerUtilisateurs(); } 
         }
 
-        // --- AUTRES FONCTIONS DE GESTION ---
         async function chargerLancement() { const { data } = await supabaseClient.from('reglages_site').select('*').eq('id', 1).single(); if (data) { document.getElementById('check-maintenance').checked = data.compte_a_rebours_actif; if (data.date_lancement) document.getElementById('date-lancement').value = new Date(data.date_lancement).toISOString().slice(0, 16); } }
         async function sauvegarderLancement() { const actif = document.getElementById('check-maintenance').checked; const dateInput = document.getElementById('date-lancement').value; let isoDate = dateInput ? new Date(dateInput).toISOString() : new Date().toISOString(); await supabaseClient.from('reglages_site').upsert([{ id: 1, compte_a_rebours_actif: actif, date_lancement: isoDate }]); alert('Réglages sauvegardés !'); }
-        async function chargerAvantages() { const { data } = await supabaseClient.from('avantages').select('*').order('plan', { ascending: true }); listeAvantagesAdmin = data || []; let html = ''; listeAvantagesAdmin.forEach(av => { let icone = av.type_icone === 'check' ? '✅' : '❌'; let couleurPlan = av.plan === 'premium' ? 'var(--accent)' : 'white'; html += `<div class="manage-card"><div class="manage-info"><div class="manage-title" style="color:${couleurPlan}">[${av.plan.toUpperCase()}] ${icone} ${av.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('avantages', '${av.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-avantages').innerHTML = html || 'Aucun avantage.'; }
+        
+        // --- GESTION DES AVANTAGES ---
+        async function chargerAvantages() { 
+            // On trie par plan, puis par ordre
+            const { data } = await supabaseClient.from('avantages').select('*').order('plan', { ascending: true }).order('ordre', { ascending: true }); 
+            listeAvantagesAdmin = data || []; 
+            let html = ''; 
+            listeAvantagesAdmin.forEach(av => { 
+                let icone = av.type_icone === 'check' ? '✅' : (av.type_icone === 'cross' ? '❌' : '➖'); 
+                let couleurPlan = av.plan === 'premium' ? 'var(--accent)' : 'white'; 
+                html += `<div class="manage-card"><div class="manage-info"><div class="manage-title" style="color:${couleurPlan}">[${av.plan.toUpperCase()}] (Ordre: ${av.ordre || 1}) ${icone} ${av.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('avantages', '${av.id}')">Sup.</button></div></div>`; 
+            }); 
+            document.getElementById('liste-avantages').innerHTML = html || 'Aucun avantage.'; 
+        }
+
+        async function sauvegarderAvantage() {
+            const plan = document.getElementById('plan-avantage').value;
+            const texte = document.getElementById('texte-avantage').value;
+            const icone = document.getElementById('type-icone-avantage').value;
+            const ordre = parseInt(document.getElementById('ordre-avantage').value) || 1;
+
+            if(!texte) return alert("Veuillez entrer un texte pour l'avantage.");
+
+            const btn = document.getElementById('btn-save-avantage');
+            btn.innerText = "Enregistrement...";
+            btn.disabled = true;
+
+            await supabaseClient.from('avantages').insert([{ plan: plan, texte: texte, type_icone: icone, ordre: ordre }]);
+            
+            document.getElementById('texte-avantage').value = '';
+            document.getElementById('ordre-avantage').value = '1';
+            btn.innerText = "Sauvegarder";
+            btn.disabled = false;
+            chargerAvantages();
+        }
+
         async function chargerArticles() { const { data } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false }); listeArticlesAdmin = data || []; let html = ''; listeArticlesAdmin.forEach(a => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${a.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('articles', '${a.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-articles').innerHTML = html || 'Aucun article.'; }
-        async function chargerMatchs() { try { const reponse = await fetch(API_URL); const data = await reponse.json(); donneesEnMemoire.matchsAPI = data.matches.matches; const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*'); donneesEnMemoire.matchsBDD = matchsBdd || []; const matchdays = [...new Set(donneesEnMemoire.matchsAPI.map(m => m.matchday))].filter(d => d).sort((a, b) => a - b); let optionsHtml = ''; matchdays.forEach(day => { optionsHtml += `<option value="${day}">Journée ${day}</option>`; }); document.getElementById('filtre-journee-admin').innerHTML = optionsHtml; filtrerMatchsAdmin(); } catch (err) {} }
-        function filtrerMatchsAdmin() { const journee = parseInt(document.getElementById('filtre-journee-admin').value); const matchsJournee = donneesEnMemoire.matchsAPI.filter(m => m.matchday === journee); let html = ''; matchsJournee.forEach(m => { let dom = m.homeTeam.name; let ext = m.awayTeam.name; html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${dom} VS ${ext}</div></div><div class="manage-actions"><button class="btn-edit" onclick="editerMatch('${m.id}', '${dom} - ${ext}')">Modifier</button></div></div>`; }); document.getElementById('liste-matchs').innerHTML = html; }
+        
+        async function chargerMatchs() { 
+            try { 
+                const req = await fetch(API_URL + '?action=fixtures'); const data = await req.json(); 
+                donneesEnMemoire.matchsAPI = data.response || []; 
+                const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*'); donneesEnMemoire.matchsBDD = matchsBdd || []; 
+                const matchdays = [...new Set(donneesEnMemoire.matchsAPI.map(m => { let r = m.league.round.match(/\d+/); return r ? parseInt(r[0]) : null; }))].filter(d => d).sort((a, b) => a - b); 
+                let optionsHtml = ''; matchdays.forEach(day => { optionsHtml += `<option value="${day}">Journée ${day}</option>`; }); 
+                document.getElementById('filtre-journee-admin').innerHTML = optionsHtml; filtrerMatchsAdmin(); 
+            } catch (err) { console.error(err); } 
+        }
+
+        function filtrerMatchsAdmin() { 
+            const journee = parseInt(document.getElementById('filtre-journee-admin').value); 
+            const matchsJournee = donneesEnMemoire.matchsAPI.filter(m => { let r = m.league.round.match(/\d+/); return r && parseInt(r[0]) === journee; }); 
+            let html = ''; 
+            matchsJournee.forEach(m => { 
+                let dom = m.teams.home.name; let ext = m.teams.away.name; 
+                html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${dom} VS ${ext}</div></div><div class="manage-actions"><button class="btn-edit" onclick="editerMatch('${m.fixture.id}', '${dom} - ${ext}')">Modifier</button></div></div>`; 
+            }); 
+            document.getElementById('liste-matchs').innerHTML = html; 
+        }
+
         async function chargerFlashes() { const { data } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false }); let html = ''; (data || []).forEach(f => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${f.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('flashes', '${f.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-flashes').innerHTML = html || 'Aucun flash.'; }
         async function sauvegarderFlash() { const texte = document.getElementById('texte-flash').value; if(!texte) return; await supabaseClient.from('flashes').insert([{ texte: texte }]); document.getElementById('texte-flash').value = ''; chargerFlashes(); }
         
