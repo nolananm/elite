@@ -276,9 +276,12 @@
                 const matchdays = [...new Set(tousLesMatchsAPI.map(m => m.matchday))].filter(d => d).sort((a, b) => a - b);
                 
                 let currentMatchday = 1;
-                const matchEnCoursOuJoue = tousLesMatchsAPI.filter(m => ['FINISHED', 'IN_PLAY', 'PAUSED'].includes(m.status));
-                if(matchEnCoursOuJoue.length > 0) {
-                    currentMatchday = Math.max(...matchEnCoursOuJoue.map(m => m.matchday));
+                let now = new Date();
+                
+                // Détection intelligente de la journée en cours
+                const matchsPasses = tousLesMatchsAPI.filter(m => new Date(m.utcDate) <= now);
+                if (matchsPasses.length > 0) {
+                    currentMatchday = Math.max(...matchsPasses.map(m => m.matchday));
                 }
 
                 let selectedDay = daySelectedBeforeRefresh ? parseInt(daySelectedBeforeRefresh) : currentMatchday;
@@ -316,19 +319,56 @@
                 let acces = reglageAdmin ? reglageAdmin.niveau_acces : "classic"; 
                 let badgeClass = acces === "premium" ? "badge-premium" : (acces === "classic" ? "badge-classic" : "badge-free");
 
-                let scoreText = ""; let boxClass = "score-box"; let libelleDate = "";
+                let scoreText = ""; 
+                let boxClass = "score-box"; 
+                let libelleDate = "";
                 
-                if (['FINISHED'].includes(m.status)) {
-                    scoreText = `${m.score.fullTime.home} - ${m.score.fullTime.away}`;
-                    libelleDate = `Terminé le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
-                } else if (['IN_PLAY', 'PAUSED'].includes(m.status)) {
-                    scoreText = `${m.score.fullTime.home} - ${m.score.fullTime.away}`;
+                let isFinished = ['FINISHED', 'AWARDED'].includes(m.status);
+                let isLive = ['IN_PLAY', 'PAUSED', 'LIVE'].includes(m.status);
+                let isPostponed = ['POSTPONED', 'CANCELED', 'CANCELLED', 'SUSPENDED'].includes(m.status);
+                
+                // La protection intelligente commence ici : a-t-on le score même si l'API est en retard sur le statut ?
+                let hasScore = m.score && m.score.fullTime && m.score.fullTime.home !== null;
+                
+                let matchDate = new Date(m.utcDate);
+                let now = new Date();
+
+                if (isFinished || (hasScore && !isLive)) {
+                    // Match terminé de manière officielle OU score disponible
+                    let sDom = m.score.fullTime.home;
+                    let sExt = m.score.fullTime.away;
+                    scoreText = `${sDom} - ${sExt}`;
+                    libelleDate = `Terminé le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                } else if (isLive) {
+                    // Match officiellement en direct
+                    let sDom = hasScore ? m.score.fullTime.home : 0;
+                    let sExt = hasScore ? m.score.fullTime.away : 0;
+                    scoreText = `${sDom} - ${sExt}`;
                     libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
                     boxClass += " score-upcoming"; 
+                } else if (isPostponed) {
+                    // Annulations
+                    scoreText = `REP.`;
+                    boxClass += " score-upcoming";
+                    libelleDate = `<span style="color:#ff9800; font-weight:bold;">Reporté</span>`;
                 } else {
-                    scoreText = new Date(m.utcDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                    boxClass += " score-upcoming"; 
-                    libelleDate = `Le ${new Date(m.utcDate).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                    // Si l'API croit que le match n'a pas commencé, on analyse l'heure réelle
+                    if (now > new Date(matchDate.getTime() + (2.5 * 60 * 60 * 1000))) {
+                        // L'heure de fin est dépassée depuis longtemps mais zéro score donné = API en retard
+                        scoreText = `- - -`;
+                        boxClass += " score-upcoming";
+                        libelleDate = `<span style="color:var(--text-muted);">En attente du résultat</span>`;
+                    } else if (now > matchDate) {
+                        // Le match a commencé mais l'API dort = on simule le direct
+                        scoreText = `0 - 0`;
+                        boxClass += " score-upcoming";
+                        libelleDate = `<span style="color:#e50046; font-weight:bold;">🔴 EN DIRECT</span>`;
+                    } else {
+                        // Le match est bien dans le futur
+                        scoreText = matchDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        boxClass += " score-upcoming"; 
+                        libelleDate = `Le ${matchDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}`;
+                    }
                 }
 
                 html += `
@@ -366,7 +406,6 @@
 
             const matchAdmin = reglageMatchsBDD.find(r => r.id_api == idApiStr) || {};
             
-            // PARSING DES DONNÉES BRUTES
             let statsHtml = `<div class="loading-text">Statistiques détaillées non renseignées pour ce match.</div>`;
             let lineupsHtml = `<div class="loading-text" style="grid-column: 1/-1;">Compositions d'équipes non renseignées.</div>`;
 
