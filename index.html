@@ -17,12 +17,48 @@
         nav { display: flex; gap: 30px; align-items: center; }
         nav a { font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.3s; }
         nav a:hover { color: var(--accent); }
+        
+        /* Bouton dynamique pour la navbar */
+        .nav-btn { background: var(--gradient); padding: 8px 18px; border-radius: 6px; color: white !important; font-weight: 700; }
+        .nav-btn:hover { box-shadow: 0 5px 15px rgba(229,0,70,0.4); }
 
         .container { max-width: 1200px; margin: 120px auto 50px auto; padding: 0 20px; }
         
-        .hero { text-align: center; margin-bottom: 80px; padding: 60px 0; }
-        .hero h1 { font-size: 56px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero p { color: var(--text-muted); font-size: 20px; max-width: 700px; margin: 0 auto; line-height: 1.6; }
+        /* Amélioration visuelle du Hero */
+        .hero { 
+            position: relative; 
+            text-align: left; 
+            margin-bottom: 60px; 
+            padding: 80px 40px; 
+            border-radius: 20px;
+            background: url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=2000&auto=format&fit=crop') center/cover;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to right, rgba(7,8,11,0.95) 0%, rgba(7,8,11,0.5) 100%);
+            border-radius: 20px;
+        }
+        .hero-content { position: relative; z-index: 1; max-width: 600px; }
+        .hero h1 { font-size: 56px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; }
+        .hero p { color: #d0d4e0; font-size: 18px; margin-bottom: 30px; line-height: 1.6; }
+        
+        .hero-btns { display: flex; gap: 15px; }
+        .btn-hero { padding: 12px 25px; border-radius: 8px; font-weight: 600; text-transform: uppercase; transition: 0.3s; cursor: pointer; border: none; font-size: 14px;}
+        .btn-hero-primary { background: var(--gradient); color: white; box-shadow: 0 10px 20px rgba(229,0,70,0.3); }
+        .btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(229,0,70,0.5); }
+        .btn-hero-secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
+        .btn-hero-secondary:hover { background: rgba(255,255,255,0.2); }
+
+        /* Section Fonctionnalités pour habiller l'accueil */
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 80px; }
+        .feature-box { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); text-align: center; transition: 0.3s; }
+        .feature-box:hover { transform: translateY(-5px); border-color: rgba(229,0,70,0.5); box-shadow: 0 10px 20px rgba(229,0,70,0.15); }
+        .feature-icon { font-size: 40px; margin-bottom: 15px; }
+        .feature-box h3 { font-size: 20px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; }
+        .feature-box p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
 
         .pricing-section { text-align: center; margin-top: 50px; }
         .pricing-section h2 { font-size: 36px; font-weight: 800; text-transform: uppercase; margin-bottom: 50px; }
@@ -56,7 +92,9 @@
             header { flex-direction: column; padding: 15px; gap: 10px; }
             nav { flex-wrap: wrap; justify-content: center; gap: 10px; }
             .container { margin-top: 140px; }
+            .hero { padding: 40px 20px; text-align: center; }
             .hero h1 { font-size: 38px; }
+            .hero-btns { justify-content: center; flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -68,14 +106,43 @@
             <a href="articles.html">Articles</a>
             <a href="matchs.html">Matchs & Fan Zone</a>
             <a href="medias.html">Émissions & Podcasts</a>
-            <a href="compte.html">Compte</a>
+            <!-- Le conteneur dynamique pour Connexion / Compte -->
+            <span id="nav-auth-container">
+                <a href="connexion.html" style="opacity: 0.5;">Chargement...</a>
+            </span>
         </nav>
     </header>
 
     <div class="container">
+        <!-- Nouveau Hero habillé -->
         <div class="hero">
-            <h1>L'expérience ultime du football</h1>
-            <p>Rejoignez la plus grande communauté de passionnés. Analyses tactiques, podcasts exclusifs et immersion totale en Ligue 1.</p>
+            <div class="hero-content">
+                <h1>L'expérience ultime du football</h1>
+                <p>Rejoignez la plus grande communauté de passionnés. Analyses tactiques, podcasts exclusifs et immersion totale au cœur de la Ligue 1.</p>
+                <div class="hero-btns">
+                    <a href="matchs.html" class="btn-hero btn-hero-primary">Voir les matchs en direct</a>
+                    <a href="#abonnements" class="btn-hero btn-hero-secondary">Découvrir les offres</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nouvelle section pour éviter que la page soit vide -->
+        <div class="features-grid">
+            <div class="feature-box">
+                <div class="feature-icon">⚡</div>
+                <h3>Direct & Stats (xG)</h3>
+                <p>Suivez l'évolution des scores, les compositions officielles et les Expected Goals mis à jour instantanément.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">🏟️</div>
+                <h3>Fan Zone 100% Foot</h3>
+                <p>Débattez en direct avec les autres abonnés, notez les joueurs et participez aux débriefings d'après-match.</p>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">🎙️</div>
+                <h3>Contenu Premium</h3>
+                <p>Accédez aux articles sans publicité, aux émissions exclusives et aux podcasts tactiques d'Élite.</p>
+            </div>
         </div>
 
         <div class="pricing-section" id="abonnements">
@@ -124,6 +191,18 @@
         const LIEN_STRIPE_CLASSIC = "https://buy.stripe.com/test_3cIcN41SffTZbyrgOm7Vm00";
         const LIEN_STRIPE_PREMIUM = "METS_TON_LIEN_DE_PAIEMENT_PREMIUM_ICI"; 
 
+        // --- NOUVEAU : GESTION DE LA NAVBAR DYNAMIQUE ---
+        async function verifierAuthNav() {
+            const container = document.getElementById('nav-auth-container');
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            if (user) {
+                container.innerHTML = '<a href="compte.html" class="nav-btn">Compte</a>';
+            } else {
+                container.innerHTML = '<a href="connexion.html" class="nav-btn">Connexion</a>';
+            }
+        }
+
         async function redirigerVersStripe(planChoisi) {
             const { data: { user } } = await supabaseClient.auth.getUser();
             
@@ -144,7 +223,6 @@
         }
 
         async function chargerAvantages() {
-            // NOUVEAU : On ajoute le tri par "ordre" ascendant
             const { data: avantages, error } = await supabaseClient
                 .from('avantages')
                 .select('*')
@@ -202,6 +280,8 @@
             }
         }
 
+        // Lancement des fonctions au chargement
+        verifierAuthNav();
         activerBouclierAntiPub();
         chargerAvantages();
 
