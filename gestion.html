@@ -47,11 +47,11 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
         th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
 
+        /* MODALES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-box { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .modal-box h3 { margin-bottom: 15px; font-size: 20px; color: white; }
-        .modal-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
-        .modal-btn-group { display: flex; gap: 15px; justify-content: center; }
+        .modal-box { background: var(--bg-card); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); max-width: 500px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .modal-box h3 { margin-bottom: 15px; font-size: 20px; color: white; text-align: center;}
+        .modal-btn-group { display: flex; gap: 15px; justify-content: center; margin-top:20px;}
         .modal-btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 14px; flex: 1; }
         .btn-cancel { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); }
         .btn-confirm { background: #00e676; color: #000; }
@@ -216,12 +216,23 @@
             <div class="list-section"><div id="liste-articles"></div></div>
         </div>
 
+        <!-- ONGLET ABONNES MODIFIÉ -->
         <div id="form-user" style="display: none;">
             <div class="list-section">
-                <h3>Liste des abonnés</h3>
+                <h3>Gestion des Utilisateurs</h3>
                 <input type="text" id="search-user" onkeyup="filtrerUsers()" placeholder="🔍 Rechercher un email..." style="margin-bottom: 15px; border-radius: 20px; padding: 12px; width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none;">
                 <div style="overflow-x: auto;">
-                    <table><thead><tr><th>Email & État</th><th>Abonnement</th></tr></thead><tbody id="liste-users"></tbody></table>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Offre</th>
+                                <th>Statut / Fin</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liste-users"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -239,6 +250,7 @@
             </div>
         </div>
 
+        <!-- MODALE CONFIRMATION (Générique) -->
         <div id="modal-admin" class="modal-overlay">
             <div class="modal-box">
                 <h3 id="admin-modal-titre">Confirmation</h3>
@@ -246,6 +258,41 @@
                 <div class="modal-btn-group">
                     <button class="modal-btn btn-cancel" onclick="document.getElementById('modal-admin').style.display='none'">Annuler</button>
                     <button id="admin-modal-btn" class="modal-btn btn-confirm">Confirmer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODALE EDITION UTILISATEUR (Abonnements) -->
+        <div id="modal-edit-user" class="modal-overlay">
+            <div class="modal-box" style="text-align: left;">
+                <h3 style="text-align:center; color: var(--accent);">Gérer l'utilisateur</h3>
+                <p id="edit-user-email" style="text-align:center; font-weight:bold; color: white; margin-bottom:20px;"></p>
+                <input type="hidden" id="edit-user-id">
+
+                <label>Offre :</label>
+                <select id="edit-user-plan" style="margin-bottom:15px; background: rgba(0,0,0,0.5);">
+                    <option value="free">Free</option>
+                    <option value="classic">Classic</option>
+                    <option value="premium">Premium</option>
+                </select>
+
+                <label>Statut de l'abonnement :</label>
+                <select id="edit-user-status" style="margin-bottom:15px; background: rgba(0,0,0,0.5);">
+                    <option value="actif">Actif (Renouvellement automatique)</option>
+                    <option value="cancelled">Annulé / Terminé</option>
+                </select>
+
+                <label>Date de renouvellement / fin :</label>
+                <input type="date" id="edit-user-date" style="margin-bottom:15px; background: rgba(0,0,0,0.5);">
+
+                <div style="display: flex; align-items: center; margin-bottom: 20px; background: rgba(255, 165, 0, 0.1); padding: 10px; border-radius: 8px;">
+                    <input type="checkbox" id="edit-user-offert">
+                    <label style="margin: 0; color: #ffa500;">Abonnement OFFERT (Cadeau)</label>
+                </div>
+
+                <div class="modal-btn-group">
+                    <button class="modal-btn btn-cancel" onclick="document.getElementById('modal-edit-user').style.display='none'">Fermer</button>
+                    <button class="modal-btn btn-confirm" onclick="sauvegarderUserEdition()">Enregistrer</button>
                 </div>
             </div>
         </div>
@@ -349,12 +396,7 @@
         }
 
         async function chargerDemandesResiliation() {
-            const { data: demandes, error } = await supabaseClient
-                .from('profils')
-                .select('id, email, plan, date_demande_resiliation')
-                .eq('statut_resiliation', 'en_attente')
-                .order('date_demande_resiliation', { ascending: true });
-
+            const { data: demandes, error } = await supabaseClient.from('profils').select('id, email, plan, date_demande_resiliation').eq('statut_resiliation', 'en_attente').order('date_demande_resiliation', { ascending: true });
             const conteneur = document.getElementById('liste-demandes-resiliation');
             const messageVide = document.getElementById('message-vide-resiliation');
             conteneur.innerHTML = '';
@@ -422,21 +464,15 @@
         
         // --- 💎 GESTION DES AVANTAGES ---
         async function chargerAvantages() { 
-            const { data } = await supabaseClient.from('avantages').select('*')
-                .order('plan', { ascending: true })
-                .order('ordre', { ascending: true }); 
-            
+            const { data } = await supabaseClient.from('avantages').select('*').order('plan', { ascending: true }).order('ordre', { ascending: true }); 
             listeAvantagesAdmin = data || []; 
             let html = ''; 
-
             const plans = ['free', 'classic', 'premium'];
-            
             plans.forEach(planNom => {
                 const planItems = listeAvantagesAdmin.filter(av => av.plan === planNom);
                 if (planItems.length > 0) {
                     let color = planNom === 'premium' ? 'var(--accent)' : (planNom === 'classic' ? '#0055ff' : 'white');
                     html += `<h4 style="margin-top: 25px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); color: ${color}; text-transform: uppercase;">PLAN ${planNom}</h4>`;
-                    
                     planItems.forEach(av => { 
                         let icone = av.type_icone === 'check' ? '✅' : (av.type_icone === 'cross' ? '❌' : '➖'); 
                         html += `
@@ -452,20 +488,17 @@
                     });
                 }
             });
-
             document.getElementById('liste-avantages').innerHTML = html || 'Aucun avantage enregistré.'; 
         }
 
         function editerAvantage(id) {
             const av = listeAvantagesAdmin.find(a => a.id == id);
             if(!av) return;
-
             document.getElementById('id-avantage').value = av.id;
             document.getElementById('plan-avantage').value = av.plan;
             document.getElementById('texte-avantage').value = av.texte;
             document.getElementById('type-icone-avantage').value = av.type_icone;
             document.getElementById('ordre-avantage').value = av.ordre || 1;
-
             document.getElementById('titre-form-avantage').innerText = "Modifier l'avantage";
             document.getElementById('btn-save-avantage').innerText = "Mettre à jour";
             document.getElementById('btn-cancel-avantage').style.display = 'block';
@@ -473,12 +506,7 @@
         }
 
         function resetFormAvantage() {
-            document.getElementById('id-avantage').value = '';
-            document.getElementById('texte-avantage').value = '';
-            document.getElementById('ordre-avantage').value = '1';
-            document.getElementById('titre-form-avantage').innerText = "Ajouter un avantage";
-            document.getElementById('btn-save-avantage').innerText = "Ajouter l'avantage";
-            document.getElementById('btn-cancel-avantage').style.display = 'none';
+            document.getElementById('id-avantage').value = ''; document.getElementById('texte-avantage').value = ''; document.getElementById('ordre-avantage').value = '1'; document.getElementById('titre-form-avantage').innerText = "Ajouter un avantage"; document.getElementById('btn-save-avantage').innerText = "Ajouter l'avantage"; document.getElementById('btn-cancel-avantage').style.display = 'none';
         }
 
         async function sauvegarderAvantage() {
@@ -487,36 +515,21 @@
             const texte = document.getElementById('texte-avantage').value;
             const icone = document.getElementById('type-icone-avantage').value;
             const ordre = parseInt(document.getElementById('ordre-avantage').value) || 1;
-
             if(!texte) return alert("Veuillez entrer un texte pour l'avantage.");
-
-            const btn = document.getElementById('btn-save-avantage');
-            btn.innerText = "Enregistrement...";
-            btn.disabled = true;
-
-            if (id) {
-                await supabaseClient.from('avantages').update({ plan: plan, texte: texte, type_icone: icone, ordre: ordre }).eq('id', id);
-            } else {
-                await supabaseClient.from('avantages').insert([{ plan: plan, texte: texte, type_icone: icone, ordre: ordre }]);
-            }
-            
-            resetFormAvantage();
-            btn.disabled = false;
-            chargerAvantages();
+            const btn = document.getElementById('btn-save-avantage'); btn.innerText = "Enregistrement..."; btn.disabled = true;
+            if (id) { await supabaseClient.from('avantages').update({ plan: plan, texte: texte, type_icone: icone, ordre: ordre }).eq('id', id); } else { await supabaseClient.from('avantages').insert([{ plan: plan, texte: texte, type_icone: icone, ordre: ordre }]); }
+            resetFormAvantage(); btn.disabled = false; chargerAvantages();
         }
 
         async function chargerArticles() { const { data } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false }); listeArticlesAdmin = data || []; let html = ''; listeArticlesAdmin.forEach(a => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${a.titre}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('articles', '${a.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-articles').innerHTML = html || 'Aucun article.'; }
         
-        // --- ⚽ GESTION DES MATCHS (AVEC DONNÉES BRUTES) ---
         async function chargerMatchs() { 
             try { 
                 const req = await fetch(API_URL + '?action=fixtures'); 
                 const data = await req.json(); 
                 donneesEnMemoire.matchsAPI = data.matches || []; 
-                
                 const { data: matchsBdd } = await supabaseClient.from('matchs_enrichis').select('*'); 
                 donneesEnMemoire.matchsBDD = matchsBdd || []; 
-
                 const matchdays = [...new Set(donneesEnMemoire.matchsAPI.map(m => m.matchday))].filter(d => d).sort((a, b) => a - b); 
                 let optionsHtml = ''; 
                 matchdays.forEach(day => { optionsHtml += `<option value="${day}">Journée ${day}</option>`; }); 
@@ -530,11 +543,7 @@
             const matchsJournee = donneesEnMemoire.matchsAPI.filter(m => m.matchday === journee); 
             let html = ''; 
             matchsJournee.forEach(m => { 
-                let dom = m.homeTeam.name; 
-                let ext = m.awayTeam.name; 
-                let infoBdd = donneesEnMemoire.matchsBDD.find(r => r.id_api == m.id);
-                let badgeCustom = infoBdd ? `<span style="background:var(--accent); color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px;">Personnalisé</span>` : '';
-                
+                let dom = m.homeTeam.name; let ext = m.awayTeam.name; let infoBdd = donneesEnMemoire.matchsBDD.find(r => r.id_api == m.id); let badgeCustom = infoBdd ? `<span style="background:var(--accent); color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-left:8px;">Personnalisé</span>` : '';
                 html += `
                 <div class="manage-card">
                     <div class="manage-info">
@@ -549,79 +558,114 @@
         }
 
         function editerMatch(idApi, titre) {
-            document.getElementById('id-api-match').value = idApi;
-            document.getElementById('label-nom-match').innerText = titre;
-            
+            document.getElementById('id-api-match').value = idApi; document.getElementById('label-nom-match').innerText = titre;
             const matchBdd = donneesEnMemoire.matchsBDD.find(r => r.id_api == idApi) || {};
             document.getElementById('niveau-acces-match').value = matchBdd.niveau_acces || 'classic';
             document.getElementById('youtube-match').value = matchBdd.youtube_url || '';
             document.getElementById('resume-match').value = matchBdd.resume_texte || '';
             document.getElementById('donnees-brutes-match').value = matchBdd.donnees_brutes || '';
-
-            const box = document.getElementById('box-edition-match');
-            box.style.display = 'block';
-            window.scrollTo({ top: box.offsetTop - 50, behavior: 'smooth' });
+            const box = document.getElementById('box-edition-match'); box.style.display = 'block'; window.scrollTo({ top: box.offsetTop - 50, behavior: 'smooth' });
         }
 
         async function sauvegarderMatch() {
-            const idApi = document.getElementById('id-api-match').value;
-            const acces = document.getElementById('niveau-acces-match').value;
-            const youtube = document.getElementById('youtube-match').value;
-            const resume = document.getElementById('resume-match').value;
-            const brutes = document.getElementById('donnees-brutes-match').value;
-
-            const btn = document.getElementById('btn-save-match');
-            btn.innerText = "Enregistrement...";
-            btn.disabled = true;
-
-            const { error } = await supabaseClient.from('matchs_enrichis').upsert([{
-                id_api: idApi,
-                niveau_acces: acces,
-                youtube_url: youtube,
-                resume_texte: resume,
-                donnees_brutes: brutes
-            }], { onConflict: 'id_api' });
-
-            btn.innerText = "Enregistrer le match";
-            btn.disabled = false;
-
-            if (error) {
-                alert("Erreur : " + error.message);
-            } else {
-                alert("Données du match enregistrées avec succès !");
-                document.getElementById('box-edition-match').style.display = 'none';
-                chargerMatchs();
-            }
+            const idApi = document.getElementById('id-api-match').value; const acces = document.getElementById('niveau-acces-match').value; const youtube = document.getElementById('youtube-match').value; const resume = document.getElementById('resume-match').value; const brutes = document.getElementById('donnees-brutes-match').value;
+            const btn = document.getElementById('btn-save-match'); btn.innerText = "Enregistrement..."; btn.disabled = true;
+            const { error } = await supabaseClient.from('matchs_enrichis').upsert([{ id_api: idApi, niveau_acces: acces, youtube_url: youtube, resume_texte: resume, donnees_brutes: brutes }], { onConflict: 'id_api' });
+            btn.innerText = "Enregistrer le match"; btn.disabled = false;
+            if (error) { alert("Erreur : " + error.message); } else { alert("Données du match enregistrées !"); document.getElementById('box-edition-match').style.display = 'none'; chargerMatchs(); }
         }
 
         async function chargerFlashes() { const { data } = await supabaseClient.from('flashes').select('*').order('created_at', { ascending: false }); let html = ''; (data || []).forEach(f => { html += `<div class="manage-card"><div class="manage-info"><div class="manage-title">${f.texte}</div></div><div class="manage-actions"><button class="btn-delete" onclick="supprimerElement('flashes', '${f.id}')">Sup.</button></div></div>`; }); document.getElementById('liste-flashes').innerHTML = html || 'Aucun flash.'; }
         async function sauvegarderFlash() { const texte = document.getElementById('texte-flash').value; if(!texte) return; await supabaseClient.from('flashes').insert([{ texte: texte }]); document.getElementById('texte-flash').value = ''; chargerFlashes(); }
         
-        async function chargerUtilisateurs() { const { data } = await supabaseClient.from('profils').select('*'); tousLesUsers = data || []; afficherUsers(tousLesUsers); }
+        // --- 👥 GESTION UTILISATEURS (AVEC ABONNEMENTS ET DATES) ---
+        async function chargerUtilisateurs() { 
+            // Assure-toi que les colonnes 'statut_abo', 'date_renouvellement', 'est_offert' existent dans la table profils
+            const { data } = await supabaseClient.from('profils').select('*'); 
+            tousLesUsers = data || []; 
+            afficherUsers(tousLesUsers); 
+        }
+
         function afficherUsers(liste) { 
             let html = ''; 
             liste.forEach(u => { 
-                let alertResiliation = '';
-                if (u.statut_resiliation === 'en_attente') alertResiliation = '<br><span style="color:#ff9800; font-size:11px;">⏳ Analyse...</span>';
-                if (u.statut_resiliation === 'redirection_stripe') alertResiliation = '<br><span style="color:#6699ff; font-size:11px;">🔔 Redirigé Stripe</span>';
-                if (u.statut_resiliation === 'traitee') alertResiliation = '<br><span style="color:#00e676; font-size:11px;">✅ Clôturé</span>';
+                let badgePlan = u.plan === 'premium' ? '<span style="background:var(--accent); padding:3px 8px; border-radius:4px; font-size:10px;">PREMIUM</span>' : 
+                                (u.plan === 'classic' ? '<span style="background:#0055ff; padding:3px 8px; border-radius:4px; font-size:10px;">CLASSIC</span>' : 
+                                '<span style="background:#333; padding:3px 8px; border-radius:4px; font-size:10px;">FREE</span>');
+                
+                let detailStatut = "";
+                if (u.plan !== 'free') {
+                    if (u.est_offert) {
+                        detailStatut = `<span style="color:#ffa500; font-size:11px;">🎁 Offert</span>`;
+                    } else if (u.statut_abo === 'cancelled' || u.statut_abo === 'annule') {
+                        detailStatut = `<span style="color:#ff3333; font-size:11px;">⚠️ Annulé</span>`;
+                    } else {
+                        detailStatut = `<span style="color:#00e676; font-size:11px;">✅ Actif</span>`;
+                    }
+                    if (u.date_renouvellement) {
+                        detailStatut += `<br><span style="font-size:10px; color:var(--text-muted);">${u.date_renouvellement}</span>`;
+                    }
+                } else {
+                    detailStatut = `<span style="color:var(--text-muted); font-size:11px;">-</span>`;
+                }
 
                 html += `<tr>
-                    <td>${u.email || 'Email caché'} ${alertResiliation}</td>
+                    <td><strong>${u.email || 'Inconnu'}</strong></td>
+                    <td>${badgePlan}</td>
+                    <td>${detailStatut}</td>
                     <td>
-                        <select onchange="changerPlanUtilisateur('${u.id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #333; padding:5px;">
-                            <option value="free" ${u.plan === 'free' ? 'selected' : ''}>Free</option>
-                            <option value="classic" ${u.plan === 'classic' ? 'selected' : ''}>Classic</option>
-                            <option value="premium" ${u.plan === 'premium' ? 'selected' : ''}>Premium</option>
-                        </select>
+                        <button class="btn-edit" onclick="ouvrirModalEditionUser('${u.id}')">Gérer</button>
                     </td>
                 </tr>`; 
             }); 
-            document.getElementById('liste-users').innerHTML = html || '<tr><td colspan="2" style="text-align:center;">Aucun utilisateur.</td></tr>'; 
+            document.getElementById('liste-users').innerHTML = html || '<tr><td colspan="4" style="text-align:center;">Aucun utilisateur.</td></tr>'; 
         }
-        function filtrerUsers() { const query = document.getElementById('search-user').value.toLowerCase(); afficherUsers(tousLesUsers.filter(u => (u.email || '').toLowerCase().includes(query))); }
-        async function changerPlanUtilisateur(id, plan) { await supabaseClient.from('profils').update({ plan: plan }).eq('id', id); }
         
+        function filtrerUsers() { const query = document.getElementById('search-user').value.toLowerCase(); afficherUsers(tousLesUsers.filter(u => (u.email || '').toLowerCase().includes(query))); }
+        
+        function ouvrirModalEditionUser(id) {
+            const user = tousLesUsers.find(u => u.id === id);
+            if(!user) return;
+
+            document.getElementById('edit-user-id').value = user.id;
+            document.getElementById('edit-user-email').innerText = user.email || 'Email non renseigné';
+            document.getElementById('edit-user-plan').value = user.plan || 'free';
+            document.getElementById('edit-user-status').value = user.statut_abo || 'actif';
+            document.getElementById('edit-user-date').value = user.date_renouvellement || '';
+            document.getElementById('edit-user-offert').checked = user.est_offert === true;
+
+            document.getElementById('modal-edit-user').style.display = 'flex';
+        }
+
+        async function sauvegarderUserEdition() {
+            const id = document.getElementById('edit-user-id').value;
+            const plan = document.getElementById('edit-user-plan').value;
+            const statut = document.getElementById('edit-user-status').value;
+            const dateRenouv = document.getElementById('edit-user-date').value || null;
+            const offert = document.getElementById('edit-user-offert').checked;
+
+            const btn = document.querySelector('#modal-edit-user .btn-confirm');
+            btn.innerText = "Enregistrement...";
+            btn.disabled = true;
+
+            const { error } = await supabaseClient.from('profils').update({
+                plan: plan,
+                statut_abo: statut,
+                date_renouvellement: dateRenouv,
+                est_offert: offert
+            }).eq('id', id);
+
+            btn.innerText = "Enregistrer";
+            btn.disabled = false;
+
+            if (error) {
+                alert("Erreur lors de la modification : " + error.message);
+            } else {
+                document.getElementById('modal-edit-user').style.display = 'none';
+                chargerUtilisateurs(); // Recharge la liste pour afficher les changements
+            }
+        }
+
         async function supprimerElement(table, id) { 
             if (confirm("Supprimer ?")) { 
                 await supabaseClient.from(table).delete().eq('id', id); 
